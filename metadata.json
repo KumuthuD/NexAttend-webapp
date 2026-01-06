@@ -1,0 +1,7 @@
+{
+  "name": "NexAttend: AI-Powered Smart Attendance Marketing Site",
+  "description": "An intelligent, AI-driven web application to automate classroom attendance using multi-face recognition, providing insightful analytics for modern educational environments.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
