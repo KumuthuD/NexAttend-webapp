@@ -64,6 +64,13 @@ const WebPage = () => {
 <div className="animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
 </div>
 
+<Link
+  to="#"
+  className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold py-4 px-10 rounded-2xl transition-all transform hover:scale-105 shadow-lg hover:shadow-violet-500/50 text-lg"
+>
+  Sign up for free
+</Link>
+
 </div>
 
 </div>
