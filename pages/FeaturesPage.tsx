@@ -17,5 +17,12 @@ const FeaturesPage = () => {
         { icon: <ChartBarIcon className="w-8 h-8 text-white" />, title: 'Automated Reports', description: 'Generate detailed analytics, charts, and reports on attendance trends and participation rates.' },
         { icon: <DocumentTextIcon className="w-8 h-8 text-white" />, title: 'Notes & Assignments', description: 'Teachers can easily share class notes, materials, and post assignments for students.' },
     ];
-    
+
+    return (
+        <div className = "py-16 px-4 container mx-auto">
+            <div className="text-center mb-12">
+            
+            </div>
+        </div>      
+    )
 }
