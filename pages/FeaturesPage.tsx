@@ -24,6 +24,8 @@ const FeaturesPage = () => {
                 <h2 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-pink-500">Our Features</h2>
                 <p className="text-lg text-gray-400 mt-2">Everything you need for a smarter classroom.</p>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {features.map(feature => <FeatureCard key={feature.title} {...feature} />)}
         </div>      
     )
 }
