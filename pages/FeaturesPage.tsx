@@ -1,5 +1,21 @@
 import React from 'react';
 import FeatureCard from '../components/FeatureCard';
 import {
-    CameraIcon, UsersIcon, CodeBracketIcon, CheckCircleIcon, ClockIcon, EnvelopeIcon, SparklesIcon, ChatBubbleLeftRightIcon, CharBarIcon, DocumnetTextIcon
+    CameraIcon, UsersIcon, CodeBracketIcon, CheckCircleIcon, ClockIcon, EnvelopeIcon, SparklesIcon, ChatBubbleLeftRightIcon, ChartBarIcon, DocumentTextIcon
 } from '../components/icons';
+
+const FeaturesPage = () => {
+    const features = [
+        { icon: <CameraIcon className="w-8 h-8 text-white" />, title: 'Multi-Face Detection', description: 'Real-time, accurate face detection for seamless attendance marking in any classroom size.' },
+        { icon: <UsersIcon className="w-8 h-8 text-white" />, title: 'Dual Dashboards', description: 'Separate, role-specific dashboards providing tailored tools and insights for teachers and students.' },
+        { icon: <CodeBracketIcon className="w-8 h-8 text-white" />, title: 'Virtual Classrooms', description: 'Easily create and manage virtual classrooms with unique, automatically generated access codes.' },
+        { icon: <CheckCircleIcon className="w-8 h-8 text-white" />, title: 'Automatic Marking', description: 'Attendance is captured and recorded automatically in the database, eliminating manual work.' },
+        { icon: <ClockIcon className="w-8 h-8 text-white" />, title: 'Late Attendance Tracking', description: 'Flexibility to mark students as "late" instead of just present or absent, for more granular data.' },
+        { icon: <EnvelopeIcon className="w-8 h-8 text-white" />, title: 'Email Notifications', description: 'Automated email alerts to students after each session, keeping them informed of their status.' },
+        { icon: <SparklesIcon className="w-8 h-8 text-white" />, title: 'Attendance Motivation', description: 'Incentivize regular attendance by automatically awarding bonus points or marks to students.' },
+        { icon: <ChatBubbleLeftRightIcon className="w-8 h-8 text-white" />, title: 'Communication Hub', description: 'A central place for teachers and students to communicate, fostering better engagement.' },
+        { icon: <ChartBarIcon className="w-8 h-8 text-white" />, title: 'Automated Reports', description: 'Generate detailed analytics, charts, and reports on attendance trends and participation rates.' },
+        { icon: <DocumentTextIcon className="w-8 h-8 text-white" />, title: 'Notes & Assignments', description: 'Teachers can easily share class notes, materials, and post assignments for students.' },
+    ];
+    
+}
