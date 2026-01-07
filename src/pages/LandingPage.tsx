@@ -37,6 +37,12 @@ const LandingPage = () => {
                     >
                         NexAttend: Effortless Attendance.
                     </h1>
+                    <h2
+                        className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-8 text-white drop-shadow-md animate-fade-in-up"
+                        style={{ animationDelay: '0.3s' }}
+                    >
+                        Intelligent Insights. Smarter Classrooms.
+                    </h2>
                    
                 </div>
             </div>
