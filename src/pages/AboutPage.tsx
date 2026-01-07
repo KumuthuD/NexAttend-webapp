@@ -110,3 +110,17 @@ const AboutPage = () => {
     Revolutionizing Education Through Technology.
   </p>
 </div>
+
+<div className="container mx-auto px-4 mb-24">
+  <div className="max-w-4xl mx-auto bg-gray-800/30 border border-gray-700 rounded-2xl p-10">
+    <h3 className="text-2xl font-bold text-violet-400 mb-4">Our Mission</h3>
+    <p className="text-lg text-gray-300 mb-10">
+      To build an AI-powered smart attendance system with analytics and communication tools.
+    </p>
+
+    <h3 className="text-2xl font-bold text-pink-500 mb-4">Our Vision</h3>
+    <p className="text-lg text-gray-300">
+      Driving digital transformation in education using innovative technology.
+    </p>
+  </div>
+</div>
