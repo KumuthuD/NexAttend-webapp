@@ -102,3 +102,11 @@ const AboutPage = () => {
   );
 };
 
+<div className="py-20 px-4 container mx-auto text-center">
+  <h2 className="text-5xl md:text-6xl font-extrabold text-pink-500 mb-4">
+    About NexAttend
+  </h2>
+  <p className="text-xl text-gray-400">
+    Revolutionizing Education Through Technology.
+  </p>
+</div>
