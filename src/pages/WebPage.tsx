@@ -54,6 +54,13 @@ const WebPage = () => {
   Intelligent Insights - Smarter Classrooms.
 </h2>
 
+<p
+  className="max-w-2xl text-xl text-gray-200 mb-10 drop-shadow animate-fade-in-up leading-relaxed"
+  style={{ animationDelay: '0.5s' }}
+>
+  Automate attendance with AI Multi-Face Detection and transform the teaching experience.
+</p>
+
 
 </div>
 
