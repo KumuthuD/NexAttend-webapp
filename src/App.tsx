@@ -6,9 +6,12 @@ import FeaturesPage from './pages/FeaturesPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import WebPage from './pages/WebPage';
+import Footer from './components/Footer';
 
 const Layout = () => {
     const location = useLocation();
+
+    const showFooter = location.pathname !== '/webpage';
 
     return (
         <div className="bg-gray-900 text-white min-h-screen font-sans">
@@ -20,6 +23,7 @@ const Layout = () => {
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/webpage" element={<WebPage />} />
             </Routes>
+            {showFooter && <Footer />}
         </div>
     );
 };
