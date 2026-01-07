@@ -1,37 +1,96 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import backgroundVideo from '../assets/background.mp4';
+import React from "react";
+import { Link } from "react-router-dom";
+import FeatureCard from "../components/FeatureCard";
+import demoVideo from "../components/nexattend-demo.mp4";
+import {
+  CheckCircleIcon,
+  BrainIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+} from "../components/icons";
 
-const LandingPage: React.FC = () => {
+
+const LandingPage = () => {
+  const homeFeatures = [
+    {
+      icon: <CheckCircleIcon className="w-8 h-8 text-white" />,
+      title: "Automated Accuracy",
+      description: "AI Face Recognition for foolproof, fast attendance.",
+    },
+    {
+      icon: <BrainIcon className="w-8 h-8 text-white" />,
+      title: "Data-Driven Decisions",
+      description: "Gain deep insights with detailed attendance analytics.",
+    },
+    {
+      icon: <ShieldCheckIcon className="w-8 h-8 text-white" />,
+      title: "Secure & Compliant",
+      description: "Data is protected with advanced safeguards.",
+    },
+    {
+      icon: <UsersIcon className="w-8 h-8 text-white" />,
+      title: "Engaged Students",
+      description: "Increase classroom interaction and focus.",
+    },
+  ];
+
   return (
-    <div className="landing-page">
-      <section className="relative w-full h-screen overflow-hidden">
+    <div className="relative min-h-screen flex flex-col">
+      <div className="relative w-full h-screen overflow-hidden">
         <video
           className="absolute top-0 left-0 w-full h-full object-cover"
-          src={backgroundVideo}
+          src={demoVideo}
           autoPlay
-          loop
           muted
+          loop
+          playsInline
         />
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-white bg-black bg-opacity-50">
-          <h1 className="text-5xl font-bold mb-4">Welcome to Our App</h1>
-          <p className="text-xl mb-8">Your journey starts here.</p>
-          <div>
+
+        <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10"></div>
+
+        <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+          <h1
+            className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-pink-500 drop-shadow-lg animate-fade-in-up"
+            style={{ animationDelay: "0.1s" }}
+          >
+            NexAttend: Effortless Attendance.
+          </h1>
+
+          <div
+            className="flex flex-col sm:flex-row gap-6 animate-fade-in-up"
+            style={{ animationDelay: "0.7s" }}
+          >
             <Link
-              to="/register"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
+              to="/features"
+              className="bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-lg hover:shadow-violet-500/50 text-lg"
             >
-              Get Started
+              Explore Features
             </Link>
             <Link
-              to="/about"
-              className="bg-transparent border border-white text-white font-bold py-2 px-4 rounded"
+              to="/webpage"
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-lg text-lg"
             >
-              Learn More
+              Go to the WebPage
             </Link>
           </div>
         </div>
-      </section>
+      </div>
+
+      <div className="bg-gray-900 py-24">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {homeFeatures.map((feature, index) => (
+              <div
+                key={feature.title}
+                className="opacity-0 animate-fade-in-up"
+                style={{ animationDelay: `${0.2 + index * 0.2}s` }}
+              >
+                <FeatureCard {...feature} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
