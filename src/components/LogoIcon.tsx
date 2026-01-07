@@ -1,1 +1,1 @@
-import logo from "./Logo.png";
+import logo from "../assets/images/logo.png";

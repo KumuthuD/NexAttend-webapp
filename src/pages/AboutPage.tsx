@@ -1,11 +1,11 @@
 import React from 'react';
 import { LinkedInIcon, InstagramIcon, XIcon } from '../components/icons';
-import kumuthuImg from '../components/kumuthu.jpg';
-import thisanduImg from '../components/thisandu.jpg';
-import thiviruImg from '../components/thiviru.jpg';
-import yasithaImg from '../components/yasitha.jpg';
-import virajImg from '../components/viraj.jpg';
-import sudamImg from '../components/sudam.jpg';
+import kumuthuImg from '../assets/team/kumuthu.jpg';
+import thisanduImg from '../assets/team/thisandu.jpg';
+import thiviruImg from '../assets/team/thiviru.jpg';
+import yasithaImg from '../assets/team/yasitha.jpg';
+import virajImg from '../assets/team/viraj.jpg';
+import sudamImg from '../assets/team/sudam.jpg';
 
 const TeamMemberCard = ({ name, role, description, image }: { name: string, role: string, description: string, image: string }) => (
     <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 text-gray-900 flex flex-col h-full">
