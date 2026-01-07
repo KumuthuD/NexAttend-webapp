@@ -38,6 +38,8 @@ const WebPage = () => {
 
 <div className="absolute top-0 left-0 w-full h-full bg-black/70 z-10"></div>
 
+<div className="relative z-20 container mx-auto px-6 md:px-12 h-full flex flex-col justify-center items-start text-left">
+</div>
 
 </div>
 
