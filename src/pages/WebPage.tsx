@@ -7,6 +7,14 @@ const WebPage = () => {
     <div className="relative h-screen flex flex-col overflow-hidden">
     </div>
   );
+  
+  return (
+  <div className="relative h-screen flex flex-col overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden">
+    </div>
+  </div>
+);
+
 };
 
 export default WebPage;
