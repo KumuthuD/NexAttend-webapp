@@ -49,3 +49,48 @@ const TeamMemberCard = ({
     </div>
   </div>
 );
+
+const teamMembers = [
+  {
+    name: "Kumuthu Dahanayake",
+    role: "Project Lead, AI & Computer Vision Engineer",
+    description:
+      "Leads the overall direction of NexAttend while contributing to real-time face recognition models.",
+    image: kumuthuImg,
+  },
+  {
+    name: "Thisandu Ranadheera",
+    role: "Backend Engineer",
+    description:
+      "Develops server-side infrastructure, APIs, and AI service integration.",
+    image: thisanduImg,
+  },
+  {
+    name: "Thiviru Igalawithana",
+    role: "UI/UX Designer & Frontend Developer",
+    description:
+      "Designs user interfaces and builds responsive frontend components.",
+    image: thiviruImg,
+  },
+  {
+    name: "Yasitha Peris",
+    role: "System Architect & DevOps Coordinator",
+    description:
+      "Designs system architecture and manages CI/CD pipelines.",
+    image: yasithaImg,
+  },
+  {
+    name: "Viraj Jayasiri",
+    role: "AI & Computer Vision Engineer",
+    description:
+      "Works on facial detection and recognition model optimization.",
+    image: virajImg,
+  },
+  {
+    name: "Sudam Amarajeewa",
+    role: "Backend Engineer & Documentation Lead",
+    description:
+      "Handles backend development and prepares technical documentation.",
+    image: sudamImg,
+  },
+];
