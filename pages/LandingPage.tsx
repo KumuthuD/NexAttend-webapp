@@ -13,6 +13,10 @@ const LandingPage: React.FC = () => {
           loop
           muted
         />
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-white bg-black bg-opacity-50">
+          <h1 className="text-5xl font-bold mb-4">Welcome to Our App</h1>
+          <p className="text-xl mb-8">Your journey starts here.</p>
+        </div>
       </section>
     </div>
   );
