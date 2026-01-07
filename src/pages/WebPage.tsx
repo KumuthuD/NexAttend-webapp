@@ -1,12 +1,12 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import demoVideo from '../components/signup-page.mp4';
 
-const WebPage: React.FC = () => {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
-            <h1 className="text-4xl font-bold mb-4 text-violet-400">Web Interface</h1>
-            <p className="text-lg text-gray-300">Welcome to the main web interface.</p>
-        </div>
-    );
+const WebPage = () => {
+  return (
+    <div className="relative h-screen flex flex-col overflow-hidden">
+    </div>
+  );
 };
 
 export default WebPage;
