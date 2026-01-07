@@ -1,5 +1,5 @@
 import React from 'react';
-import ContactImg from '../components/Contact.png';
+import ContactImg from '../assets/images/Contact.png';
 import { InstagramIcon, LinkedInIcon, XIcon } from '../components/icons';
 
 const ContactPage = () => (

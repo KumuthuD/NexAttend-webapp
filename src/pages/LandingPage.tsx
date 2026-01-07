@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import FeatureCard from "../components/FeatureCard";
-import demoVideo from "../components/nexattend-demo.mp4";
+import demoVideo from "../assets/videos/nexattend-demo.mp4";
 import {
   CheckCircleIcon,
   BrainIcon,
@@ -53,27 +53,23 @@ const LandingPage = () => {
         {/* Hero Content */}
         <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
           <h1
-            className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-pink-500 drop-shadow-lg animate-fade-in-up"
-            style={{ animationDelay: "0.1s" }}
+            className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-pink-500 drop-shadow-lg"
           >
             NexAttend: Effortless Attendance.
           </h1>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-8 text-white drop-shadow-md animate-fade-in-up"
-            style={{ animationDelay: "0.3s" }}
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-8 text-white drop-shadow-md"
           >
             Intelligent Insights. Smarter Classrooms.
           </h2>
           <p
-            className="max-w-2xl text-xl text-gray-200 mb-10 drop-shadow animate-fade-in-up"
-            style={{ animationDelay: "0.5s" }}
+            className="max-w-2xl text-xl text-gray-200 mb-10 drop-shadow"
           >
             Automate attendance with AI Multi-Face Detection and transform the
             teaching experience.
           </p>
           <div
-            className="flex flex-col sm:flex-row gap-6 animate-fade-in-up"
-            style={{ animationDelay: "0.7s" }}
+            className="flex flex-col sm:flex-row gap-6"
           >
             <Link
               to="/features"
@@ -98,8 +94,7 @@ const LandingPage = () => {
             {homeFeatures.map((feature, index) => (
               <div
                 key={feature.title}
-                className="opacity-0 animate-fade-in-up"
-                style={{ animationDelay: `${0.2 + index * 0.2}s` }}
+                className=""
               >
                 <FeatureCard {...feature} />
               </div>
