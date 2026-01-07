@@ -9,132 +9,131 @@ import virajImg from '../components/viraj.jpg';
 import sudamImg from '../components/sudam.jpg';
 
 const TeamMemberCard = ({
-  name,
-  role,
-  description,
-  image,
+    name,
+    role,
+    description,
+    image,
 }: {
-  name: string;
-  role: string;
-  description: string;
-  image: string;
+    name: string;
+    role: string;
+    description: string;
+    image: string;
 }) => (
-  <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 text-gray-900 flex flex-col h-full">
-    <div className="h-64 overflow-hidden">
-      <img
-        src={image}
-        alt={name}
-        className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
-      />
-    </div>
+    <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 text-gray-900 flex flex-col h-full">
+        <div className="h-64 overflow-hidden">
+            <img
+                src={image}
+                alt={name}
+                className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
+            />
+        </div>
 
-    <div className="p-6 flex-grow flex flex-col">
-      <h3 className="text-xl font-bold text-violet-900 mb-1">{name}</h3>
-      <p className="text-sm font-semibold text-gray-600 mb-4">{role}</p>
-      <p className="text-sm text-gray-700 leading-relaxed flex-grow">
-        {description}
-      </p>
+        <div className="p-6 flex-grow flex flex-col">
+            <h3 className="text-xl font-bold text-violet-900 mb-1">{name}</h3>
+            <p className="text-sm font-semibold text-gray-600 mb-4">{role}</p>
+            <p className="text-sm text-gray-700 leading-relaxed flex-grow">
+                {description}
+            </p>
 
-      <div className="flex space-x-4 mt-6 pt-4 border-t border-gray-200">
-        <a href="#" className="text-gray-500 hover:text-blue-600">
-          <LinkedInIcon className="w-5 h-5" />
-        </a>
-        <a href="#" className="text-gray-500 hover:text-pink-600">
-          <InstagramIcon className="w-5 h-5" />
-        </a>
-        <a href="#" className="text-gray-500 hover:text-black">
-          <XIcon className="w-5 h-5" />
-        </a>
-      </div>
+            <div className="flex space-x-4 mt-6 pt-4 border-t border-gray-200">
+                <a href="#" className="text-gray-500 hover:text-blue-600">
+                    <LinkedInIcon className="w-5 h-5" />
+                </a>
+                <a href="#" className="text-gray-500 hover:text-pink-600">
+                    <InstagramIcon className="w-5 h-5" />
+                </a>
+                <a href="#" className="text-gray-500 hover:text-black">
+                    <XIcon className="w-5 h-5" />
+                </a>
+            </div>
+        </div>
     </div>
-  </div>
 );
 
 const teamMembers = [
-  {
-    name: "Kumuthu Dahanayake",
-    role: "Project Lead, AI & Computer Vision Engineer",
-    description:
-      "Leads the overall direction of NexAttend while contributing to real-time face recognition models.",
-    image: kumuthuImg,
-  },
-  {
-    name: "Thisandu Ranadheera",
-    role: "Backend Engineer",
-    description:
-      "Develops server-side infrastructure, APIs, and AI service integration.",
-    image: thisanduImg,
-  },
-  {
-    name: "Thiviru Igalawithana",
-    role: "UI/UX Designer & Frontend Developer",
-    description:
-      "Designs user interfaces and builds responsive frontend components.",
-    image: thiviruImg,
-  },
-  {
-    name: "Yasitha Peris",
-    role: "System Architect & DevOps Coordinator",
-    description:
-      "Designs system architecture and manages CI/CD pipelines.",
-    image: yasithaImg,
-  },
-  {
-    name: "Viraj Jayasiri",
-    role: "AI & Computer Vision Engineer",
-    description:
-      "Works on facial detection and recognition model optimization.",
-    image: virajImg,
-  },
-  {
-    name: "Sudam Amarajeewa",
-    role: "Backend Engineer & Documentation Lead",
-    description:
-      "Handles backend development and prepares technical documentation.",
-    image: sudamImg,
-  },
+    {
+        name: "Kumuthu Dahanayake",
+        role: "Project Lead, AI & Computer Vision Engineer",
+        description:
+            "Leads the overall direction of NexAttend while contributing to real-time face recognition models.",
+        image: kumuthuImg,
+    },
+    {
+        name: "Thisandu Ranadheera",
+        role: "Backend Engineer",
+        description:
+            "Develops server-side infrastructure, APIs, and AI service integration.",
+        image: thisanduImg,
+    },
+    {
+        name: "Thiviru Igalawithana",
+        role: "UI/UX Designer & Frontend Developer",
+        description:
+            "Designs user interfaces and builds responsive frontend components.",
+        image: thiviruImg,
+    },
+    {
+        name: "Yasitha Peris",
+        role: "System Architect & DevOps Coordinator",
+        description:
+            "Designs system architecture and manages CI/CD pipelines.",
+        image: yasithaImg,
+    },
+    {
+        name: "Viraj Jayasiri",
+        role: "AI & Computer Vision Engineer",
+        description:
+            "Works on facial detection and recognition model optimization.",
+        image: virajImg,
+    },
+    {
+        name: "Sudam Amarajeewa",
+        role: "Backend Engineer & Documentation Lead",
+        description:
+            "Handles backend development and prepares technical documentation.",
+        image: sudamImg,
+    },
 ];
 
 const AboutPage = () => {
-  return (
-    <div className="bg-gray-900 min-h-screen">
-    </div>
-  );
+    return (
+        <div className="bg-gray-900 min-h-screen">
+            <div className="py-20 px-4 container mx-auto text-center">
+                <h2 className="text-5xl md:text-6xl font-extrabold text-pink-500 mb-4">
+                    About NexAttend
+                </h2>
+                <p className="text-xl text-gray-400">
+                    Revolutionizing Education Through Technology.
+                </p>
+            </div>
+
+            <div className="container mx-auto px-4 mb-24">
+                <div className="max-w-4xl mx-auto bg-gray-800/30 border border-gray-700 rounded-2xl p-10">
+                    <h3 className="text-2xl font-bold text-violet-400 mb-4">Our Mission</h3>
+                    <p className="text-lg text-gray-300 mb-10">
+                        To build an AI-powered smart attendance system with analytics and communication tools.
+                    </p>
+
+                    <h3 className="text-2xl font-bold text-pink-500 mb-4">Our Vision</h3>
+                    <p className="text-lg text-gray-300">
+                        Driving digital transformation in education using innovative technology.
+                    </p>
+                </div>
+            </div>
+
+            <div className="container mx-auto px-4 pb-24">
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-bold text-pink-500 mb-6">Our Team</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                    {teamMembers.map((member) => (
+                        <TeamMemberCard key={member.name} {...member} />
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 };
-
-<div className="py-20 px-4 container mx-auto text-center">
-  <h2 className="text-5xl md:text-6xl font-extrabold text-pink-500 mb-4">
-    About NexAttend
-  </h2>
-  <p className="text-xl text-gray-400">
-    Revolutionizing Education Through Technology.
-  </p>
-</div>
-
-<div className="container mx-auto px-4 mb-24">
-  <div className="max-w-4xl mx-auto bg-gray-800/30 border border-gray-700 rounded-2xl p-10">
-    <h3 className="text-2xl font-bold text-violet-400 mb-4">Our Mission</h3>
-    <p className="text-lg text-gray-300 mb-10">
-      To build an AI-powered smart attendance system with analytics and communication tools.
-    </p>
-
-    <h3 className="text-2xl font-bold text-pink-500 mb-4">Our Vision</h3>
-    <p className="text-lg text-gray-300">
-      Driving digital transformation in education using innovative technology.
-    </p>
-  </div>
-</div>
-
-<div className="container mx-auto px-4 pb-24">
-  <div className="text-center mb-16">
-    <h2 className="text-4xl font-bold text-pink-500 mb-6">Our Team</h2>
-  </div>
-
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-    {teamMembers.map((member) => (
-      <TeamMemberCard key={member.name} {...member} />
-    ))}
-  </div>
-</div>
 
 export default AboutPage;
