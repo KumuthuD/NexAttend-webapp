@@ -39,6 +39,15 @@ const WebPage = () => {
 <div className="absolute top-0 left-0 w-full h-full bg-black/70 z-10"></div>
 
 <div className="relative z-20 container mx-auto px-6 md:px-12 h-full flex flex-col justify-center items-start text-left">
+
+    <h1
+  className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-500 drop-shadow-lg animate-fade-in-up"
+  style={{ animationDelay: '0.1s' }}
+>
+  NextAttend
+</h1>
+
+
 </div>
 
 </div>
