@@ -61,12 +61,12 @@ const WebPage = () => {
   Automate attendance with AI Multi-Face Detection and transform the teaching experience.
 </p>
 
-
+<div className="animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
 </div>
 
 </div>
 
-
+</div>
 
 };
 
