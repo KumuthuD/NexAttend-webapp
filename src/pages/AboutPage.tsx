@@ -124,3 +124,17 @@ const AboutPage = () => {
     </p>
   </div>
 </div>
+
+<div className="container mx-auto px-4 pb-24">
+  <div className="text-center mb-16">
+    <h2 className="text-4xl font-bold text-pink-500 mb-6">Our Team</h2>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+    {teamMembers.map((member) => (
+      <TeamMemberCard key={member.name} {...member} />
+    ))}
+  </div>
+</div>
+
+export default AboutPage;
