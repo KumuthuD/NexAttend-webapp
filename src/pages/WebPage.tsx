@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import demoVideo from '../components/signup-page.mp4';
+import demoVideo from '../assets/videos/signup-page.mp4';
 
 const WebPage = () => {
     return (
