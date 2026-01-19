@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import FeatureCard from "../components/FeatureCard";
-import demoVideo from "../assets/videos/nexattend-demo.mp4";
 import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
 import kumuthuImg from "../assets/team/kumuthu.jpg";
 import thisanduImg from "../assets/team/thisandu.jpg";
@@ -189,19 +188,12 @@ const LandingPage = () => {
   return (
     <div className="relative overflow-hidden">
       {/* ===== HERO SECTION ===== */}
-      <section id="home" className="relative h-screen">
-        <video
-          className="absolute top-0 left-0 w-full h-full object-cover"
-          src={demoVideo}
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-gray-900/70 via-gray-900/60 to-gray-900 z-10"></div>
+      <section id="home" className="relative min-h-screen bg-gray-900 pt-20 md:pt-24 flex flex-col justify-center">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-violet-900/20 to-gray-900"></div>
 
         {/* Floating Orbs */}
-        <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="orb orb-purple w-96 h-96 -top-20 -left-20 animate-float-slow"></div>
           <div className="orb orb-pink w-80 h-80 top-1/4 -right-20 animate-float"></div>
           <div className="orb orb-blue w-64 h-64 bottom-20 left-1/4 animate-float-reverse"></div>
@@ -209,7 +201,7 @@ const LandingPage = () => {
 
         {/* Grid Overlay */}
         <div
-          className="absolute inset-0 z-10 pointer-events-none opacity-20"
+          className="absolute inset-0 pointer-events-none opacity-20"
           style={{
             backgroundImage: `linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px)`,
             backgroundSize: "80px 80px",
@@ -217,57 +209,59 @@ const LandingPage = () => {
         ></div>
 
         {/* Hero Content */}
-        <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
-          <div className="animate-fade-in-down stagger-1 mb-6">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium backdrop-blur-sm">
-              <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></span>
-              AI-Powered Attendance System
-            </span>
-          </div>
+        <div className="relative z-20 container mx-auto px-4 flex-grow flex flex-col items-center justify-center text-center">
+          <div className="w-full max-w-7xl mx-auto flex flex-col items-center">
+            <div className="animate-fade-in-down stagger-1 mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium backdrop-blur-sm">
+                <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></span>
+                AI-Powered Attendance System
+              </span>
+            </div>
 
-          <h1 className="animate-fade-in-up stagger-2 text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400">
-            NexAttend: Effortless Attendance.
-          </h1>
-          <h2 className="animate-fade-in-up stagger-3 text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-8 text-white/90">
-            Intelligent Insights.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
-              Smarter Classrooms.
-            </span>
-          </h2>
-          <p className="animate-fade-in-up stagger-4 max-w-2xl text-lg md:text-xl text-gray-300 mb-10 leading-relaxed">
-            Automate attendance with AI Multi-Face Detection and transform the
-            teaching experience with real-time analytics.
-          </p>
-          <div className="animate-fade-in-up stagger-5 flex flex-col sm:flex-row gap-4 md:gap-6">
-            <a
-              href="#features"
-              className="btn-glow bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-violet-500/30 text-lg"
-            >
-              Explore Features
-            </a>
-            <a
-              href="#contact"
-              className="group bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/20 hover:border-violet-400/50 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-lg text-lg flex items-center justify-center gap-2"
-            >
-              Get Started
-              <svg
-                className="w-5 h-5 group-hover:translate-x-1 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <h1 className="animate-fade-in-up stagger-2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400">
+              NexAttend: Effortless Attendance.
+            </h1>
+            <h2 className="animate-fade-in-up stagger-3 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-6 md:mb-8 text-white/90 max-w-4xl mx-auto">
+              Intelligent Insights.{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
+                Smarter Classrooms.
+              </span>
+            </h2>
+            <p className="animate-fade-in-up stagger-4 max-w-2xl text-lg md:text-xl text-gray-300 mb-8 leading-relaxed">
+              Automate attendance with AI Multi-Face Detection and transform the
+              teaching experience with real-time analytics.
+            </p>
+            <div className="animate-fade-in-up stagger-5 flex flex-col sm:flex-row gap-4 md:gap-6">
+              <a
+                href="#features"
+                className="btn-glow bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-violet-500/30 text-lg"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
-            </a>
+                Explore Features
+              </a>
+              <a
+                href="#contact"
+                className="group bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/20 hover:border-violet-400/50 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-lg text-lg flex items-center justify-center gap-2"
+              >
+                Get Started
+                <svg
+                  className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </a>
+            </div>
           </div>
 
           {/* Scroll Indicator */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-fade-in stagger-6">
+          <div className="animate-fade-in stagger-6 pb-6 flex-shrink-0 w-full flex justify-center mt-8 md:mt-12">
             <a
               href="#features"
               className="flex flex-col items-center gap-2 text-gray-400 hover:text-violet-400 transition-colors"
@@ -279,10 +273,10 @@ const LandingPage = () => {
             </a>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ===== FEATURES SECTION ===== */}
-      <section id="features" className="relative py-24 bg-gray-900">
+      < section id="features" className="relative py-24 bg-gray-900" >
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="orb orb-purple w-64 h-64 -top-32 left-1/4 opacity-30"></div>
           <div className="orb orb-pink w-48 h-48 bottom-0 right-1/4 opacity-30"></div>
@@ -290,10 +284,12 @@ const LandingPage = () => {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium mb-6">
-              <SparklesIcon className="w-4 h-4" />
-              Powerful Features
-            </span>
+            <div className="inline-block mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium">
+                <SparklesIcon className="w-4 h-4" />
+                Powerful Features
+              </span>
+            </div>
             <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">
               Why Choose NexAttend?
             </h2>
@@ -306,16 +302,16 @@ const LandingPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {features.map((feature, index) => (
               <FeatureCard key={feature.title} {...feature} index={index} />
             ))}
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ===== ABOUT SECTION ===== */}
-      <section id="about" className="relative py-24 bg-gray-900/50">
+      < section id="about" className="relative py-24 bg-gray-900/50" >
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="orb orb-pink w-96 h-96 top-0 -right-48 opacity-20"></div>
           <div className="orb orb-blue w-80 h-80 bottom-0 -left-40 opacity-20"></div>
@@ -324,12 +320,14 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative z-10">
           {/* About Header */}
           <div className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-sm font-medium mb-6">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-              </svg>
-              Our Team
-            </span>
+            <div className="inline-block mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-sm font-medium">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                </svg>
+                Our Team
+              </span>
+            </div>
             <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-violet-400 to-pink-400 mb-4">
               Meet the Team Behind NexAttend
             </h2>
@@ -425,10 +423,10 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ===== CONTACT SECTION ===== */}
-      <section id="contact" className="relative py-24 bg-gray-900">
+      < section id="contact" className="relative py-24 bg-gray-900" >
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="orb orb-purple w-[500px] h-[500px] -top-60 -left-60 opacity-30"></div>
           <div className="orb orb-pink w-96 h-96 bottom-0 -right-48 opacity-30"></div>
@@ -437,13 +435,15 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative z-10">
           {/* Contact Header */}
           <div className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+            <div className="inline-block mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+                </span>
+                Get In Touch
               </span>
-              Get In Touch
-            </span>
+            </div>
             <h2 className="text-4xl md:text-5xl font-extrabold mb-4">
               <span className="text-white">Let's </span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400">
@@ -456,7 +456,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <div className="glass-card rounded-3xl p-8 md:p-12 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500"></div>
               <div className="absolute -top-32 -right-32 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl"></div>
@@ -610,8 +610,8 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 };
 
