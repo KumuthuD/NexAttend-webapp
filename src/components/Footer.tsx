@@ -1,52 +1,118 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { LogoIcon, InstagramIcon, LinkedInIcon, XIcon } from './icons';
 
-const Footer = () => (
-    <footer className="bg-violet-900/40 border-t border-violet-900/50">
-        <div className="container mx-auto py-12 px-4">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                <div className="md:col-span-4">
-                    <div className="flex items-center gap-2">
-                        <LogoIcon className="w-10 h-10" />
-                        <h2 className="text-2xl font-bold text-white">NexAttend</h2>
+const Footer = () => {
+    const scrollToSection = (sectionId: string) => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <footer className="relative bg-gray-900 border-t border-gray-800">
+            {/* Gradient accent */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent"></div>
+
+            <div className="container mx-auto py-16 px-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+                    {/* Brand Section */}
+                    <div className="md:col-span-5">
+                        <button
+                            onClick={() => scrollToSection('home')}
+                            className="flex items-center gap-3 group"
+                        >
+                            <LogoIcon className="w-12 h-12 group-hover:scale-110 transition-transform" />
+                            <div>
+                                <h2 className="text-2xl font-bold text-white group-hover:text-violet-400 transition-colors">NexAttend</h2>
+                                <p className="text-sm text-gray-500">AI-Powered Attendance</p>
+                            </div>
+                        </button>
+                        <p className="mt-6 text-gray-400 max-w-sm leading-relaxed">
+                            Transforming classroom management with AI-powered face recognition and intelligent analytics.
+                        </p>
+                        <div className="flex space-x-3 mt-6">
+                            <a
+                                href="https://www.instagram.com/nexattend"
+                                className="w-11 h-11 glass-card rounded-xl flex items-center justify-center text-gray-400 hover:text-pink-400 hover:border-pink-500/30 transition-all"
+                            >
+                                <InstagramIcon className="w-5 h-5" />
+                            </a>
+                            <a
+                                href="https://www.linkedin.com/company/nexattend/"
+                                className="w-11 h-11 glass-card rounded-xl flex items-center justify-center text-gray-400 hover:text-blue-400 hover:border-blue-500/30 transition-all"
+                            >
+                                <LinkedInIcon className="w-5 h-5" />
+                            </a>
+                            <a
+                                href="#"
+                                className="w-11 h-11 glass-card rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:border-gray-500/30 transition-all"
+                            >
+                                <XIcon className="w-5 h-5" />
+                            </a>
+                        </div>
                     </div>
-                    <div className="flex space-x-4 mt-4">
-                        <a href="https://www.instagram.com/nexattend" className="text-gray-400 hover:text-white transition-colors"><InstagramIcon className="w-6 h-6" /></a>
-                        <a href="https://www.linkedin.com/company/nexattend/" className="text-gray-400 hover:text-white transition-colors"><LinkedInIcon className="w-6 h-6" /></a>
-                        <a href="#" className="text-gray-400 hover:text-white transition-colors"><XIcon className="w-6 h-6" /></a>
+
+                    {/* Links Section */}
+                    <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+                        <div>
+                            <h3 className="font-bold text-white mb-4">Quick Links</h3>
+                            <ul className="space-y-3">
+                                <li>
+                                    <button onClick={() => scrollToSection('home')} className="text-gray-400 hover:text-violet-400 text-sm transition-colors">
+                                        Home
+                                    </button>
+                                </li>
+                                <li>
+                                    <button onClick={() => scrollToSection('features')} className="text-gray-400 hover:text-violet-400 text-sm transition-colors">
+                                        Features
+                                    </button>
+                                </li>
+                                <li>
+                                    <button onClick={() => scrollToSection('about')} className="text-gray-400 hover:text-violet-400 text-sm transition-colors">
+                                        About Us
+                                    </button>
+                                </li>
+                                <li>
+                                    <button onClick={() => scrollToSection('contact')} className="text-gray-400 hover:text-violet-400 text-sm transition-colors">
+                                        Contact
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-white mb-4">Features</h3>
+                            <ul className="space-y-3">
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">Face Recognition</a></li>
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">Analytics</a></li>
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">LMS Integration</a></li>
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">Reports</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-white mb-4">Support</h3>
+                            <ul className="space-y-3">
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">Help Center</a></li>
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">Documentation</a></li>
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">Privacy Policy</a></li>
+                                <li><a href="#" className="text-gray-400 hover:text-violet-400 text-sm transition-colors">Terms of Service</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <div className="md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-8">
-                    <div>
-                        <h3 className="font-semibold text-white">Features</h3>
-                        <ul className="mt-4 space-y-2">
-                            <li><Link to="/features" className="cursor-pointer text-gray-400 hover:text-white text-sm transition-colors">Core features</Link></li>
-                            <li><Link to="/features" className="cursor-pointer text-gray-400 hover:text-white text-sm transition-colors">Pro experience</Link></li>
-                            <li><Link to="/features" className="cursor-pointer text-gray-400 hover:text-white text-sm transition-colors">Integrations</Link></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-white">Learn more</h3>
-                        <ul className="mt-4 space-y-2">
-                            <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Blog</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Case studies</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Customer stories</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Best practices</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-white">Support</h3>
-                        <ul className="mt-4 space-y-2">
-                            <li><Link to="/contact" className="cursor-pointer text-gray-400 hover:text-white text-sm transition-colors">Contact</Link></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Support</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Legal</a></li>
-                        </ul>
-                    </div>
+
+                {/* Bottom Bar */}
+                <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p className="text-gray-500 text-sm">
+                        © 2026 NexAttend. All rights reserved.
+                    </p>
+                    <p className="text-gray-500 text-sm">
+                        Made with <span className="text-pink-500">♥</span> by the NexAttend Team
+                    </p>
                 </div>
             </div>
-        </div>
-    </footer>
-);
+        </footer>
+    );
+};
 
 export default Footer;
