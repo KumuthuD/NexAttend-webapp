@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import FeatureCard from "../components/FeatureCard";
 import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
 import kumuthuImg from "../assets/team/kumuthu.jpg";
@@ -238,25 +239,75 @@ const LandingPage = () => {
               >
                 Explore Features
               </a>
-              <a
-                href="#contact"
-                className="group bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/20 hover:border-violet-400/50 text-white font-bold py-4 px-10 rounded-full transition-all transform hover:scale-105 shadow-lg text-lg flex items-center justify-center gap-2"
+              <Link
+                to="/get-started"
+                className="group relative bg-gradient-to-r from-violet-600/20 via-pink-600/20 to-violet-600/20 backdrop-blur-md text-white font-bold py-4 px-10 rounded-full transition-all duration-500 transform hover:scale-110 text-lg flex items-center justify-center gap-3 overflow-hidden"
+                style={{
+                  boxShadow: '0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(236, 72, 153, 0.2), inset 0 0 20px rgba(139, 92, 246, 0.1)',
+                  animation: 'buttonGlow 3s ease-in-out infinite',
+                }}
               >
-                Get Started
-                <svg
-                  className="w-5 h-5 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                {/* Animated gradient border */}
+                <span
+                  className="absolute inset-0 rounded-full p-[2px]"
+                  style={{
+                    background: 'linear-gradient(90deg, #8b5cf6, #ec4899, #8b5cf6, #ec4899, #8b5cf6)',
+                    backgroundSize: '300% 100%',
+                    animation: 'borderGradient 4s linear infinite',
+                  }}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-              </a>
+                  <span className="block w-full h-full rounded-full bg-gray-900/90 backdrop-blur-md"></span>
+                </span>
+
+                {/* Shimmer sweep effect */}
+                <span
+                  className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                  }}
+                ></span>
+
+                {/* Sparkle particles */}
+                <span className="absolute top-1 right-4 w-1 h-1 bg-violet-400 rounded-full animate-ping opacity-75"></span>
+                <span className="absolute bottom-2 left-6 w-1.5 h-1.5 bg-pink-400 rounded-full animate-ping opacity-60" style={{ animationDelay: '0.5s' }}></span>
+                <span className="absolute top-3 left-10 w-1 h-1 bg-white rounded-full animate-ping opacity-50" style={{ animationDelay: '1s' }}></span>
+
+                {/* Button text */}
+                <span className="relative z-10 bg-gradient-to-r from-violet-300 via-pink-300 to-violet-300 bg-clip-text text-transparent font-extrabold tracking-wide group-hover:from-white group-hover:via-pink-200 group-hover:to-white transition-all duration-300">
+                  Get Started
+                </span>
+
+                {/* Animated arrow */}
+                <span className="relative z-10 flex items-center">
+                  <svg
+                    className="w-5 h-5 text-violet-400 group-hover:text-pink-400 group-hover:translate-x-2 transition-all duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
+                  </svg>
+                  {/* Arrow trail effect */}
+                  <svg
+                    className="w-5 h-5 text-pink-400/50 absolute -left-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 delay-75"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
+                  </svg>
+                </span>
+              </Link>
             </div>
           </div>
 

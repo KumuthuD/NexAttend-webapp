@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LogoIcon, Bars3Icon, XMarkIcon } from './icons';
 
 const Header = () => {
@@ -6,19 +7,24 @@ const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState('home');
     const [isHovered, setIsHovered] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
 
-            const sections = ['home', 'features', 'about', 'contact'];
-            for (const section of sections.reverse()) {
-                const element = document.getElementById(section);
-                if (element) {
-                    const rect = element.getBoundingClientRect();
-                    if (rect.top <= 100) {
-                        setActiveSection(section);
-                        break;
+            // Only track sections on the home page
+            if (location.pathname === '/') {
+                const sections = ['home', 'features', 'about', 'contact'];
+                for (const section of sections.reverse()) {
+                    const element = document.getElementById(section);
+                    if (element) {
+                        const rect = element.getBoundingClientRect();
+                        if (rect.top <= 100) {
+                            setActiveSection(section);
+                            break;
+                        }
                     }
                 }
             }
@@ -26,14 +32,32 @@ const Header = () => {
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [location.pathname]);
 
     const scrollToSection = (sectionId: string) => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
         setIsMobileMenuOpen(false);
+
+        // If not on home page, navigate first then scroll
+        if (location.pathname !== '/') {
+            navigate('/');
+            // Wait for navigation then scroll
+            setTimeout(() => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        } else {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+
+    const goToGetStarted = () => {
+        setIsMobileMenuOpen(false);
+        navigate('/get-started');
     };
 
     const navLinks = [
@@ -91,14 +115,14 @@ const Header = () => {
                                 onClick={() => scrollToSection(link.id)}
                                 className={`
                                     relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300
-                                    ${activeSection === link.id
+                                    ${activeSection === link.id && location.pathname === '/'
                                         ? 'text-white bg-white/10'
                                         : 'text-gray-400 hover:text-white hover:bg-white/5'
                                     }
                                 `}
                             >
                                 {link.label}
-                                {activeSection === link.id && (
+                                {activeSection === link.id && location.pathname === '/' && (
                                     <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-violet-400 rounded-full"></span>
                                 )}
                             </button>
@@ -110,7 +134,7 @@ const Header = () => {
 
                     {/* CTA Button */}
                     <button
-                        onClick={() => scrollToSection('contact')}
+                        onClick={goToGetStarted}
                         className="relative z-10 hidden md:flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white text-sm font-bold rounded-full transition-all transform hover:scale-105 shadow-lg shadow-violet-500/25"
                     >
                         Get Started
@@ -159,7 +183,7 @@ const Header = () => {
                             onClick={() => scrollToSection(link.id)}
                             className={`
                                 text-3xl font-bold transition-all duration-300
-                                ${activeSection === link.id
+                                ${activeSection === link.id && location.pathname === '/'
                                     ? 'text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400'
                                     : 'text-gray-400 hover:text-white'
                                 }
@@ -176,7 +200,7 @@ const Header = () => {
 
                     {/* Mobile CTA */}
                     <button
-                        onClick={() => scrollToSection('contact')}
+                        onClick={goToGetStarted}
                         className="mt-8 px-10 py-4 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white text-lg font-bold rounded-full transition-all transform hover:scale-105 shadow-lg shadow-violet-500/30 flex items-center gap-3"
                         style={{
                             transitionDelay: '200ms',

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import LandingPage from './pages/LandingPage';
+import GetStartedPage from './pages/GetStartedPage';
 import Footer from './components/Footer';
 
 const App: React.FC = () => {
@@ -11,6 +12,7 @@ const App: React.FC = () => {
                 <Header />
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
+                    <Route path="/get-started" element={<GetStartedPage />} />
                 </Routes>
                 <Footer />
             </div>

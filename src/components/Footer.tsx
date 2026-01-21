@@ -25,7 +25,7 @@ const Footer = () => {
                             <LogoIcon className="w-12 h-12 group-hover:scale-110 transition-transform" />
                             <div>
                                 <h2 className="text-2xl font-bold text-white group-hover:text-violet-400 transition-colors">NexAttend</h2>
-                                <p className="text-sm text-gray-500">AI-Powered Attendance</p>
+                                <p className="text-sm text-gray-500">AI-Powered Attendance System</p>
                             </div>
                         </button>
                         <p className="mt-6 text-gray-400 max-w-sm leading-relaxed">
