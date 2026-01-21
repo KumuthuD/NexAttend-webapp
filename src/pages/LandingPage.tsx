@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import FeatureCard from "../components/FeatureCard";
 import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
 import kumuthuImg from "../assets/team/kumuthu.jpg";
-import thisanduImg from "../assets/team/thisandu.jpg";
-import thiviruImg from "../assets/team/thiviru.jpg";
-import yasithaImg from "../assets/team/yasitha.jpg";
+import thisanduImg from "../assets/team/thisandu.jpeg";
+import thiviruImg from "../assets/team/thiviru.jpeg";
+import yasithaImg from "../assets/team/yasitha.jpeg";
 import virajImg from "../assets/team/viraj.jpg";
 import sudamImg from "../assets/team/sudam.jpg";
 import {
