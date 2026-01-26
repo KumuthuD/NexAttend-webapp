@@ -152,7 +152,6 @@ const GetStartedPage = () => {
                                                     className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
                                                 >
                                                     <option value="teacher" className="bg-gray-900">Teacher / Lecturer</option>
-                                                    <option value="admin" className="bg-gray-900">Administrator</option>
                                                     <option value="student" className="bg-gray-900">Student</option>
                                                 </select>
                                             </div>
