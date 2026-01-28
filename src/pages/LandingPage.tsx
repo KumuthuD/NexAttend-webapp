@@ -8,6 +8,7 @@ import thiviruImg from "../assets/team/thiviru.jpeg";
 import yasithaImg from "../assets/team/yasitha.jpeg";
 import virajImg from "../assets/team/viraj.jpg";
 import sudamImg from "../assets/team/sudam.jpg";
+import demoVideo from "../assets/videos/nexattend-demo.mp4";
 import {
   CameraIcon,
   BrainIcon,
@@ -357,6 +358,208 @@ const LandingPage = () => {
             {features.map((feature, index) => (
               <FeatureCard key={feature.title} {...feature} index={index} />
             ))}
+          </div>
+        </div>
+      </section >
+
+      {/* ===== DEMO VIDEO SECTION ===== */}
+      < section id="demo" className="relative py-24 bg-gray-900" >
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="orb orb-violet w-96 h-96 top-0 -left-48 opacity-20"></div>
+          <div className="orb orb-pink w-80 h-80 bottom-0 -right-40 opacity-20"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Demo Header */}
+          <div className="text-center mb-16">
+            <div className="inline-block mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                </svg>
+                Product Demo
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">
+              See NexAttend in Action
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Watch how our AI-powered attendance system transforms classroom management in real-time.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <div className="w-32 h-1 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 rounded-full"></div>
+            </div>
+          </div>
+
+          {/* Demo Video */}
+          <div className="max-w-5xl mx-auto">
+            <div className="glass-card rounded-3xl p-8 md:p-12 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500"></div>
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl"></div>
+
+              <div className="relative z-10">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <video
+                    className="w-full rounded-2xl"
+                    controls
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  >
+                    <source src={demoVideo} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section >
+
+      {/* ===== PRICING SECTION ===== */}
+      < section id="pricing" className="relative py-24 bg-gray-900/50" >
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="orb orb-pink w-96 h-96 top-0 -right-48 opacity-20"></div>
+          <div className="orb orb-blue w-80 h-80 bottom-0 -left-40 opacity-20"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Pricing Header */}
+          <div className="text-center mb-16">
+            <div className="inline-block mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                </svg>
+                Pricing Plans
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">
+              Choose Your Plan
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Flexible pricing options for institutions of all sizes. Start free or scale as you grow.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <div className="w-32 h-1 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 rounded-full"></div>
+            </div>
+          </div>
+
+          {/* Pricing Tiers */}
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+              
+              {/* Starter Plan */}
+              <div className="relative group h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-500/20 to-gray-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative h-full bg-gray-800/60 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-500 flex flex-col">
+                  <div className="w-14 h-14 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Starter</h3>
+                  <p className="text-gray-400 text-sm mb-8">Perfect for small classrooms</p>
+                  <div className="mb-8">
+                    <span className="text-5xl font-black text-white">Free</span>
+                    <p className="text-gray-500 text-sm mt-2">No credit card required</p>
+                  </div>
+                  <ul className="space-y-4 mb-8 flex-grow">
+                    {["Up to 30 students", "Basic face recognition", "30-day data retention", "Email support"].map((feature, i) => (
+                      <li key={i} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link to="/get-started" className="mt-auto block w-full text-center py-4 px-6 bg-gray-700/50 hover:bg-gray-600/50 border border-gray-600/50 hover:border-gray-500/50 text-white font-semibold rounded-2xl transition-all duration-300">
+                    Get Started Free
+                  </Link>
+                </div>
+              </div>
+
+              {/* Professional Plan */}
+              <div className="relative group h-full md:-mt-4 md:mb-4">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 via-pink-600 to-violet-600 rounded-3xl blur opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                  <span className="inline-flex items-center gap-1.5 px-5 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-bold rounded-full shadow-xl shadow-violet-500/40">
+                    <SparklesIcon className="w-4 h-4" />
+                    MOST POPULAR
+                  </span>
+                </div>
+                <div className="relative h-full bg-gradient-to-br from-gray-800/95 via-gray-900/95 to-gray-800/95 backdrop-blur-xl rounded-3xl p-8 border-2 border-violet-500/50 transition-all duration-500 flex flex-col">
+                  <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-violet-500/30 mt-4">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 mb-2">Professional</h3>
+                  <p className="text-gray-400 text-sm mb-8">For growing institutions</p>
+                  <div className="mb-8">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-black text-white">$49</span>
+                      <span className="text-xl text-gray-400">/month</span>
+                    </div>
+                    <p className="text-gray-500 text-sm mt-2">Billed monthly</p>
+                  </div>
+                  <ul className="space-y-4 mb-8 flex-grow">
+                    {["Up to 200 students", "Advanced AI recognition", "Unlimited data retention", "Real-time analytics", "Priority 24/7 support"].map((feature, i) => (
+                      <li key={i} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-3 h-3 text-violet-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-200">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link to="/get-started" className="mt-auto block w-full text-center py-4 px-6 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 hover:scale-[1.02]">
+                    Start 14-Day Free Trial
+                  </Link>
+                </div>
+              </div>
+
+              {/* Enterprise Plan */}
+              <div className="relative group h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-violet-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative h-full bg-gray-800/60 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/50 hover:border-pink-500/30 transition-all duration-500 flex flex-col">
+                  <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-violet-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400 mb-2">Enterprise</h3>
+                  <p className="text-gray-400 text-sm mb-8">For large organizations</p>
+                  <div className="mb-8">
+                    <span className="text-5xl font-black text-white">Custom</span>
+                    <p className="text-gray-500 text-sm mt-2">Tailored to your needs</p>
+                  </div>
+                  <ul className="space-y-4 mb-8 flex-grow">
+                    {["Unlimited students & classes", "Custom AI model training", "LMS & SSO integration", "Dedicated success manager", "99.9% SLA guarantee"].map((feature, i) => (
+                      <li key={i} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-3 h-3 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <a href="#contact" className="mt-auto block w-full text-center py-4 px-6 bg-gradient-to-r from-pink-600/20 to-violet-600/20 hover:from-pink-600/30 hover:to-violet-600/30 border border-pink-500/30 hover:border-pink-500/50 text-white font-semibold rounded-2xl transition-all duration-300">
+                    Contact Sales
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section >

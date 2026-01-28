@@ -16,7 +16,7 @@ const Header = () => {
 
             // Only track sections on the home page
             if (location.pathname === '/') {
-                const sections = ['home', 'features', 'about', 'contact'];
+                const sections = ['home', 'features', 'pricing', 'about', 'contact'];
                 for (const section of sections.reverse()) {
                     const element = document.getElementById(section);
                     if (element) {
@@ -63,6 +63,7 @@ const Header = () => {
     const navLinks = [
         { id: 'home', label: 'Home' },
         { id: 'features', label: 'Features' },
+        { id: 'pricing', label: 'Pricing' },
         { id: 'about', label: 'About' },
         { id: 'contact', label: 'Contact' },
     ];
