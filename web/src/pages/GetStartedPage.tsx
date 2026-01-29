@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { SparklesIcon } from "../components/icons";
+import Input from "../components/common/Input";
+import Button from "../components/common/Button";
+import { User, Mail, Lock, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const GetStartedPage = () => {
+    const navigate = useNavigate();
+
     // Scroll to top when page loads
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
     const [activeTab, setActiveTab] = useState<"signup" | "login">("signup");
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -23,7 +31,13 @@ const GetStartedPage = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(formData);
+        setIsLoading(true);
+        // Simulate auth delay
+        setTimeout(() => {
+            setIsLoading(false);
+            console.log(formData);
+            navigate('/dashboard');
+        }, 1500);
     };
 
     return (
@@ -92,7 +106,7 @@ const GetStartedPage = () => {
 
                         {/* Right Side - Auth Form */}
                         <div className="animate-fade-in-right">
-                            <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
+                            <div className="glass-card rounded-3xl p-8 relative overflow-hidden bg-gray-800/80 backdrop-blur-xl border border-gray-700/50 shadow-2xl">
                                 {/* Gradient top border */}
                                 <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500"></div>
 
@@ -101,7 +115,7 @@ const GetStartedPage = () => {
                                 <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl"></div>
 
                                 {/* Tab Switcher */}
-                                <div className="relative z-10 flex mb-8 bg-gray-800/50 rounded-xl p-1">
+                                <div className="relative z-10 flex mb-8 bg-gray-900/60 rounded-xl p-1 border border-gray-700">
                                     <button
                                         onClick={() => setActiveTab("signup")}
                                         className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${activeTab === "signup"
@@ -126,126 +140,99 @@ const GetStartedPage = () => {
                                 <form onSubmit={handleSubmit} className="relative z-10 space-y-5">
                                     {activeTab === "signup" && (
                                         <>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                    Full Name
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    placeholder="Enter your full name"
-                                                    className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
-                                                    required
-                                                />
-                                            </div>
+                                            <Input
+                                                label="Full Name"
+                                                name="name"
+                                                placeholder="Enter your full name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                leftIcon={<User size={18} />}
+                                                required
+                                            />
 
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                <label className="block text-sm font-medium text-gray-300 mb-1">
                                                     I am a...
                                                 </label>
                                                 <select
                                                     name="role"
                                                     value={formData.role}
                                                     onChange={handleChange}
-                                                    className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
+                                                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
                                                 >
-                                                    <option value="teacher" className="bg-gray-900">Teacher / Lecturer</option>
-                                                    <option value="student" className="bg-gray-900">Student</option>
+                                                    <option value="teacher">Teacher / Lecturer</option>
+                                                    <option value="student">Student</option>
                                                 </select>
                                             </div>
                                         </>
                                     )}
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Email Address
-                                        </label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            placeholder="you@example.com"
-                                            className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
-                                            required
-                                        />
-                                    </div>
+                                    <Input
+                                        label="Email Address"
+                                        type="email"
+                                        name="email"
+                                        placeholder="you@example.com"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        leftIcon={<Mail size={18} />}
+                                        required
+                                    />
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Password
-                                        </label>
-                                        <input
-                                            type="password"
-                                            name="password"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            placeholder="Create a secure password"
-                                            className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
-                                            required
-                                        />
-                                    </div>
+                                    <Input
+                                        label="Password"
+                                        type="password"
+                                        name="password"
+                                        placeholder="••••••••"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        leftIcon={<Lock size={18} />}
+                                        required
+                                    />
 
                                     {activeTab === "signup" && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Confirm Password
-                                            </label>
-                                            <input
-                                                type="password"
-                                                name="confirmPassword"
-                                                value={formData.confirmPassword}
-                                                onChange={handleChange}
-                                                placeholder="Confirm your password"
-                                                className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
-                                                required
-                                            />
-                                        </div>
+                                        <Input
+                                            label="Confirm Password"
+                                            type="password"
+                                            name="confirmPassword"
+                                            placeholder="Confirm your password"
+                                            value={formData.confirmPassword}
+                                            onChange={handleChange}
+                                            leftIcon={<Lock size={18} />}
+                                            required
+                                        />
                                     )}
 
                                     {activeTab === "login" && (
-                                        <div className="flex justify-end">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <label className="flex items-center text-gray-300 cursor-pointer hover:text-white transition-colors">
+                                                <input type="checkbox" className="mr-2 rounded bg-gray-700 border-gray-600 text-violet-600 focus:ring-violet-500" />
+                                                Remember me
+                                            </label>
                                             <a
                                                 href="#"
-                                                className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+                                                className="text-violet-400 hover:text-violet-300 transition-colors"
                                             >
                                                 Forgot password?
                                             </a>
                                         </div>
                                     )}
 
-                                    <button
+                                    <Button
                                         type="submit"
-                                        className="group w-full bg-gradient-to-r from-violet-600 via-pink-600 to-violet-600 hover:from-violet-500 hover:via-pink-500 hover:to-violet-500 text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-violet-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 relative overflow-hidden"
+                                        isLoading={isLoading}
+                                        rightIcon={<ArrowRight size={18} />}
+                                        className="w-full py-3 text-lg bg-gradient-to-r from-violet-600 via-pink-600 to-violet-600 hover:from-violet-500 hover:via-pink-500 hover:to-violet-500 border-none shadow-lg shadow-violet-500/30"
                                     >
-                                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                                        <span className="relative z-10">
-                                            {activeTab === "signup" ? "Create Account" : "Sign In"}
-                                        </span>
-                                        <svg
-                                            className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M14 5l7 7m0 0l-7 7m7-7H3"
-                                            />
-                                        </svg>
-                                    </button>
+                                        {activeTab === "signup" ? "Create Account" : "Sign In"}
+                                    </Button>
 
                                     {/* Divider */}
                                     <div className="relative my-6">
                                         <div className="absolute inset-0 flex items-center">
-                                            <div className="w-full border-t border-white/10"></div>
+                                            <div className="w-full border-t border-gray-700"></div>
                                         </div>
                                         <div className="relative flex justify-center text-sm">
-                                            <span className="px-4 bg-gray-900/80 text-gray-400">
+                                            <span className="px-4 bg-gray-800 text-gray-400">
                                                 or continue with
                                             </span>
                                         </div>
@@ -255,7 +242,7 @@ const GetStartedPage = () => {
                                     <div className="flex justify-center">
                                         <button
                                             type="button"
-                                            className="flex items-center justify-center gap-3 py-3 px-8 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl transition-all w-full max-w-xs"
+                                            className="flex items-center justify-center gap-3 py-3 px-8 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 rounded-xl transition-all w-full max-w-xs text-white"
                                         >
                                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                                 <path
@@ -279,31 +266,18 @@ const GetStartedPage = () => {
                                         </button>
                                     </div>
 
-                                    <p className="text-center text-sm text-gray-400 mt-6">
-                                        {activeTab === "signup" ? (
-                                            <>
-                                                Already have an account?{" "}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setActiveTab("login")}
-                                                    className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
-                                                >
-                                                    Sign in
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                Don't have an account?{" "}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setActiveTab("signup")}
-                                                    className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
-                                                >
-                                                    Sign up
-                                                </button>
-                                            </>
-                                        )}
-                                    </p>
+                                    <div className="text-center mt-6">
+                                        <p className="text-sm text-gray-400">
+                                            {activeTab === "signup" ? "Already have an account? " : "Don't have an account? "}
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveTab(activeTab === "signup" ? "login" : "signup")}
+                                                className="text-violet-400 hover:text-violet-300 font-medium underline-offset-4 hover:underline"
+                                            >
+                                                {activeTab === "signup" ? "Sign In" : "Sign Up"}
+                                            </button>
+                                        </p>
+                                    </div>
                                 </form>
                             </div>
                         </div>
