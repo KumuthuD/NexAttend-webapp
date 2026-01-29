@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from app.database.mongodb import db
+from app.api.routes import students
 
 router = APIRouter()
 
@@ -25,3 +26,5 @@ async def db_health_check():
             "status": "error",
             "message": str(e)
         }
+
+router.include_router(students.router, prefix="/students", tags=["students"])
