@@ -3,7 +3,6 @@ from typing import List
 from app.database.mongodb import get_database
 from app.models.student import Student
 from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate
-from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
 
