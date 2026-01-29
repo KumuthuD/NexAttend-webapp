@@ -45,5 +45,9 @@ backend/data/face_images/*
 backend/data/temp/*
 !backend/data/temp/.gitkeep
 
+
 # Agent/Temporary Files (Preserving existing rule)
 /NexAttend-*.md
+*.md
+!README.md
+!docs/**/*.md
