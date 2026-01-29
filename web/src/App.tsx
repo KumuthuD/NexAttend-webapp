@@ -4,6 +4,7 @@ import Header from './components/Header';
 import LandingPage from './pages/LandingPage';
 import GetStartedPage from './pages/GetStartedPage';
 import Footer from './components/Footer';
+import TestComponentsPage from './pages/TestComponentsPage';
 
 const App: React.FC = () => {
     return (
@@ -13,6 +14,7 @@ const App: React.FC = () => {
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/get-started" element={<GetStartedPage />} />
+                    <Route path="/test-components" element={<TestComponentsPage />} />
                 </Routes>
                 <Footer />
             </div>
