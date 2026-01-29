@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends
 from app.database.mongodb import db
+from app.api.routes import auth
 
 router = APIRouter()
+
+router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 
 @router.get("/health")
 async def health_check():
