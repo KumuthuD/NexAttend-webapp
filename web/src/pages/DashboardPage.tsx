@@ -1,13 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '../components/common/Card';
-import { Users, CheckCircle, Clock } from 'lucide-react';
+import { Users, CheckCircle, Clock, Server } from 'lucide-react';
+import { healthCheck } from '../services/api';
 
 const DashboardPage: React.FC = () => {
+    const [apiStatus, setApiStatus] = useState<'loading' | 'connected' | 'error'>('loading');
+
+    useEffect(() => {
+        const checkBackend = async () => {
+            try {
+                await healthCheck();
+                setApiStatus('connected');
+            } catch (error) {
+                setApiStatus('error');
+            }
+        };
+        checkBackend();
+    }, []);
+
     return (
         <div className="container mx-auto px-4 py-8 space-y-8">
             <div>
                 <h1 className="text-3xl font-bold text-white">Dashboard</h1>
                 <p className="text-gray-400 mt-2">Welcome back to your comprehensive attendance overview.</p>
+                {/* API Status Indicator */}
+                <div className={`mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${apiStatus === 'connected' ? 'bg-green-500/10 text-green-400' :
+                        apiStatus === 'error' ? 'bg-red-500/10 text-red-400' :
+                            'bg-yellow-500/10 text-yellow-400'
+                    }`}>
+                    <Server size={16} className="mr-2" />
+                    {apiStatus === 'connected' ? 'Backend Connected' :
+                        apiStatus === 'error' ? 'Backend Disconnected' :
+                            'Connecting to Backend...'}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
