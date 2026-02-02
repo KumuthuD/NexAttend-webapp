@@ -1,8 +1,7 @@
 """
-Test script for image_processor.py
-Week 01 Day 4 - Viraj's Task
+Week 01 Day 4 - Viraj Jayasiri
 
-This script tests all image preprocessing functions including:
+This code tests all image preprocessing functions including:-
 1. Image resizing (standard and aspect-ratio preserving)
 2. Color space conversions (BGR↔RGB, Grayscale)
 3. Image normalization
@@ -45,9 +44,9 @@ def main():
     # Create test image
     print("Creating test image (480x640x3)...")
     test_image = np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8)
-    print(f"✓ Test image created")
-    print(f"  → Shape: {test_image.shape}")
-    print(f"  → Dtype: {test_image.dtype}")
+    print(f"Test image created")
+    print(f"  Shape: {test_image.shape}")
+    print(f"  Dtype: {test_image.dtype}")
     print()
     
     test_count = 0
@@ -59,10 +58,10 @@ def main():
     try:
         resized = resize_image(test_image, 224, 224)
         assert resized.shape == (224, 224, 3), f"Expected (224, 224, 3), got {resized.shape}"
-        print(f"✓ PASSED - Resized to {resized.shape}")
+        print(f"PASSED - Resized to {resized.shape}")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 2: Resize with aspect ratio
@@ -71,10 +70,10 @@ def main():
     try:
         resized_ar = resize_with_aspect_ratio(test_image, 256)
         assert resized_ar.shape == (256, 256, 3), f"Expected (256, 256, 3), got {resized_ar.shape}"
-        print(f"✓ PASSED - Resized with padding to {resized_ar.shape}")
+        print(f"PASSED - Resized with padding to {resized_ar.shape}")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 3: BGR to RGB conversion
@@ -84,10 +83,10 @@ def main():
         rgb_image = convert_bgr_to_rgb(test_image)
         assert rgb_image.shape == test_image.shape, "Shape changed during conversion"
         # Verify that conversion happened (channels should be swapped)
-        print(f"✓ PASSED - BGR to RGB conversion successful")
+        print(f"PASSED - BGR to RGB conversion successful")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 4: RGB to BGR conversion
@@ -96,10 +95,10 @@ def main():
     try:
         bgr_image = convert_rgb_to_bgr(rgb_image)
         assert bgr_image.shape == rgb_image.shape, "Shape changed during conversion"
-        print(f"✓ PASSED - RGB to BGR conversion successful")
+        print(f"PASSED - RGB to BGR conversion successful")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 5: Grayscale conversion
@@ -109,10 +108,10 @@ def main():
         gray_image = convert_to_grayscale(test_image)
         assert len(gray_image.shape) == 2, f"Expected 2D array, got {len(gray_image.shape)}D"
         assert gray_image.shape == (480, 640), f"Expected (480, 640), got {gray_image.shape}"
-        print(f"✓ PASSED - Grayscale conversion: {gray_image.shape}")
+        print(f"PASSED - Grayscale conversion: {gray_image.shape}")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 6: Normalization (0-1)
@@ -123,10 +122,10 @@ def main():
         min_val = np.min(normalized)
         max_val = np.max(normalized)
         assert normalized.min() >= 0 and normalized.max() <= 1, f"Range error: [{min_val}, {max_val}]"
-        print(f"✓ PASSED - Normalized range: [{min_val:.4f}, {max_val:.4f}]")
+        print(f"PASSED - Normalized range: [{min_val:.4f}, {max_val:.4f}]")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 7: Normalization (-1 to 1)
@@ -137,10 +136,10 @@ def main():
         min_val = np.min(normalized)
         max_val = np.max(normalized)
         assert min_val >= -1 and max_val <= 1, f"Range error: [{min_val}, {max_val}]"
-        print(f"✓ PASSED - Normalized range: [{min_val:.4f}, {max_val:.4f}]")
+        print(f"PASSED - Normalized range: [{min_val:.4f}, {max_val:.4f}]")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 8: Cropping
@@ -149,10 +148,10 @@ def main():
     try:
         cropped = crop_image(test_image, 50, 50, 100, 100)
         assert cropped.shape == (100, 100, 3), f"Expected (100, 100, 3), got {cropped.shape}"
-        print(f"✓ PASSED - Cropped to {cropped.shape}")
+        print(f"PASSED - Cropped to {cropped.shape}")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 9: Rotation
@@ -161,10 +160,10 @@ def main():
     try:
         rotated = rotate_image(test_image, 45)
         assert rotated.shape == test_image.shape, "Shape changed during rotation"
-        print(f"✓ PASSED - Rotated, shape maintained: {rotated.shape}")
+        print(f"PASSED - Rotated, shape maintained: {rotated.shape}")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 10: Horizontal flip
@@ -173,10 +172,10 @@ def main():
     try:
         flipped = flip_image(test_image, "horizontal")
         assert flipped.shape == test_image.shape, "Shape changed during flip"
-        print(f"✓ PASSED - Flipped horizontally: {flipped.shape}")
+        print(f"PASSED - Flipped horizontally: {flipped.shape}")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 11: Brightness/Contrast enhancement
@@ -185,10 +184,10 @@ def main():
     try:
         enhanced = enhance_brightness_contrast(test_image, brightness=20, contrast=10)
         assert enhanced.shape == test_image.shape, "Shape changed during enhancement"
-        print(f"✓ PASSED - Enhancement applied: {enhanced.shape}")
+        print(f"PASSED - Enhancement applied: {enhanced.shape}")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 12: Image validation
@@ -202,10 +201,10 @@ def main():
         invalid_is_valid = validate_image(None)
         assert invalid_is_valid == False, "None marked as valid"
         
-        print(f"✓ PASSED - Validation works correctly")
+        print(f"PASSED - Validation works correctly")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 13: Get image info
@@ -218,15 +217,15 @@ def main():
         assert info['width'] == 640, f"Width mismatch: expected 640, got {info['width']}"
         assert info['channels'] == 3, f"Channels mismatch: expected 3, got {info['channels']}"
         
-        print(f"✓ PASSED - Image info retrieved:")
-        print(f"  → Shape: {info['shape']}")
-        print(f"  → Dimensions: {info['width']}x{info['height']}")
-        print(f"  → Channels: {info['channels']}")
-        print(f"  → Data type: {info['dtype']}")
-        print(f"  → Size: {info['size_bytes']} bytes ({info['size_bytes']/1024:.2f} KB)")
+        print(f"PASSED - Image info retrieved:")
+        print(f"  Shape: {info['shape']}")
+        print(f"  Dimensions: {info['width']}x{info['height']}")
+        print(f"  Channels: {info['channels']}")
+        print(f"  Data type: {info['dtype']}")
+        print(f"  Size: {info['size_bytes']} bytes ({info['size_bytes']/1024:.2f} KB)")
         passed_count += 1
     except Exception as e:
-        print(f"✗ FAILED - {str(e)}")
+        print(f"FAILED - {str(e)}")
     print()
     
     # Test 14: Integration with camera (if available)
@@ -244,17 +243,17 @@ def main():
                 resized_frame = resize_image(rgb_frame, 224, 224)
                 
                 assert resized_frame.shape == (224, 224, 3), "Integration preprocessing failed"
-                print(f"✓ PASSED - Integration with camera_service works")
-                print(f"  → Captured frame, converted to RGB, resized to {resized_frame.shape}")
+                print(f"PASSED - Integration with camera_service works")
+                print(f"  Captured frame, converted to RGB, resized to {resized_frame.shape}")
                 passed_count += 1
             else:
-                print(f"⊘ SKIPPED - Could not capture frame from camera")
+                print(f"SKIPPED - Could not capture frame from camera")
             
             camera.release_camera()
         else:
-            print(f"⊘ SKIPPED - Camera not available")
+            print(f"SKIPPED - Camera not available")
     except Exception as e:
-        print(f"⊘ SKIPPED - {str(e)}")
+        print(f"SKIPPED - {str(e)}")
     print()
     
     # Final summary
@@ -264,13 +263,13 @@ def main():
     
     if passed_count == test_count:
         print()
-        print("✓ ALL TESTS PASSED!")
+        print("ALL TESTS PASSED!")
         print()
-        print("Week 01 Day 4 Deliverable: COMPLETE ✓")
-        print("  ✓ Image resizing works")
-        print("  ✓ BGR to RGB conversion works")
-        print("  ✓ All preprocessing functions operational")
-        print("  ✓ Integration with camera service verified")
+        print("Week 01 Day 4 Deliverable: COMPLETE")
+        print("  Image resizing works")
+        print("  BGR to RGB conversion works")
+        print("  All preprocessing functions operational")
+        print("  Integration with camera service verified")
         print()
         print("Branch: feature/ai/image-processor")
         print("Ready for commit and push!")
@@ -278,7 +277,7 @@ def main():
         return 0
     else:
         print()
-        print(f"✗ SOME TESTS FAILED ({test_count - passed_count} failures)")
+        print(f"SOME TESTS FAILED ({test_count - passed_count} failures)")
         print("=" * 70)
         return 1
 
