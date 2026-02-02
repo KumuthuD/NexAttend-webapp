@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
 
 class UserCreate(BaseModel):
@@ -7,8 +7,8 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=6)
     role: str = "teacher"
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "full_name": "John Doe",
                 "email": "john@example.com",
@@ -16,6 +16,7 @@ class UserCreate(BaseModel):
                 "role": "teacher"
             }
         }
+    )
 
 class UserResponse(BaseModel):
     id: str = Field(..., alias="_id")
@@ -24,5 +25,4 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)

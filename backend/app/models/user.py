@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, BeforeValidator
+from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
 from typing import Optional, Annotated
 from bson import ObjectId
 
@@ -13,11 +13,11 @@ class User(BaseModel):
     role: str = Field(default="teacher")  # admin, teacher
     is_active: bool = Field(default=True)
 
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        json_schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+        json_schema_extra={
             "example": {
                 "full_name": "John Doe",
                 "email": "teacher@example.com",
@@ -25,3 +25,4 @@ class User(BaseModel):
                 "is_active": True
             }
         }
+    )
