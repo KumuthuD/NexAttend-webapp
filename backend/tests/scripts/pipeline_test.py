@@ -1,16 +1,11 @@
 """
 Full AI Pipeline Test - Week 1 Day 5
-====================================
-Test the complete pipeline: Camera → Detect → Crop Face
+Viraj Jayasiri
 
-This script integrates:
+This code integrates:
 1. CameraService - Capture frames from webcam
 2. FaceDetector (MTCNN) - Detect faces in frames
 3. ImageProcessor - Crop detected faces
-
-Author: Viraj
-Date: Week 01 Day 5
-Branch: feature/ai/pipeline-test
 """
 
 import cv2
@@ -30,7 +25,7 @@ from app.services.face_detector import FaceDetector
 class PipelineTest:
     """
     Full AI Pipeline Test Class
-    Tests: Camera → Face Detection → Face Cropping
+    Tests: Camera - Face Detection - Face Cropping
     """
     
     def __init__(self, output_dir: str = "test_captures/cropped_faces"):
@@ -42,23 +37,23 @@ class PipelineTest:
         """
         print("=" * 70)
         print("NexAttend - Full AI Pipeline Test")
-        print("Week 1 Day 5: Camera → Detect → Crop Face")
+        print("Week 1 Day 5: Camera - Detect - Crop Face")
         print("=" * 70)
         print()
         
         # Initialize components
-        print("📷 Initializing Camera Service...")
+        print("Initializing Camera Service...")
         self.camera = CameraService(camera_id=0)
         
-        print("🔍 Initializing Face Detector (MTCNN)...")
+        print("Initializing Face Detector (MTCNN)...")
         self.detector = FaceDetector(min_face_size=40)
         
-        print("✂️  Image Processor ready for cropping...")
+        print("Image Processor ready for cropping...")
         
         # Setup output directory
         self.output_dir = os.path.join(os.path.dirname(__file__), '..', '..', output_dir)
         os.makedirs(self.output_dir, exist_ok=True)
-        print(f"💾 Output directory: {self.output_dir}")
+        print(f"Output directory: {self.output_dir}")
         
         # Statistics
         self.frames_processed = 0
@@ -66,7 +61,7 @@ class PipelineTest:
         self.faces_cropped = 0
         
         print()
-        print("✅ All components initialized successfully!")
+        print("All components initialized successfully!")
         print()
     
     def run_live_test(self):
@@ -77,16 +72,16 @@ class PipelineTest:
         print("Starting live camera test...")
         print()
         print("Controls:")
-        print("  📸 Press 'c' to CAPTURE and CROP faces")
-        print("  🛑 Press 'q' to QUIT")
+        print("  Press 'c' to CAPTURE and CROP faces")
+        print("  Press 'q' to QUIT")
         print()
         
         # Start camera
         if not self.camera.start_camera():
-            print("❌ Failed to start camera. Exiting.")
+            print("Failed to start camera. Exiting.")
             return
         
-        print("🎥 Camera started! Processing frames...")
+        print("Camera started! Processing frames...")
         print("-" * 70)
         
         try:
@@ -94,7 +89,7 @@ class PipelineTest:
                 # 1. CAPTURE FRAME
                 success, frame = self.camera.capture_frame()
                 if not success:
-                    print("⚠️  Failed to capture frame")
+                    print("Failed to capture frame")
                     continue
                 
                 self.frames_processed += 1
@@ -143,16 +138,16 @@ class PipelineTest:
                 key = cv2.waitKey(1) & 0xFF
                 
                 if key == ord('q'):
-                    print("\n🛑 Quit requested. Stopping...")
+                    print("\nQuit requested. Stopping...")
                     break
                 
                 elif key == ord('c') and len(faces) > 0:
                     # 3. CROP FACES when 'c' is pressed
-                    print(f"\n📸 Capturing frame with {len(faces)} face(s)...")
+                    print(f"\nCapturing frame with {len(faces)} face(s)...")
                     self._crop_and_save_faces(frame, faces)
         
         except KeyboardInterrupt:
-            print("\n\n⚠️  Interrupted by user")
+            print("\n\nInterrupted by user")
         
         finally:
             # Cleanup
@@ -195,10 +190,10 @@ class PipelineTest:
                 
                 self.faces_cropped += 1
                 
-                print(f"  ✅ Saved: {filename} ({cropped_face.shape[1]}x{cropped_face.shape[0]})")
+                print(f"  Saved: {filename} ({cropped_face.shape[1]}x{cropped_face.shape[0]})")
                 
             except Exception as e:
-                print(f"  ❌ Error cropping face {idx+1}: {str(e)}")
+                print(f"  Error cropping face {idx+1}: {str(e)}")
     
     def _print_summary(self):
         """
@@ -214,9 +209,9 @@ class PipelineTest:
         print(f"Output directory:        {self.output_dir}")
         print("=" * 70)
         print()
-        print("✅ Pipeline test completed successfully!")
+        print("Pipeline test completed successfully!")
         print()
-        print("Pipeline: Camera ✓ → Detect ✓ → Crop ✓")
+        print("Pipeline: Camera - Detect - Crop")
         print()
 
 
@@ -231,28 +226,28 @@ def run_single_frame_test():
     
     # Start camera
     if not tester.camera.start_camera():
-        print("❌ Failed to start camera")
+        print("Failed to start camera")
         return
     
     # Capture one frame
     success, frame = tester.camera.capture_frame()
     if not success:
-        print("❌ Failed to capture frame")
+        print("Failed to capture frame")
         tester.camera.release_camera()
         return
     
-    print(f"✅ Frame captured: {frame.shape}")
+    print(f"Frame captured: {frame.shape}")
     
     # Detect faces
     faces = tester.detector.detect_faces(frame)
-    print(f"✅ Detected {len(faces)} face(s)")
+    print(f"Detected {len(faces)} face(s)")
     
     if len(faces) > 0:
         # Crop and save
         tester._crop_and_save_faces(frame, faces)
-        print(f"✅ Cropped and saved {len(faces)} face(s)")
+        print(f"Cropped and saved {len(faces)} face(s)")
     else:
-        print("⚠️  No faces detected in frame")
+        print("No faces detected in frame")
     
     # Cleanup
     tester.camera.release_camera()
