@@ -21,7 +21,7 @@ def test_password_hashing():
     assert auth_service.verify_password(password, service_hashed) is True
     assert auth_service.verify_password("wrongpassword", service_hashed) is False
     
-    print(" All password hashing tests passed!")
+    print("✅ All password hashing tests passed!")
 
 if __name__ == "__main__":
     test_password_hashing()
