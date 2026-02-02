@@ -1,24 +1,12 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import Optional
+from pydantic import BaseModel, Field, EmailStr, BeforeValidator
+from typing import Optional, Annotated
 from bson import ObjectId
 
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v, values=None, config=None, field=None): # Updated signature for Pydantic v2 compat if needed, simplified for v1/v2 compatibility
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
-        return ObjectId(v)
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, core_schema, handler):
-        return {"type": "string"}
+# Helper for Pydantic v2 to handle ObjectId
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class User(BaseModel):
-    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     full_name: str = Field(...)
     email: EmailStr = Field(...)
     password_hash: str = Field(...)
@@ -29,3 +17,11 @@ class User(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+        json_schema_extra = {
+            "example": {
+                "full_name": "John Doe",
+                "email": "teacher@example.com",
+                "role": "teacher",
+                "is_active": True
+            }
+        }

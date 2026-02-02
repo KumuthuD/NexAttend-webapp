@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
     role: str = "teacher"
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "full_name": "John Doe",
                 "email": "john@example.com",

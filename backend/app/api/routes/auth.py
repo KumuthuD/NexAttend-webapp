@@ -37,3 +37,11 @@ async def register_user(user_in: UserCreate):
     created_user = await db["users"].find_one({"_id": new_user.inserted_id})
     
     return created_user
+
+# Setup for Login (Day 7 Task)
+@router.post("/login")
+async def login():
+    """
+    OAuth2 compatible token login (To be implemented).
+    """
+    return {"msg": "To be implemented in Day 7"}
