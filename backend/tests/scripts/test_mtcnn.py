@@ -1,3 +1,11 @@
+"""
+MTCNN Test Script
+Tests basic face detection functionality (Live Feed).
+
+Kumuthu Dahanayake
+Week 01 Day 2
+"""
+
 import cv2
 import sys
 from mtcnn import MTCNN
