@@ -1,4 +1,12 @@
 
+"""
+Face Detector Service
+Wrapper class for MTCNN face detection.
+
+Kumuthu Dahanayake
+Week 01 Day 4
+"""
+
 import cv2
 import numpy as np
 from mtcnn import MTCNN

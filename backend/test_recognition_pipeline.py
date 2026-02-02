@@ -1,4 +1,12 @@
 
+"""
+Recognition Pipeline Test
+Integrates Detector and Recognizer for full live pipeline testing.
+
+Kumuthu Dahanayake
+Week 01 Day 5
+"""
+
 import cv2
 import sys
 import os

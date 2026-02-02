@@ -1,4 +1,12 @@
 
+"""
+DeepFace Embedding Test
+Tests loading of Facenet model and embedding generation.
+
+Kumuthu Dahanayake
+Week 01 Day 3
+"""
+
 import cv2
 import numpy as np
 import os
