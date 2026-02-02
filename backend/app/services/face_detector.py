@@ -28,12 +28,6 @@ class FaceDetector:
     ):
         """
         Initialize MTCNN Face Detector with optimized settings for multiple faces.
-        
-        Args:
-           min_face_size (int): Minimum face size to detect (default 20px)
-           scale_factor (float): Image pyramid scale factor (default 0.709)
-           steps_threshold (List[float]): Confidence thresholds for MTCNN stages
-           min_confidence (float): Minimum confidence to accept detection (default 0.90)
         """
         try:
             # optimized MTCNN parameters for multiple face detection
@@ -57,15 +51,6 @@ class FaceDetector:
     ) -> List[Dict]:
         """
         Detect multiple faces in the given image with optimization.
-
-        Args:
-            image (np.ndarray): Input image in BGR format (OpenCV standard)
-            filter_confidence (bool): Apply confidence filtering (default True)
-            sort_by_size (bool): Sort faces by area descending (default True)
-
-        Returns:
-            List[Dict]: List of dictionaries containing face details:
-                  [{'box': [x, y, w, h], 'confidence': float, 'keypoints': dict, 'area': int}]
         """
         if image is None or image.size == 0:
             logger.warning("Empty image passed to detect_faces")
@@ -115,13 +100,6 @@ class FaceDetector:
         """
         Detect faces in multiple images (batch processing).
         Useful for processing video frames efficiently.
-
-        Args:
-            images (List[np.ndarray]): List of images in BGR format
-            filter_confidence (bool): Apply confidence filtering
-
-        Returns:
-            List[List[Dict]]: List of detection results for each image
         """
         if not images:
             logger.warning("Empty image list passed to detect_faces_batch")
@@ -138,12 +116,6 @@ class FaceDetector:
     def _filter_by_size(self, faces: List[Dict]) -> List[Dict]:
         """
         Filter faces by minimum size threshold.
-        
-        Args:
-            faces (List[Dict]): List of detected faces
-            
-        Returns:
-            List[Dict]: Filtered faces
         """
         filtered = []
         for face in faces:
@@ -159,12 +131,6 @@ class FaceDetector:
         """
         Get only the largest face in the image.
         Useful for single-person registration.
-
-        Args:
-            image (np.ndarray): Input image in BGR format
-
-        Returns:
-            Optional[Dict]: Largest face or None if no face found
         """
         faces = self.detect_faces(image, sort_by_size=True)
         return faces[0] if faces else None
@@ -177,14 +143,6 @@ class FaceDetector:
     ) -> List[np.ndarray]:
         """
         Crop all detected faces from the image with padding.
-
-        Args:
-            image (np.ndarray): Original image
-            faces (List[Dict]): List of detected faces
-            padding (float): Padding ratio around face (default 0.2 = 20%)
-
-        Returns:
-            List[np.ndarray]: List of cropped face images
         """
         cropped_faces = []
         
@@ -212,12 +170,6 @@ class FaceDetector:
         """
         Check if face image has good quality for recognition.
         Checks: blur detection, brightness, minimum resolution.
-
-        Args:
-            face_image (np.ndarray): Cropped face image
-
-        Returns:
-            Tuple[bool, str]: (is_valid, reason)
         """
         if face_image is None or face_image.size == 0:
             return False, "Empty image"
@@ -248,13 +200,6 @@ class FaceDetector:
     def draw_faces(self, image: np.ndarray, faces: List[Dict]) -> np.ndarray:
         """
         Draw bounding boxes and landmarks on the image with enhanced visualization.
-
-        Args:
-            image (np.ndarray): Original BGR image
-            faces (List[Dict]): List of face results from detect_faces
-
-        Returns:
-            np.ndarray: Image with drawn annotations
         """
         annotated_image = image.copy()
 
@@ -292,12 +237,6 @@ class FaceDetector:
     def get_face_count(self, image: np.ndarray) -> int:
         """
         Quick method to get face count without full processing.
-
-        Args:
-            image (np.ndarray): Input image
-
-        Returns:
-            int: Number of faces detected
         """
         faces = self.detect_faces(image, filter_confidence=True)
         return len(faces)
@@ -310,13 +249,6 @@ class FaceDetector:
         """
         Remove overlapping face detections using Non-Maximum Suppression.
         Keeps the face with highest confidence when overlap detected.
-
-        Args:
-            faces (List[Dict]): List of detected faces
-            overlap_threshold (float): IoU threshold for considering overlap
-
-        Returns:
-            List[Dict]: Filtered list without overlapping faces
         """
         if len(faces) <= 1:
             return faces
@@ -346,10 +278,6 @@ class FaceDetector:
         """
         Calculate Intersection over Union (IoU) between two boxes.
 
-        Args:
-            box1 (List[int]): [x, y, w, h]
-            box2 (List[int]): [x, y, w, h]
-
         Returns:
             float: IoU value (0.0 to 1.0)
         """
@@ -374,4 +302,3 @@ class FaceDetector:
 
         iou = intersection_area / union_area if union_area > 0 else 0.0
         return iou
-
