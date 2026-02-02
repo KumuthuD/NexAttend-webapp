@@ -1,4 +1,12 @@
 
+"""
+FaceDetector Class Test
+Validates the FaceDetector service class with live webcam feed.
+
+Kumuthu Dahanayake
+Week 01 Day 4
+"""
+
 import cv2
 import sys
 import os
