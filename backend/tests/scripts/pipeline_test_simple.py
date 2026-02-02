@@ -1,11 +1,10 @@
 """
-Simplified Pipeline Test - No Deep Learning Dependencies
-=========================================================
+Simplified Pipeline Test-
 Tests basic integration without requiring TensorFlow/MTCNN
 Uses OpenCV's Haar Cascade for face detection instead
 
-Author: Viraj
-Date: Week 01 Day 5
+Viraj Jayasiri
+Week 01 Day 5
 """
 
 import cv2
@@ -24,22 +23,22 @@ from app.services.ai.image_processor import crop_image, convert_bgr_to_rgb
 class SimplePipelineTest:
     """
     Simplified Pipeline Test using Haar Cascade
-    Tests: Camera → Face Detection (Haar) → Face Cropping
+    Tests: Camera - Face Detection (Haar) - Face Cropping
     """
     
     def __init__(self, output_dir: str = "test_captures/cropped_faces_simple"):
         print("=" * 70)
         print("NexAttend - Simplified Pipeline Test (Haar Cascade)")
-        print("Week 1 Day 5: Camera → Detect → Crop Face")
+        print("Week 1 Day 5: Camera - Detect - Crop Face")
         print("=" * 70)
         print()
         
         # Initialize camera
-        print("📷 Initializing Camera Service...")
+        print("Initializing Camera Service...")
         self.camera = CameraService(camera_id=0)
         
         # Initialize Haar Cascade detector (built into OpenCV)
-        print("🔍 Loading Haar Cascade Face Detector...")
+        print("Loading Haar Cascade Face Detector...")
         cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
         self.face_cascade = cv2.CascadeClassifier(cascade_path)
         
@@ -49,14 +48,14 @@ class SimplePipelineTest:
         # Setup output directory
         self.output_dir = os.path.join(os.path.dirname(__file__), '..', '..', output_dir)
         os.makedirs(self.output_dir, exist_ok=True)
-        print(f"💾 Output directory: {self.output_dir}")
+        print(f"Output directory: {self.output_dir}")
         
         self.frames_processed = 0
         self.faces_detected = 0
         self.faces_cropped = 0
         
         print()
-        print("✅ All components initialized successfully!")
+        print("All components initialized successfully!")
         print()
     
     def detect_faces_haar(self, frame: np.ndarray):
@@ -79,15 +78,15 @@ class SimplePipelineTest:
         print("Starting live camera test...")
         print()
         print("Controls:")
-        print("  📸 Press 'c' to CAPTURE and CROP faces")
-        print("  🛑 Press 'q' to QUIT")
+        print("  Press 'c' to CAPTURE and CROP faces")
+        print("  Press 'q' to QUIT")
         print()
         
         if not self.camera.start_camera():
-            print("❌ Failed to start camera")
+            print("Failed to start camera")
             return
         
-        print("🎥 Camera started! Processing frames...")
+        print("Camera started! Processing frames...")
         print("-" * 70)
         
         try:
@@ -133,15 +132,15 @@ class SimplePipelineTest:
                 key = cv2.waitKey(1) & 0xFF
                 
                 if key == ord('q'):
-                    print("\n🛑 Quit requested")
+                    print("\nQuit requested")
                     break
                 elif key == ord('c') and len(faces) > 0:
                     # 3. CROP FACES
-                    print(f"\n📸 Capturing {len(faces)} face(s)...")
+                    print(f"\nCapturing {len(faces)} face(s)...")
                     self._crop_and_save_faces(frame, faces)
         
         except KeyboardInterrupt:
-            print("\n\n⚠️  Interrupted")
+            print("\n\nInterrupted")
         
         finally:
             self.camera.release_camera()
@@ -170,10 +169,10 @@ class SimplePipelineTest:
                 cv2.imwrite(filepath, cropped_face)
                 
                 self.faces_cropped += 1
-                print(f"  ✅ Saved: {filename} ({cropped_face.shape[1]}x{cropped_face.shape[0]})")
+                print(f"  Saved: {filename} ({cropped_face.shape[1]}x{cropped_face.shape[0]})")
                 
             except Exception as e:
-                print(f"  ❌ Error: {str(e)}")
+                print(f"  Error: {str(e)}")
     
     def _print_summary(self):
         print()
@@ -186,8 +185,8 @@ class SimplePipelineTest:
         print(f"Output directory:  {self.output_dir}")
         print("=" * 70)
         print()
-        print("✅ Pipeline test completed!")
-        print("Pipeline: Camera ✓ → Detect ✓ → Crop ✓")
+        print("Pipeline test completed!")
+        print("Pipeline: Camera - Detect - Crop")
         print()
 
 
@@ -198,25 +197,25 @@ def run_single_test():
     tester = SimplePipelineTest()
     
     if not tester.camera.start_camera():
-        print("❌ Failed to start camera")
+        print("Failed to start camera")
         return
     
     success, frame = tester.camera.capture_frame()
     if not success:
-        print("❌ Failed to capture frame")
+        print("Failed to capture frame")
         tester.camera.release_camera()
         return
     
-    print(f"✅ Frame captured: {frame.shape}")
+    print(f"Frame captured: {frame.shape}")
     
     faces = tester.detect_faces_haar(frame)
-    print(f"✅ Detected {len(faces)} face(s)")
+    print(f"Detected {len(faces)} face(s)")
     
     if len(faces) > 0:
         tester._crop_and_save_faces(frame, faces)
-        print(f"✅ Cropped and saved {len(faces)} face(s)")
+        print(f"Cropped and saved {len(faces)} face(s)")
     else:
-        print("⚠️  No faces detected")
+        print("No faces detected")
     
     tester.camera.release_camera()
     tester._print_summary()
