@@ -1,4 +1,12 @@
 
+"""
+Face Recognizer Service
+Wrapper for DeepFace embedding generation and comparison.
+
+Kumuthu Dahanayake
+Week 01 Day 5
+"""
+
 import numpy as np
 import logging
 from deepface import DeepFace
