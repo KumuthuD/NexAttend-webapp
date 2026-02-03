@@ -1,29 +1,47 @@
-from fastapi import APIRouter, HTTPException, status
-from app.schemas.user import UserCreate, User
+from fastapi import APIRouter, HTTPException, status, Body
+from app.database.mongodb import get_database
+from app.models.user import User
+from app.schemas.user import UserCreate, UserResponse
+from app.core.security import get_password_hash
 
 router = APIRouter()
 
-@router.post("/login", response_model=dict)
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def register_user(user_in: UserCreate):
+    """
+    Register a new user (teacher/admin).
+    """
+    db = await get_database()
+    
+    # Check if user already exists
+    existing_user = await db["users"].find_one({"email": user_in.email})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exists"
+        )
+    
+    # Hash password
+    hashed_password = get_password_hash(user_in.password)
+    
+    # Create user model
+    user_model = User(
+        full_name=user_in.full_name,
+        email=user_in.email,
+        password_hash=hashed_password,
+        role=user_in.role
+    )
+    
+    # Save to database
+    new_user = await db["users"].insert_one(user_model.model_dump(by_alias=True))
+    created_user = await db["users"].find_one({"_id": new_user.inserted_id})
+    
+    return created_user
+
+# Setup for Login (Day 7 Task)
+@router.post("/login")
 async def login():
     """
-    OAuth2 compatible token login, get an access token for future requests
+    OAuth2 compatible token login (To be implemented).
     """
-    # TODO: Implement actual login logic (Day 7 task)
-    return {"access_token": "dummy_token", "token_type": "bearer"}
-
-@router.post("/register", response_model=User)
-async def register(user_in: UserCreate):
-    """
-    Create new user without the need to be logged in
-    """
-    # TODO: Implement user creation logic (Day 6 task)
-    # Return dummy response for now to satisfy schema
-    return {
-        "id": "dummy_id",
-        "email": user_in.email,
-        "full_name": user_in.full_name,
-        "role": user_in.role,
-        "is_active": True,
-        "created_at": "2024-01-01T00:00:00",
-        "updated_at": "2024-01-01T00:00:00"
-    }
+    return {"msg": "To be implemented in Day 7"}

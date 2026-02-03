@@ -1,27 +1,28 @@
-from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
+from typing import Optional, Annotated
+from bson import ObjectId
 
-class UserModel(BaseModel):
-    """
-    User database model representation
-    """
-    id: Optional[str] = Field(default=None, alias="_id")
-    email: EmailStr
-    hashed_password: str
-    full_name: str
-    role: str
-    is_active: bool = True
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+# Helper for Pydantic v2 to handle ObjectId
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
-    class Config:
-        populate_by_name = True
-        json_schema_extra = {
+class User(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    full_name: str = Field(...)
+    email: EmailStr = Field(...)
+    password_hash: str = Field(...)
+    role: str = Field(default="teacher")  # admin, teacher
+    is_active: bool = Field(default=True)
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+        json_schema_extra={
             "example": {
-                "email": "teacher@example.com",
                 "full_name": "John Doe",
+                "email": "teacher@example.com",
                 "role": "teacher",
                 "is_active": True
             }
         }
+    )
