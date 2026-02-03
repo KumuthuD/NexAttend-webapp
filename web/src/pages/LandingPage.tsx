@@ -403,9 +403,6 @@ const LandingPage = () => {
                   <video
                     className="w-full rounded-2xl"
                     controls
-                    autoPlay
-                    muted
-                    loop
                     playsInline
                   >
                     <source src={demoVideo} type="video/mp4" />
@@ -451,7 +448,7 @@ const LandingPage = () => {
           {/* Pricing Tiers */}
           <div className="max-w-6xl mx-auto px-4">
             <div className="grid md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
-              
+
               {/* Starter Plan */}
               <div className="relative group h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-500/20 to-gray-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
