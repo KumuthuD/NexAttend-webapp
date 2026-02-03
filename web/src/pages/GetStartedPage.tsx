@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { SparklesIcon } from "../components/icons";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
+import ImageUpload from "../components/common/ImageUpload";
+
 import { User, Mail, Lock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,6 +25,9 @@ const GetStartedPage = () => {
         role: "teacher",
     });
 
+    const [profileImages, setProfileImages] = useState<File[]>([]);
+    const [imageError, setImageError] = useState<string>("");
+
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
@@ -31,11 +36,25 @@ const GetStartedPage = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Reset errors
+        setImageError("");
+
+        // Specific validation for student signup
+        if (activeTab === "signup" && formData.role === "student") {
+            if (profileImages.length < 3) {
+                setImageError("Please upload at least 3 profile photos for face recognition setup.");
+                return;
+            }
+        }
+
         setIsLoading(true);
+
         // Simulate auth delay
         setTimeout(() => {
             setIsLoading(false);
-            console.log(formData);
+            console.log("Form Data:", formData);
+            console.log("Images:", profileImages);
             navigate('/dashboard');
         }, 1500);
     };
@@ -164,6 +183,22 @@ const GetStartedPage = () => {
                                                     <option value="student">Student</option>
                                                 </select>
                                             </div>
+
+                                            {/* Image Upload for Students */}
+                                            {formData.role === "student" && (
+                                                <div className="animate-fade-in-up">
+                                                    <ImageUpload
+                                                        files={profileImages}
+                                                        onFilesChange={(files) => {
+                                                            setProfileImages(files);
+                                                            if (files.length >= 3) setImageError("");
+                                                        }}
+                                                        label="Profile Photos (Face Recognition)"
+                                                        error={imageError}
+                                                        minFiles={3}
+                                                    />
+                                                </div>
+                                            )}
                                         </>
                                     )}
 
