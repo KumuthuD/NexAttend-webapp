@@ -18,6 +18,14 @@ class UserCreate(BaseModel):
         }
     )
 
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 class UserResponse(BaseModel):
     id: str = Field(..., alias="_id")
     full_name: str

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Body
 from app.database.mongodb import get_database
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse
-from app.core.security import get_password_hash
+from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
+from app.core.security import get_password_hash, verify_password, create_access_token
 
 router = APIRouter()
 
@@ -38,10 +38,32 @@ async def register_user(user_in: UserCreate):
     
     return created_user
 
-# Setup for Login (Day 7 Task)
-@router.post("/login")
-async def login():
+@router.post("/login", response_model=Token)
+async def login(user_in: UserLogin):
     """
-    OAuth2 compatible token login (To be implemented).
+    Authenticate user and return access token.
     """
-    return {"msg": "To be implemented in Day 7"}
+    db = await get_database()
+    
+    # Fetch user
+    user = await db["users"].find_one({"email": user_in.email})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password"
+        )
+    
+    # Verify password
+    if not verify_password(user_in.password, user["password_hash"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password"
+        )
+    
+    # Generate token
+    access_token = create_access_token(subject=str(user["_id"]))
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
