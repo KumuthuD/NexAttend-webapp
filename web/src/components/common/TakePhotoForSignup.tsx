@@ -6,6 +6,7 @@ interface CameraCaptureProps {
     onClose: () => void;
 }
 
+
 const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
