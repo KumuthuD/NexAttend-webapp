@@ -2,12 +2,14 @@ from fastapi import APIRouter
 from app.api.routes import auth
 from app.api.routes import students
 from app.api.routes import health
+from app.api.routes import users
 
 router = APIRouter()
 
 router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 router.include_router(students.router, prefix="/students", tags=["students"])
 router.include_router(health.router, prefix="/health", tags=["health"])
+router.include_router(users.router, prefix="/users", tags=["users"])
 
 @router.get("/health")
 async def health_check():
