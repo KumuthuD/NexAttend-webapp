@@ -27,5 +27,13 @@ async def get_current_user(
     user_id = security.verify_token(token)
     if user_id is None:
         raise credentials_exception
+    
+    # Fetch user from database
+    user_data = await db["users"].find_one({"_id": ObjectId(user_id)})
+    if user_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
         
-    return user_id # Next step: Fetch user from DB
+    return User(**user_data)
