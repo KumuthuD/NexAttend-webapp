@@ -404,6 +404,7 @@ const LandingPage = () => {
                     className="w-full rounded-2xl"
                     controls
                     playsInline
+                    autoPlay={false}
                   >
                     <source src={demoVideo} type="video/mp4" />
                     Your browser does not support the video tag.
