@@ -7,6 +7,7 @@ import GetStartedPage from './pages/GetStartedPage';
 import Footer from './components/Footer';
 import TestComponentsPage from './pages/TestComponentsPage';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 const App: React.FC = () => {
     return (
@@ -16,8 +17,16 @@ const App: React.FC = () => {
                     <Header />
                     <Routes>
                         <Route path="/" element={<LandingPage />} />
-                        <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardPage />
+                                </ProtectedRoute>
+                            }
+                        />
                         <Route path="/get-started" element={<GetStartedPage />} />
+                        <Route path="/login" element={<div className="p-20 text-center">Login Page Placeholder</div>} />
                         <Route path="/test-components" element={<TestComponentsPage />} />
                     </Routes>
                     <Footer />
