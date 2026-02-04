@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import Card from '../components/common/Card';
 import { Users, CheckCircle, Clock, Server } from 'lucide-react';
 import { healthCheck } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const DashboardPage: React.FC = () => {
+    const { user } = useAuth();
     const [apiStatus, setApiStatus] = useState<'loading' | 'connected' | 'error'>('loading');
 
     useEffect(() => {
@@ -22,7 +24,7 @@ const DashboardPage: React.FC = () => {
         <div className="container mx-auto px-4 py-8 space-y-8">
             <div>
                 <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-                <p className="text-gray-400 mt-2">Welcome back to your comprehensive attendance overview.</p>
+                <p className="text-gray-400 mt-2">Welcome back, <span className="text-violet-400 font-semibold">{user?.name || 'Guest'}</span>! Here's your comprehensive attendance overview.</p>
                 {/* API Status Indicator */}
                 <div className={`mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${apiStatus === 'connected' ? 'bg-green-500/10 text-green-400' :
                         apiStatus === 'error' ? 'bg-red-500/10 text-red-400' :

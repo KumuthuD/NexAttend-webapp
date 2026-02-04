@@ -3,6 +3,7 @@ import { SparklesIcon } from "../components/icons";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import ImageUpload from "../components/common/ImageUpload";
+import { useAuth } from "../contexts/AuthContext";
 
 import { User, Mail, Lock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -10,19 +11,20 @@ import { useNavigate } from "react-router-dom";
 const GetStartedPage = () => {
     const navigate = useNavigate();
 
+    const { login, register, isLoading } = useAuth();
+
     // Scroll to top when page loads
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
     const [activeTab, setActiveTab] = useState<"signup" | "login">("signup");
-    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
         password: "",
         confirmPassword: "",
-        role: "teacher",
+        role: "teacher" as "teacher" | "student",
     });
 
     const [profileImages, setProfileImages] = useState<File[]>([]);
@@ -34,7 +36,7 @@ const GetStartedPage = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Reset errors
@@ -48,15 +50,24 @@ const GetStartedPage = () => {
             }
         }
 
-        setIsLoading(true);
-
-        // Simulate auth delay
-        setTimeout(() => {
-            setIsLoading(false);
-            console.log("Form Data:", formData);
-            console.log("Images:", profileImages);
+        try {
+            if (activeTab === "signup") {
+                await register({
+                    name: formData.name,
+                    email: formData.email,
+                    role: formData.role,
+                });
+            } else {
+                await login({
+                    name: "User", // This would typically come from the backend on login
+                    email: formData.email,
+                    role: "teacher", // Default or fetched from backend
+                });
+            }
             navigate('/dashboard');
-        }, 1500);
+        } catch (error) {
+            console.error("Authentication failed", error);
+        }
     };
 
     return (
