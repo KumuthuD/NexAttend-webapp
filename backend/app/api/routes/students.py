@@ -21,10 +21,10 @@ router = APIRouter()
 
 @router.post("/", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
 async def create_student(student: StudentCreate = Body(...)):
-    """
-    Register a new student (JSON-only version, mostly for testing).
-    Expects pre-calculated embeddings or none.
-    """
+    
+    #Register a new student (JSON-only version, mostly for testing).
+    #Expects pre-calculated embeddings or none.
+    
     db = await get_database()
     
     # Check if roll number or email already exists
@@ -71,14 +71,9 @@ async def register_student(
     year: int = Form(...),
     file: UploadFile = File(...)
 ):
-    """
-    Register a new student WITH Face (Multipart Integration).
     
-    1. Validates unique student (email/roll_number).
-    2. Validates & decodes the image.
-    3. Detects face & generates embedding (AI).
-    4. Saves Embedding document + Student document.
-    """
+    #Registers a student and processes their face image for recognition.
+    
     db = await get_database()
     
     # 1. Validation: Duplicates
