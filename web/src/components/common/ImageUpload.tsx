@@ -5,7 +5,6 @@ import CameraCapture from './WebcamCapture';
 interface ImageUploadProps {
     files: File[];
     onFilesChange: (files: File[]) => void;
-    maxFiles?: number;
     minFiles?: number;
     label?: string;
     error?: string;
@@ -14,7 +13,6 @@ interface ImageUploadProps {
 const ImageUpload: React.FC<ImageUploadProps> = ({
     files,
     onFilesChange,
-    maxFiles = 5,
     minFiles = 3,
     label = "Upload Images",
     error
@@ -52,21 +50,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const newFiles = Array.from(e.dataTransfer.files).filter(validateFile);
-
-            // Limit total files
-            const totalFiles = [...files, ...newFiles].slice(0, maxFiles);
-            onFilesChange(totalFiles);
+            onFilesChange([...files, ...newFiles]);
         }
-    }, [files, maxFiles, onFilesChange]);
+    }, [files, onFilesChange]);
 
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         if (e.target.files && e.target.files.length > 0) {
             const newFiles = Array.from(e.target.files).filter(validateFile);
-            const totalFiles = [...files, ...newFiles].slice(0, maxFiles);
-            onFilesChange(totalFiles);
+            onFilesChange([...files, ...newFiles]);
         }
-    }, [files, maxFiles, onFilesChange]);
+    }, [files, onFilesChange]);
 
     const removeFile = (index: number) => {
         const newFiles = [...files];
@@ -139,16 +133,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                                         </div>
                                     </div>
                                 ))}
-                                {/* Add More Button inside grid if not at max */}
-                                {files.length < maxFiles && (
-                                    <div
-                                        onClick={() => inputRef.current?.click()}
-                                        className="aspect-square rounded-lg border border-dashed border-gray-600 flex flex-col items-center justify-center hover:border-violet-400 hover:bg-violet-400/5 transition-all text-gray-500 hover:text-violet-300 group"
-                                    >
-                                        <UploadCloud size={20} className="group-hover:scale-110 transition-transform" />
-                                        <span className="text-[10px] mt-1">Add More</span>
-                                    </div>
-                                )}
+                                {/* Add More Button inside grid */}
+                                <div
+                                    onClick={() => inputRef.current?.click()}
+                                    className="aspect-square rounded-lg border border-dashed border-gray-600 flex flex-col items-center justify-center hover:border-violet-400 hover:bg-violet-400/5 transition-all text-gray-500 hover:text-violet-300 group"
+                                >
+                                    <UploadCloud size={20} className="group-hover:scale-110 transition-transform" />
+                                    <span className="text-[10px] mt-1">Add More</span>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -160,8 +152,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsCameraOpen(true)}
-                    disabled={files.length >= maxFiles}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-violet-300 hover:text-violet-200 border border-gray-700 hover:border-violet-500/50 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group shadow-lg shadow-black/20"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-violet-300 hover:text-violet-200 border border-gray-700 hover:border-violet-500/50 rounded-xl transition-all duration-300 group shadow-lg shadow-black/20"
                 >
                     <Camera size={18} className="group-hover:scale-110 transition-transform" />
                     <span className="font-medium text-sm">Take Photo</span>
@@ -171,8 +162,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             {isCameraOpen && (
                 <CameraCapture
                     onCapture={(file) => {
-                        const totalFiles = [...files, file].slice(0, maxFiles);
-                        onFilesChange(totalFiles);
+                        onFilesChange([...files, file]);
                     }}
                     onClose={() => setIsCameraOpen(false)}
                 />
