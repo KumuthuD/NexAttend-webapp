@@ -12,7 +12,7 @@ class StudentBase(BaseModel):
 
 # Properties to receive on registration
 class StudentCreate(StudentBase):
-    pass
+    face_embedding: Optional[List[float]] = Field(None, description="128-dimensional face embedding vector")
 
 # Properties to receive on update
 class StudentUpdate(BaseModel):
