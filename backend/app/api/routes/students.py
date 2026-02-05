@@ -4,6 +4,8 @@ from app.database.mongodb import get_database
 from app.models.student import Student
 from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate
 
+from app.models.face_embedding import FaceEmbedding
+
 router = APIRouter()
 
 @router.post("/", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
@@ -27,10 +29,33 @@ async def create_student(student: StudentCreate = Body(...)):
             detail="Student with this roll number or email already exists"
         )
     
-    student_model = Student(**student.model_dump())
-    new_student = await db["students"].insert_one(student_model.model_dump(by_alias=True))
-    created_student = await db["students"].find_one({"_id": new_student.inserted_id})
+    # Prepare student model
+    student_data = student.model_dump(exclude={"face_embedding"})
+    student_model = Student(**student_data)
+    
+    # Handle face embedding if provided
+    face_embedding_id = None
+    if student.face_embedding:
+        face_embedding = FaceEmbedding(
+            student_id=student_model.id,
+            embedding=student.face_embedding
+        )
+        face_embedding_id = face_embedding.id
+        await db["face_embeddings"].insert_one(face_embedding.model_dump(by_alias=True))
+        student_model.face_embedding_id = face_embedding_id
+        student_model.has_registered_face = True
+    
+    # Save student to database
+    await db["students"].insert_one(student_model.model_dump(by_alias=True))
+    created_student = await db["students"].find_one({"_id": student_model.id})
     return created_student
+
+@router.post("/register", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
+async def register_student(student: StudentCreate = Body(...)):
+    """
+    Register a new student with face data.
+    """
+    return await create_student(student)
 
 @router.get("/", response_model=List[StudentResponse])
 async def list_students(skip: int = 0, limit: int = 100):
