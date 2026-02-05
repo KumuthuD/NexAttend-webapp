@@ -56,7 +56,7 @@ const GetStartedPage = () => {
                     name: formData.name,
                     email: formData.email,
                     role: formData.role,
-                });
+                }, profileImages);
             } else {
                 await login({
                     name: "User", // This would typically come from the backend on login
@@ -182,7 +182,7 @@ const GetStartedPage = () => {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-300 mb-1">
-                                                    I am a...
+                                                    I am a
                                                 </label>
                                                 <select
                                                     name="role"
@@ -204,7 +204,7 @@ const GetStartedPage = () => {
                                                             setProfileImages(files);
                                                             if (files.length >= 3) setImageError("");
                                                         }}
-                                                        label="Profile Photos (Face Recognition)"
+                                                        label="Photos"
                                                         error={imageError}
                                                         minFiles={3}
                                                     />
@@ -279,7 +279,7 @@ const GetStartedPage = () => {
                                         </div>
                                         <div className="relative flex justify-center text-sm">
                                             <span className="px-4 bg-gray-800 text-gray-400">
-                                                or continue with
+                                                or
                                             </span>
                                         </div>
                                     </div>
