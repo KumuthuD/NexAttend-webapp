@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (userData: Omit<User, 'id'>) => Promise<void>;
-  register: (userData: Omit<User, 'id'>) => Promise<void>;
+  register: (userData: Omit<User, 'id'>, images?: File[]) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -55,8 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const register = async (userData: Omit<User, 'id'>) => {
+  const register = async (userData: Omit<User, 'id'>, images?: File[]) => {
     setIsLoading(true);
+    console.log('Registering with images:', images);
     // Simulate API call
     return new Promise<void>((resolve) => {
       setTimeout(() => {
@@ -78,13 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isLoading, 
-      login, 
-      register, 
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      login,
+      register,
       logout,
-      isAuthenticated: !!user 
+      isAuthenticated: !!user
     }}>
       {children}
     </AuthContext.Provider>

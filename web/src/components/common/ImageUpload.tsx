@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { UploadCloud, X, Image as ImageIcon, Camera } from 'lucide-react';
-import CameraCapture from './TakePhotoForSignup';
+import CameraCapture from './WebcamCapture';
 
 interface ImageUploadProps {
     files: File[];
@@ -77,7 +77,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     return (
         <div className="w-full">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-                {label} <span className="text-gray-500 text-xs">(Min: {minFiles}, Max: {maxFiles})</span>
+                {label} <span className="text-gray-500 text-xs"></span>
             </label>
 
             <div
