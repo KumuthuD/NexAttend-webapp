@@ -34,6 +34,14 @@ class FaceRecognizer:
         similarity = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
         return float(similarity)
     
+    def compute_similarity(
+        self, 
+        embedding1: List[float], 
+        embedding2: List[float]
+    ) -> float:
+        # alias for compare_embeddings to match other services
+        return self.compare_embeddings(embedding1, embedding2)
+    
     def find_match(
         self, 
         face_embedding: List[float], 
