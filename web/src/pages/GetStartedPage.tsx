@@ -3,9 +3,10 @@ import { SparklesIcon } from "../components/icons";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import ImageUpload from "../components/common/ImageUpload";
+import CameraCapture from "../components/common/TakePhotoForSignup";
 import { useAuth } from "../contexts/AuthContext";
 
-import { User, Mail, Lock, ArrowRight } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, Camera, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const GetStartedPage = () => {
@@ -29,6 +30,9 @@ const GetStartedPage = () => {
 
     const [profileImages, setProfileImages] = useState<File[]>([]);
     const [imageError, setImageError] = useState<string>("");
+    const [submitError, setSubmitError] = useState<string>("");
+    const [showCamera, setShowCamera] = useState(false);
+    const [uploadMethod, setUploadMethod] = useState<"upload" | "camera">("upload");
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -36,11 +40,19 @@ const GetStartedPage = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleCameraCapture = (file: File) => {
+        setProfileImages(prev => [...prev, file]);
+        if ([...profileImages, file].length >= 3) {
+            setImageError("");
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Reset errors
         setImageError("");
+        setSubmitError("");
 
         // Specific validation for student signup
         if (activeTab === "signup" && formData.role === "student") {
@@ -52,21 +64,50 @@ const GetStartedPage = () => {
 
         try {
             if (activeTab === "signup") {
-                await register({
-                    name: formData.name,
-                    email: formData.email,
-                    role: formData.role,
-                });
+                if (formData.role === "student") {
+                    // Create FormData for student registration
+                    const data = new FormData();
+                    data.append("name", formData.name);
+                    data.append("email", formData.email);
+                    data.append("password", formData.password);
+                    data.append("role", formData.role);
+                    
+                    // Append images
+                    profileImages.forEach((file) => {
+                        data.append("files", file); // 'files' must match backend expectation
+                    });
+                    
+                    await register(data);
+                } else {
+                    // Standard teacher registration
+                    await register({
+                        name: formData.name,
+                        email: formData.email,
+                        role: formData.role,
+                        // password: formData.password // Note: AuthContext might need password if real API requires it
+                    });
+                }
             } else {
                 await login({
-                    name: "User", // This would typically come from the backend on login
+                    name: "User", // This is ignored by backend usually, but required by type
                     email: formData.email,
-                    role: "teacher", // Default or fetched from backend
+                    role: "teacher", // Default or ignored
+                    // password: formData.password 
                 });
             }
             navigate('/dashboard');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Authentication failed", error);
+            // Handle error (show toast/alert)
+            if (error.response) {
+                // Server responded with error
+                setSubmitError(error.response.data?.message || "Authentication failed. Please check your credentials.");
+            } else if (error.request) {
+                // Request made but no response (network error)
+                setSubmitError("Cannot connect to server. Is the backend running on port 8000?");
+            } else {
+                setSubmitError("An unexpected error occurred. Please try again.");
+            }
         }
     };
 
@@ -90,6 +131,14 @@ const GetStartedPage = () => {
                     backgroundSize: "80px 80px",
                 }}
             ></div>
+
+            {/* Camera Modal */}
+            {showCamera && (
+                <CameraCapture
+                    onCapture={handleCameraCapture}
+                    onClose={() => setShowCamera(false)}
+                />
+            )}
 
             {/* Main Content */}
             <div className="relative z-10 container mx-auto px-4 py-12">
@@ -165,6 +214,13 @@ const GetStartedPage = () => {
                                         Log In
                                     </button>
                                 </div>
+                                
+                                {submitError && (
+                                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-200 text-sm flex items-center gap-2 animate-fade-in-up">
+                                        <div className="w-2 h-2 rounded-full bg-red-500" />
+                                        {submitError}
+                                    </div>
+                                )}
 
                                 {/* Form */}
                                 <form onSubmit={handleSubmit} className="relative z-10 space-y-5">
@@ -197,17 +253,66 @@ const GetStartedPage = () => {
 
                                             {/* Image Upload for Students */}
                                             {formData.role === "student" && (
-                                                <div className="animate-fade-in-up">
-                                                    <ImageUpload
-                                                        files={profileImages}
-                                                        onFilesChange={(files) => {
-                                                            setProfileImages(files);
-                                                            if (files.length >= 3) setImageError("");
-                                                        }}
-                                                        label="Profile Photos (Face Recognition)"
-                                                        error={imageError}
-                                                        minFiles={3}
-                                                    />
+                                                <div className="animate-fade-in-up space-y-4">
+                                                    <div className="flex gap-2 p-1 bg-gray-900/50 rounded-lg">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setUploadMethod("upload")}
+                                                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${uploadMethod === "upload" ? "bg-gray-700 text-white" : "text-gray-400 hover:text-gray-200"}`}
+                                                        >
+                                                            <Upload size={16} /> Upload Photos
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setUploadMethod("camera")}
+                                                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${uploadMethod === "camera" ? "bg-gray-700 text-white" : "text-gray-400 hover:text-gray-200"}`}
+                                                        >
+                                                            <Camera size={16} /> Use Camera
+                                                        </button>
+                                                    </div>
+
+                                                    {uploadMethod === "upload" ? (
+                                                        <ImageUpload
+                                                            files={profileImages}
+                                                            onFilesChange={(files) => {
+                                                                setProfileImages(files);
+                                                                if (files.length >= 3) setImageError("");
+                                                            }}
+                                                            label="Profile Photos (Face Recognition)"
+                                                            error={imageError}
+                                                            minFiles={3}
+                                                        />
+                                                    ) : (
+                                                        <div className="space-y-3">
+                                                            <div className="text-center p-6 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/50">
+                                                                <div className="flex flex-wrap gap-2 justify-center mb-4">
+                                                                    {profileImages.map((file, idx) => (
+                                                                        <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-600">
+                                                                            <img 
+                                                                                src={URL.createObjectURL(file)} 
+                                                                                alt={`captured ${idx}`} 
+                                                                                className="w-full h-full object-cover" 
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                                
+                                                                <p className="text-sm text-gray-400 mb-4">
+                                                                    {profileImages.length} of 3 photos taken
+                                                                </p>
+                                                                
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setShowCamera(true)}
+                                                                    className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg flex items-center gap-2 mx-auto transition-colors"
+                                                                >
+                                                                    <Camera size={18} />
+                                                                    Open Camera
+                                                                </button>
+                                                                {imageError && <p className="text-red-400 text-xs mt-2">{imageError}</p>}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </>

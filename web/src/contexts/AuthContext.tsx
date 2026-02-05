@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
 // Define User types
 export interface User {
@@ -13,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (userData: Omit<User, 'id'>) => Promise<void>;
-  register: (userData: Omit<User, 'id'>) => Promise<void>;
+  register: (userData: Omit<User, 'id'> | FormData) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -40,36 +41,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (userData: Omit<User, 'id'>) => {
     setIsLoading(true);
-    // Simulate API call
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const newUser: User = {
-          ...userData,
-          id: Math.random().toString(36).substr(2, 9),
-        };
-        setUser(newUser);
-        localStorage.setItem('nexattend_user', JSON.stringify(newUser));
-        setIsLoading(false);
-        resolve();
-      }, 1500);
-    });
+    try {
+      const response = await api.post('/auth/login', userData);
+      const { user, token } = response.data;
+      
+      setUser(user);
+      localStorage.setItem('nexattend_user', JSON.stringify(user));
+      localStorage.setItem('nexattend_token', token);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const register = async (userData: Omit<User, 'id'>) => {
+  const register = async (userData: Omit<User, 'id'> | FormData) => {
     setIsLoading(true);
-    // Simulate API call
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const newUser: User = {
-          ...userData,
-          id: Math.random().toString(36).substr(2, 9),
-        };
-        setUser(newUser);
-        localStorage.setItem('nexattend_user', JSON.stringify(newUser));
-        setIsLoading(false);
-        resolve();
-      }, 1500);
-    });
+    try {
+      let response;
+      
+      // Check if userData is FormData (for student registration with images)
+      if (userData instanceof FormData) {
+        response = await api.post('/students/register', userData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      } else {
+        // Standard user registration (teacher)
+        response = await api.post('/auth/register', userData);
+      }
+      
+      const { user, token } = response.data;
+      
+      setUser(user);
+      localStorage.setItem('nexattend_user', JSON.stringify(user));
+      localStorage.setItem('nexattend_token', token);
+      
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
