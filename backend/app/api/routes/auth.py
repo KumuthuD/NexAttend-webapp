@@ -1,18 +1,20 @@
-from fastapi import APIRouter, HTTPException, status, Body
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from app.database.mongodb import get_database
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
+from app.schemas.token import Token
 from app.core.security import get_password_hash, verify_password, create_access_token
+from app.api import deps
+from typing import Any
 
 router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register_user(user_in: UserCreate):
+async def register_user(user_in: UserCreate, db = Depends(get_database)):
     """
     Register a new user (teacher/admin).
     """
-    db = await get_database()
-    
     # Check if user already exists
     existing_user = await db["users"].find_one({"email": user_in.email})
     if existing_user:
@@ -40,13 +42,11 @@ async def register_user(user_in: UserCreate):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login_user(user_in: UserLogin):
+async def login_user(user_in: UserLogin, db = Depends(get_database)):
     """
     OAuth2 compatible token login.
-    Authenticate user and return JWT access token.
+    Authenticate user and return JWT access token with user info.
     """
-    db = await get_database()
-    
     # Find user by email
     user = await db["users"].find_one({"email": user_in.email})
     if not user:
@@ -84,3 +84,13 @@ async def login_user(user_in: UserLogin):
             is_active=user.get("is_active", True)
         )
     )
+
+
+@router.get("/me", response_model=UserResponse)
+async def read_user_me(
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get current logged in user.
+    """
+    return current_user
