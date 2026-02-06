@@ -56,7 +56,7 @@ const Sidebar = () => {
         <div className="w-full h-px bg-white/30 mb-6" />
 
         {/* Primary Menu */}
-        <nav className="space-y-1 mb-6 mt-4">
+        <nav className="space-y-3.5 mb-6 mt-4">
           {menuItems.map((item) => {
             const active = isActive(item.path);
             return (
