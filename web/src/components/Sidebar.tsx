@@ -22,6 +22,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <HomeIcon className="w-5 h-5" />, path: '/dashboard' },
+    { id: 'student-register', label: 'Register Student', icon: <UserCircleIcon className="w-5 h-5" />, path: '/student-register' },
     { id: 'features', label: 'Features', icon: <SparklesIcon className="w-5 h-5" />, path: '/features' },
     { id: 'calendar', label: 'Calendar', icon: <CalendarIcon className="w-5 h-5" />, path: '/calendar' },
     { id: 'contact', label: 'Contact', icon: <EnvelopeIcon className="w-5 h-5" />, path: '/contact' },

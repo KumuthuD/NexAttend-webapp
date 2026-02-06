@@ -28,4 +28,21 @@ export const healthCheck = async () => {
     }
 };
 
+
+
+// Student Registration with Face Data
+export const registerStudent = async (studentData: FormData) => {
+    try {
+        const response = await api.post('/students/register', studentData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Student registration failed:', error);
+        throw error;
+    }
+};
+
 export default api;
