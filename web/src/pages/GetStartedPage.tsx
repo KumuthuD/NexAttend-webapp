@@ -5,8 +5,9 @@ import Button from "../components/common/Button";
 import ImageUpload from "../components/common/ImageUpload";
 import { useAuth } from "../contexts/AuthContext";
 
-import { User, Mail, Lock, ArrowRight } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Alert from "../components/Alert";
 
 const GetStartedPage = () => {
     const navigate = useNavigate();
@@ -29,6 +30,9 @@ const GetStartedPage = () => {
 
     const [profileImages, setProfileImages] = useState<File[]>([]);
     const [imageError, setImageError] = useState<string>("");
+    const [authError, setAuthError] = useState<string>("");
+    const [authSuccess, setAuthSuccess] = useState<string>("");
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -39,15 +43,29 @@ const GetStartedPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Reset errors
+        // Reset states
         setImageError("");
+        setAuthError("");
+        setAuthSuccess("");
+        setValidationErrors({});
 
-        // Specific validation for student signup
-        if (activeTab === "signup" && formData.role === "student") {
-            if (profileImages.length < 3) {
+        // Client-side validation
+        const errors: Record<string, string> = {};
+
+        if (activeTab === "signup") {
+            if (formData.password !== formData.confirmPassword) {
+                errors.confirmPassword = "Passwords do not match";
+            }
+
+            if (formData.role === "student" && profileImages.length < 3) {
                 setImageError("Please upload at least 3 profile photos for face recognition setup.");
                 return;
             }
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            return;
         }
 
         try {
@@ -57,16 +75,22 @@ const GetStartedPage = () => {
                     email: formData.email,
                     role: formData.role,
                 }, profileImages);
+                setAuthSuccess("Account created successfully! Redirecting...");
             } else {
                 await login({
-                    name: "User", // This would typically come from the backend on login
+                    name: "User",
                     email: formData.email,
-                    role: "teacher", // Default or fetched from backend
+                    role: "teacher",
                 });
+                setAuthSuccess("Login successful! Redirecting...");
             }
-            navigate('/dashboard');
-        } catch (error) {
+
+            setTimeout(() => {
+                navigate('/dashboard');
+            }, 1500);
+        } catch (error: any) {
             console.error("Authentication failed", error);
+            setAuthError(error.message || "Authentication failed. Please check your credentials and try again.");
         }
     };
 
@@ -166,6 +190,24 @@ const GetStartedPage = () => {
                                     </button>
                                 </div>
 
+                                {/* Feedback Messages */}
+                                <div className="relative z-10 mb-6 space-y-3">
+                                    {authError && (
+                                        <Alert
+                                            type="error"
+                                            message={authError}
+                                            dismissible
+                                            onDismiss={() => setAuthError("")}
+                                        />
+                                    )}
+                                    {authSuccess && (
+                                        <Alert
+                                            type="success"
+                                            message={authSuccess}
+                                        />
+                                    )}
+                                </div>
+
                                 {/* Form */}
                                 <form onSubmit={handleSubmit} className="relative z-10 space-y-5">
                                     {activeTab === "signup" && (
@@ -221,6 +263,7 @@ const GetStartedPage = () => {
                                         value={formData.email}
                                         onChange={handleChange}
                                         leftIcon={<Mail size={18} />}
+                                        error={validationErrors.email}
                                         required
                                     />
 
@@ -244,6 +287,7 @@ const GetStartedPage = () => {
                                             value={formData.confirmPassword}
                                             onChange={handleChange}
                                             leftIcon={<Lock size={18} />}
+                                            error={validationErrors.confirmPassword}
                                             required
                                         />
                                     )}
