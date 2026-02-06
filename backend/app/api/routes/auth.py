@@ -5,6 +5,7 @@ from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse
 from app.schemas.token import Token
 from app.core.security import get_password_hash, verify_password, create_access_token
+from app.api import deps
 from typing import Any
 
 router = APIRouter()
@@ -60,3 +61,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+@router.get("/me", response_model=UserResponse)
+async def read_user_me(
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Get current logged in user.
+    """
+    return current_user
