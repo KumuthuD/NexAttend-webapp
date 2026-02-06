@@ -81,6 +81,7 @@ export const registerUser = async (data: RegisterData): Promise<UserData> => {
     return response.data;
 };
 
+
 // Student Registration with Face Data
 export const registerStudent = async (studentData: FormData) => {
     try {

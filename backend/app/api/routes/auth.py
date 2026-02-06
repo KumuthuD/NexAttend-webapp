@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.database.mongodb import get_database
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
+from app.schemas.user import UserCreate, UserResponse
 from app.schemas.token import Token
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.api import deps
@@ -85,6 +86,24 @@ async def login_user(user_in: UserLogin, db = Depends(get_database)):
         )
     )
 
+@router.post("/login", response_model=Token)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db = Depends(get_database)) -> Any:
+    """
+    OAuth2 compatible token login, get an access token for future requests.
+    """
+    user = await db["users"].find_one({"email": form_data.username})
+    
+    if not user or not verify_password(form_data.password, user["password_hash"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    
+    access_token = create_access_token(subject=str(user["_id"]))
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
 
 @router.get("/me", response_model=UserResponse)
 async def read_user_me(
@@ -93,4 +112,5 @@ async def read_user_me(
     """
     Get current logged in user.
     """
+    # current_user is already fetched by the dependency get_current_user
     return current_user

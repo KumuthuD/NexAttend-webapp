@@ -1,0 +1,401 @@
+﻿python : EExecuting <Task finished 
+name='Task-13' coro=<TestAuthE2E.te
+st_full_auth_flow() done, defined 
+at C:\Users\MSI-G\Desktop\NexAttend
+-webapp\backend\test_auth_e2e.py:40
+> exception=ResponseValidationError
+() created at C:\Program Files\Wind
+owsApps\PythonSoftwareFoundation.Py
+thon.3.12_3.12.2800.0_x64__qbz5n2kf
+ra8p0\Lib\asyncio\runners.py:100> 
+took 0.234 seconds
+At line:1 char:1
++ python backend/test_auth_e2e.py 
+> test_output.txt 2>&1; 
+Get-Content t ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotS 
+   pecified: (EExecuting <Tas...k  
+   0.234 seconds:String) [], Rem   
+ oteException
+    + FullyQualifiedErrorId : Nati 
+   veCommandError
+ 
+E
+===================================
+===================================
+ERROR: test_auth_failures (__main__
+.TestAuthE2E.test_auth_failures)
+Tests negative cases: Invalid 
+login, Missing token, Invalid token
+-----------------------------------
+-----------------------------------
+Traceback (most recent call last):
+  File "C:\Program Files\WindowsApp
+s\PythonSoftwareFoundation.Python.3
+.12_3.12.2800.0_x64__qbz5n2kfra8p0\
+Lib\asyncio\runners.py", line 118, 
+in run
+    return 
+self._loop.run_until_complete(task)
+           
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApp
+s\PythonSoftwareFoundation.Python.3
+.12_3.12.2800.0_x64__qbz5n2kfra8p0\
+Lib\asyncio\base_events.py", line 
+691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\Desktop\NexA
+ttend-webapp\backend\test_auth_e2e.
+py", line 105, in 
+test_auth_failures
+    print("\u2705 E2E Invalid 
+Login handling passed!")
+  File "C:\Program Files\WindowsApp
+s\PythonSoftwareFoundation.Python.3
+.12_3.12.2800.0_x64__qbz5n2kfra8p0\
+Lib\encodings\cp1252.py", line 19, 
+in encode
+    return codecs.charmap_encode(in
+put,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' 
+codec can't encode character 
+'\u2705' in position 0: character 
+maps to <undefined>
+
+===================================
+===================================
+ERROR: test_full_auth_flow (__main_
+_.TestAuthE2E.test_full_auth_flow)
+Tests the complete cycle: Register 
+-> Login -> Access Protected Route
+-----------------------------------
+-----------------------------------
+Traceback (most recent call last):
+  File "C:\Program Files\WindowsApp
+s\PythonSoftwareFoundation.Python.3
+.12_3.12.2800.0_x64__qbz5n2kfra8p0\
+Lib\asyncio\runners.py", line 118, 
+in run
+    return 
+self._loop.run_until_complete(task)
+           
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApp
+s\PythonSoftwareFoundation.Python.3
+.12_3.12.2800.0_x64__qbz5n2kfra8p0\
+Lib\asyncio\base_events.py", line 
+691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\Desktop\NexA
+ttend-webapp\backend\test_auth_e2e.
+py", line 60, in 
+test_full_auth_flow
+    response = client.post("/api/v1
+/auth/register", 
+json=registration_data)
+               ^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\testclient.py", 
+line 546, in post
+    return super().post(
+           ^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\httpx\_client.py", line 
+1144, in post
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\testclient.py", 
+line 445, in request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\httpx\_client.py", line 
+825, in request
+    return self.send(request, 
+auth=auth, 
+follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\httpx\_client.py", line 
+914, in send
+    response = 
+self._send_handling_auth(
+               
+^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\httpx\_client.py", line 
+942, in _send_handling_auth
+    response = 
+self._send_handling_redirects(
+               
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\httpx\_client.py", line 
+979, in _send_handling_redirects
+    response = 
+self._send_single_request(request)
+               
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\httpx\_client.py", line 
+1014, in _send_single_request
+    response = 
+transport.handle_request(request)
+               
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\testclient.py", 
+line 348, in handle_request
+    raise exc
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\testclient.py", 
+line 345, in handle_request
+    portal.call(self.app, scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\anyio\from_thread.py", line 
+334, in call
+    return cast(T_Retval, 
+self.start_task_soon(func, 
+*args).result())
+                          ^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApp
+s\PythonSoftwareFoundation.Python.3
+.12_3.12.2800.0_x64__qbz5n2kfra8p0\
+Lib\concurrent\futures\_base.py", 
+line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApp
+s\PythonSoftwareFoundation.Python.3
+.12_3.12.2800.0_x64__qbz5n2kfra8p0\
+Lib\concurrent\futures\_base.py", 
+line 401, in __get_result
+    raise self._exception
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\anyio\from_thread.py", line 
+259, in _call_func
+    retval = await 
+retval_or_awaitable
+             
+^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\fastapi\applications.py", 
+line 1135, in __call__
+    await super().__call__(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\applications.py", 
+line 107, in __call__
+    await 
+self.middleware_stack(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\middleware\errors.
+py", line 186, in __call__
+    raise exc
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\middleware\errors.
+py", line 164, in __call__
+    await self.app(scope, receive, 
+_send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\middleware\cors.py
+", line 85, in __call__
+    await self.app(scope, receive, 
+send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\middleware\excepti
+ons.py", line 63, in __call__
+    await wrap_app_handling_excepti
+ons(self.app, conn)(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\_exception_handler
+.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\_exception_handler
+.py", line 42, in wrapped_app
+    await app(scope, receive, 
+sender)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\fastapi\middleware\asyncexit
+stack.py", line 18, in __call__
+    await self.app(scope, receive, 
+send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\routing.py", line 
+716, in __call__
+    await 
+self.middleware_stack(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\routing.py", line 
+736, in app
+    await route.handle(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\routing.py", line 
+290, in handle
+    await self.app(scope, receive, 
+send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\fastapi\routing.py", line 
+115, in app
+    await 
+wrap_app_handling_exceptions(app, 
+request)(scope, receive, send)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\_exception_handler
+.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\starlette\_exception_handler
+.py", line 42, in wrapped_app
+    await app(scope, receive, 
+sender)
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\fastapi\routing.py", line 
+101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\fastapi\routing.py", line 
+377, in app
+    content = await 
+serialize_response(
+              
+^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\Loca
+l\Packages\PythonSoftwareFoundation
+.Python.3.12_qbz5n2kfra8p0\LocalCac
+he\local-packages\Python312\site-pa
+ckages\fastapi\routing.py", line 
+215, in serialize_response
+    raise ResponseValidationError(
+fastapi.exceptions.ResponseValidati
+onError: 1 validation error:
+  {'type': 'missing', 'loc': 
+('response', 'is_active'), 'msg': 
+'Field required', 'input': {'_id': 
+'69856113ab739f54ce189023', 
+'full_name': 'E2E User', 'email': 
+'e2e@example.com', 'password': 
+'password123', 'role': 'teacher'}}
+
+  File "C:\Users\MSI-G\Desktop\NexA
+ttend-webapp\backend\app\api\routes
+\auth.py", line 13, in 
+register_user
+    POST /api/v1/auth/register
+
+-----------------------------------
+-----------------------------------
+Ran 2 tests in 0.311s
+
+FAILED (errors=2)
+
+Starting Auth Failures Test...
+
+Starting Full Auth Flow Test...

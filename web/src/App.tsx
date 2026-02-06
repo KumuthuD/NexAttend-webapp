@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import TestComponentsPage from './pages/TestComponentsPage';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import StudentRegistrationPage from './pages/StudentRegistrationPage';
 
 const App: React.FC = () => {
     return (
@@ -26,6 +27,14 @@ const App: React.FC = () => {
                             }
                         />
                         <Route path="/get-started" element={<GetStartedPage />} />
+                        <Route
+                            path="/student-register"
+                            element={
+                                <ProtectedRoute>
+                                    <StudentRegistrationPage />
+                                </ProtectedRoute>
+                            }
+                        />
                         <Route path="/login" element={<div className="p-20 text-center">Login Page Placeholder</div>} />
                         <Route path="/test-components" element={<TestComponentsPage />} />
                     </Routes>
