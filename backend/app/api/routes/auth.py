@@ -11,12 +11,10 @@ from typing import Any
 router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register_user(user_in: UserCreate):
+async def register_user(user_in: UserCreate, db = Depends(get_database)):
     """
     Register a new user (teacher/admin).
     """
-    db = await get_database()
-    
     # Check if user already exists
     existing_user = await db["users"].find_one({"email": user_in.email})
     if existing_user:
@@ -43,11 +41,10 @@ async def register_user(user_in: UserCreate):
     return created_user
 
 @router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db = Depends(get_database)) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests.
     """
-    db = await get_database()
     user = await db["users"].find_one({"email": form_data.username})
     
     if not user or not verify_password(form_data.password, user["password_hash"]):
@@ -69,4 +66,5 @@ async def read_user_me(
     """
     Get current logged in user.
     """
+    # current_user is already fetched by the dependency get_current_user
     return current_user
