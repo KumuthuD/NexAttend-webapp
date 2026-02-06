@@ -53,45 +53,48 @@ class TestAuthE2E(unittest.IsolatedAsyncioTestCase):
             "password": user_password,
             "role": "teacher"
         }
-        # First call: check existing, Second call: find_one after insert
-        self.mock_db["users"].find_one = AsyncMock(side_effect=[None, {"_id": user_id, **registration_data}, {"_id": user_id, **registration_data}])
+        mock_user_in_db = {
+            "_id": user_id, 
+            **registration_data,
+            "is_active": True,
+            "password_hash": "hashed_val" # Not checked in register response
+        }
+        # First call: check existing (None), Second call: find_one after insert
+        self.mock_db["users"].find_one = AsyncMock(side_effect=[None, mock_user_in_db, mock_user_in_db])
         self.mock_db["users"].insert_one = AsyncMock(return_value=MagicMock(inserted_id=user_id))
         
         response = client.post("/api/v1/auth/register", json=registration_data)
+        if response.status_code != 201:
+            print(f"Registration Error: {response.json()}")
         self.assertEqual(response.status_code, 201)
-        print("✅ E2E Registration test passed!")
+        print("Registration test passed!")
 
         # 2. Login
         from app.core.security import get_password_hash
         hashed_password = get_password_hash(user_password)
-        mock_user = {
-            "_id": user_id, 
-            "email": user_email, 
-            "password_hash": hashed_password,
-            "full_name": "E2E User",
-            "role": "teacher",
-            "is_active": True
+        mock_user_for_login = {
+            **mock_user_in_db,
+            "password_hash": hashed_password
         }
         # Mock find_one for login
-        self.mock_db["users"].find_one = AsyncMock(return_value=mock_user)
+        self.mock_db["users"].find_one = AsyncMock(return_value=mock_user_for_login)
         
         login_data = {"username": user_email, "password": user_password}
         response = client.post("/api/v1/auth/login", data=login_data)
         self.assertEqual(response.status_code, 200)
         token = response.json()["access_token"]
-        print("✅ E2E Login test passed!")
+        print("Login test passed!")
 
         # 3. Access Protected Route (/api/v1/auth/me)
-        # The dependency call get_current_user also calls find_one
-        self.mock_db["users"].find_one = AsyncMock(return_value=mock_user)
+        self.mock_db["users"].find_one = AsyncMock(return_value=mock_user_for_login)
         
         headers = {"Authorization": f"Bearer {token}"}
         response = client.get("/api/v1/auth/me", headers=headers)
         if response.status_code != 200:
-            print(f"Error Response: {response.json()}")
+            print(f"Protected Route Error: {response.json()}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["email"], user_email)
-        print("✅ E2E Protected Route (/me) test passed!")
+        print("Protected Route (/me) test passed!")
 
     async def test_auth_failures(self):
         """
@@ -102,18 +105,18 @@ class TestAuthE2E(unittest.IsolatedAsyncioTestCase):
         self.mock_db["users"].find_one = AsyncMock(return_value=None)
         response = client.post("/api/v1/auth/login", data={"username": "wrong@ex.com", "password": "p"})
         self.assertEqual(response.status_code, 401)
-        print("✅ E2E Invalid Login handling passed!")
+        print("Invalid Login handling passed!")
 
         # 2. Missing Token
         response = client.get("/api/v1/auth/me")
         self.assertEqual(response.status_code, 401)
-        print("✅ E2E Missing Token handling passed!")
+        print("Missing Token handling passed!")
 
         # 3. Invalid Token
         headers = {"Authorization": "Bearer invalid_token"}
         response = client.get("/api/v1/auth/me", headers=headers)
         self.assertEqual(response.status_code, 401)
-        print("✅ E2E Invalid Token handling passed!")
+        print("Invalid Token handling passed!")
 
 if __name__ == "__main__":
     unittest.main()
