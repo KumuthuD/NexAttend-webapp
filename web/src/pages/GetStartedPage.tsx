@@ -74,14 +74,11 @@ const GetStartedPage = () => {
                     name: formData.name,
                     email: formData.email,
                     role: formData.role,
+                    password: formData.password,
                 }, profileImages);
                 setAuthSuccess("Account created successfully! Redirecting...");
             } else {
-                await login({
-                    name: "User",
-                    email: formData.email,
-                    role: "teacher",
-                });
+                await login(formData.email, formData.password);
                 setAuthSuccess("Login successful! Redirecting...");
             }
 
@@ -90,7 +87,9 @@ const GetStartedPage = () => {
             }, 1500);
         } catch (error: any) {
             console.error("Authentication failed", error);
-            setAuthError(error.message || "Authentication failed. Please check your credentials and try again.");
+            // Extract error message from API response
+            const errorMessage = error.response?.data?.detail || error.message || "Authentication failed. Please check your credentials and try again.";
+            setAuthError(errorMessage);
         }
     };
 

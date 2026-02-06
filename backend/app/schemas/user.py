@@ -26,3 +26,21 @@ class UserResponse(BaseModel):
     is_active: bool
 
     model_config = ConfigDict(populate_by_name=True)
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "john@example.com",
+                "password": "securepassword123"
+            }
+        }
+    )
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { loginUser, registerUser, UserData, RegisterData } from '../services/api';
 
 // Define User types
 export interface User {
@@ -12,8 +13,8 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (userData: Omit<User, 'id'>) => Promise<void>;
-  register: (userData: Omit<User, 'id'>, images?: File[]) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -33,49 +34,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Failed to parse user from local storage', error);
         localStorage.removeItem('nexattend_user');
+        localStorage.removeItem('nexattend_token');
       }
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (userData: Omit<User, 'id'>) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
-    // Simulate API call
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const newUser: User = {
-          ...userData,
-          id: Math.random().toString(36).substr(2, 9),
-        };
-        setUser(newUser);
-        localStorage.setItem('nexattend_user', JSON.stringify(newUser));
-        setIsLoading(false);
-        resolve();
-      }, 1500);
-    });
+    try {
+      const response = await loginUser(email, password);
+      
+      // Store token
+      localStorage.setItem('nexattend_token', response.access_token);
+      
+      // Map API response to User format
+      const newUser: User = {
+        id: response.user.id,
+        name: response.user.full_name,
+        email: response.user.email,
+        role: response.user.role as 'teacher' | 'student',
+      };
+      
+      setUser(newUser);
+      localStorage.setItem('nexattend_user', JSON.stringify(newUser));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const register = async (userData: Omit<User, 'id'>, images?: File[]) => {
+  const register = async (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => {
     setIsLoading(true);
     console.log('Registering with images:', images);
-    // Simulate API call
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const newUser: User = {
-          ...userData,
-          id: Math.random().toString(36).substr(2, 9),
-        };
-        setUser(newUser);
-        localStorage.setItem('nexattend_user', JSON.stringify(newUser));
-        setIsLoading(false);
-        resolve();
-      }, 1500);
-    });
+    
+    try {
+      const registerData: RegisterData = {
+        full_name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        role: userData.role,
+      };
+      
+      const response = await registerUser(registerData);
+      
+      // Map API response to User format
+      const newUser: User = {
+        id: response.id,
+        name: response.full_name,
+        email: response.email,
+        role: response.role as 'teacher' | 'student',
+      };
+      
+      setUser(newUser);
+      localStorage.setItem('nexattend_user', JSON.stringify(newUser));
+      
+      // Note: Token will be obtained on subsequent login
+      // For auto-login after registration, call login API
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('nexattend_user');
+    localStorage.removeItem('nexattend_token');
   };
 
   return (
