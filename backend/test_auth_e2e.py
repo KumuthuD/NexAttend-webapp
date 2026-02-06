@@ -17,6 +17,12 @@ os.environ.setdefault("MONGODB_URL", "mongodb://localhost:27017")
 os.environ.setdefault("DATABASE_NAME", "nexattend_test")
 os.environ.setdefault("API_V1_STR", "/api/v1")
 
+# Mock AI modules before they are imported by the app
+from unittest.mock import MagicMock
+sys.modules["app.services.face_detector"] = MagicMock()
+sys.modules["app.services.embedding_service"] = MagicMock()
+sys.modules["deepface"] = MagicMock()
+
 from app.main import app
 from app.database.mongodb import get_database
 
@@ -35,6 +41,7 @@ class TestAuthE2E(unittest.IsolatedAsyncioTestCase):
         """
         Tests the complete cycle: Register -> Login -> Access Protected Route
         """
+        print("\nStarting Full Auth Flow Test...")
         user_email = "e2e@example.com"
         user_password = "password123"
         user_id = str(ObjectId())
@@ -46,7 +53,8 @@ class TestAuthE2E(unittest.IsolatedAsyncioTestCase):
             "password": user_password,
             "role": "teacher"
         }
-        self.mock_db["users"].find_one = AsyncMock(side_effect=[None, {"_id": user_id, **registration_data}])
+        # First call: check existing, Second call: find_one after insert
+        self.mock_db["users"].find_one = AsyncMock(side_effect=[None, {"_id": user_id, **registration_data}, {"_id": user_id, **registration_data}])
         self.mock_db["users"].insert_one = AsyncMock(return_value=MagicMock(inserted_id=user_id))
         
         response = client.post("/api/v1/auth/register", json=registration_data)
@@ -64,6 +72,7 @@ class TestAuthE2E(unittest.IsolatedAsyncioTestCase):
             "role": "teacher",
             "is_active": True
         }
+        # Mock find_one for login
         self.mock_db["users"].find_one = AsyncMock(return_value=mock_user)
         
         login_data = {"username": user_email, "password": user_password}
@@ -73,11 +82,13 @@ class TestAuthE2E(unittest.IsolatedAsyncioTestCase):
         print("✅ E2E Login test passed!")
 
         # 3. Access Protected Route (/api/v1/auth/me)
-        # We need to mock find_one again for the decoded user_id in deps.get_current_user
+        # The dependency call get_current_user also calls find_one
         self.mock_db["users"].find_one = AsyncMock(return_value=mock_user)
         
         headers = {"Authorization": f"Bearer {token}"}
         response = client.get("/api/v1/auth/me", headers=headers)
+        if response.status_code != 200:
+            print(f"Error Response: {response.json()}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["email"], user_email)
         print("✅ E2E Protected Route (/me) test passed!")
@@ -86,6 +97,7 @@ class TestAuthE2E(unittest.IsolatedAsyncioTestCase):
         """
         Tests negative cases: Invalid login, Missing token, Invalid token
         """
+        print("\nStarting Auth Failures Test...")
         # 1. Invalid Login
         self.mock_db["users"].find_one = AsyncMock(return_value=None)
         response = client.post("/api/v1/auth/login", data={"username": "wrong@ex.com", "password": "p"})
