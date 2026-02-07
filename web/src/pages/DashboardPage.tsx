@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/Sidebar';
 import ClassroomCard from '../components/dashboard/ClassroomCard';
 import AddClassroomCard from '../components/dashboard/AddClassroomCard';
+import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
 import { Smile, Database, Code } from 'lucide-react'; // Using lucide-react for icons as placeholders
 import { useNavigate } from 'react-router-dom';
 
@@ -38,6 +39,7 @@ const DashboardPage: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -46,6 +48,13 @@ const DashboardPage: React.FC = () => {
 
     const handleLogout = () => {
         navigate('/get-started');
+    };
+
+    const handleCreateClassroom = (classroomName: string) => {
+        // TODO: Implement actual classroom creation logic with API call
+        console.log('Creating classroom:', classroomName);
+        // For now, just close the modal
+        setIsCreateModalOpen(false);
     };
 
     // Determine role (default to student if null for safety, though protection should handle it)
@@ -99,11 +108,18 @@ const DashboardPage: React.FC = () => {
                         {/* Add/Join Card */}
                         <AddClassroomCard
                             type={isTeacher ? 'create' : 'join'}
-                            onClick={() => console.log(isTeacher ? 'Create classroom' : 'Join classroom')}
+                            onClick={() => setIsCreateModalOpen(true)}
                         />
                     </div>
                 </div>
             </main>
+
+            {/* Create Classroom Modal */}
+            <CreateClassroomModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSubmit={handleCreateClassroom}
+            />
         </div>
     );
 };
