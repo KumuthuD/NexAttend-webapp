@@ -45,8 +45,7 @@ const DashboardPage: React.FC = () => {
     }, []);
 
     const handleLogout = () => {
-        logout();
-        navigate('/');
+        navigate('/get-started');
     };
 
     // Determine role (default to student if null for safety, though protection should handle it)
@@ -60,7 +59,7 @@ const DashboardPage: React.FC = () => {
             {/* Main Content */}
             <main className="flex-1 ml-64 p-8">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex justify-between items-center mb-5">
                     <div>
                         {/* Header space if needed, currently empty in design or just title */}
                     </div>
@@ -73,7 +72,7 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 {/* Divider */}
-                <div className="w-full h-px bg-white/30 mb-8" />
+                <div className="w-full h-1 bg-white/30 mb-8 border-0 rounded-full" />
 
                 {/* Content Container - Centered */}
                 <div className="flex flex-col items-center w-full">

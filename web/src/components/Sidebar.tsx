@@ -22,10 +22,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <HomeIcon className="w-5 h-5" />, path: '/dashboard' },
-    { id: 'features', label: 'Features', icon: <SparklesIcon className="w-5 h-5" />, path: '/features' },
     { id: 'calendar', label: 'Calendar', icon: <CalendarIcon className="w-5 h-5" />, path: '/calendar' },
-    { id: 'contact', label: 'Contact', icon: <EnvelopeIcon className="w-5 h-5" />, path: '/contact' },
-    { id: 'about', label: 'About Us', icon: <InformationCircleIcon className="w-5 h-5" />, path: '/about' },
     { id: 'notifications', label: 'Notifications', icon: <BellIcon className="w-5 h-5" />, path: '/notifications' },
     { id: 'settings', label: 'Settings', icon: <Cog6ToothIcon className="w-5 h-5" />, path: '/settings' },
     { id: 'support', label: 'Support', icon: <QuestionMarkCircleIcon className="w-5 h-5" />, path: '/support' },
@@ -53,10 +50,10 @@ const Sidebar = () => {
         </div>
 
         {/* Divider */}
-        <div className="w-full h-px bg-white/30 mb-6" />
+        <div className="w-full h-1 bg-white/30 mb-1 border-0 rounded-full" />
 
-        {/* Primary Menu */}
-        <nav className="space-y-3.5 mb-6 mt-4">
+        {/* Menu */}
+        <nav className="space-y-4 mb-6 mt-4">
           {menuItems.map((item) => {
             const active = isActive(item.path);
             return (
@@ -82,7 +79,7 @@ const Sidebar = () => {
         </nav>
 
         {/* User Profile */}
-        <div className="mt-auto flex items-center gap-3 px-3 py-4 mb-4 border-t border-white/20 cursor-pointer hover:bg-white/5 rounded-xl transition-colors">
+        <div className="mt-auto flex items-center gap-3 px-3 py-4 mb-4 border-2 border-white/20 cursor-pointer hover:bg-white/5 rounded-xl transition-colors">
           <div className="relative">
             <img
               src={profileImg}
@@ -92,7 +89,7 @@ const Sidebar = () => {
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-[#7B7FED] rounded-full"></span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white truncate">John Doe</p>
+            <p className="text-sm font-bold text-white truncate">Kumuthu</p>
           </div>
           <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
