@@ -36,7 +36,7 @@ async def register_user(user_in: UserCreate, db = Depends(get_database)):
     )
     
     # Save to database
-    new_user = await db["users"].insert_one(user_model.model_dump(by_alias=True))
+    new_user = await db["users"].insert_one(user_model.model_dump(by_alias=True, exclude=["id"]))
     created_user = await db["users"].find_one({"_id": new_user.inserted_id})
     
     return created_user
