@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { SparklesIcon } from "../components/icons";
+
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import ImageUpload from "../components/common/ImageUpload";
@@ -117,48 +117,9 @@ const GetStartedPage = () => {
             {/* Main Content */}
             <div className="relative z-10 container mx-auto px-4 py-12">
                 <div className="max-w-5xl mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        {/* Left Side - Welcome Text */}
-                        <div className="text-center lg:text-left animate-fade-in-left">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium backdrop-blur-sm mb-6">
-                                <SparklesIcon className="w-4 h-4" />
-                                Join NexAttend Today
-                            </div>
-
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6">
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400">
-                                    Transform Your
-                                </span>
-                                <br />
-                                <span className="text-white">Classroom Experience</span>
-                            </h1>
-
-                            <p className="text-lg text-gray-400 mb-8 leading-relaxed">
-                                Join thousands of educators using AI-powered attendance tracking.
-                                Save time, gain insights, and focus on what matters most — teaching.
-                            </p>
-
-                            {/* Feature highlights */}
-                            <div className="space-y-4">
-                                {[
-                                    { icon: "⚡", text: "Lightning-fast face recognition" },
-                                    { icon: "📊", text: "Real-time analytics dashboard" },
-                                    { icon: "🔒", text: "Enterprise-grade security" },
-                                    { icon: "🎓", text: "Made for educators, by educators" },
-                                ].map((feature, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center gap-3 text-gray-300"
-                                    >
-                                        <span className="text-xl">{feature.icon}</span>
-                                        <span>{feature.text}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Right Side - Auth Form */}
-                        <div className="animate-fade-in-right">
+                    <div className="flex justify-center items-center">
+                        {/* Auth Form - Centered */}
+                        <div className="w-full max-w-md animate-fade-in-up">
                             <div className="glass-card rounded-3xl p-8 relative overflow-hidden bg-gray-800/80 backdrop-blur-xl border border-gray-700/50 shadow-2xl">
                                 {/* Gradient top border */}
                                 <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500"></div>

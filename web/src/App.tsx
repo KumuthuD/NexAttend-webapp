@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import Header from './components/Header';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
@@ -9,24 +9,30 @@ import TestComponentsPage from './pages/TestComponentsPage';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
+import LoginPage from './pages/LoginPage';
+
+// Layout for marketing/public pages
+const MarketingLayout = () => {
+    return (
+        <div className="bg-gray-900 text-white min-h-screen font-sans">
+            <Header />
+            <Outlet />
+            <Footer />
+        </div>
+    );
+};
 
 const App: React.FC = () => {
     return (
         <AuthProvider>
             <Router>
-                <div className="bg-gray-900 text-white min-h-screen font-sans">
-                    <Header />
-                    <Routes>
+                <Routes>
+                    {/* Public / Marketing Routes */}
+                    <Route element={<MarketingLayout />}>
                         <Route path="/" element={<LandingPage />} />
-                        <Route
-                            path="/dashboard"
-                            element={
-                                <ProtectedRoute>
-                                    <DashboardPage />
-                                </ProtectedRoute>
-                            }
-                        />
                         <Route path="/get-started" element={<GetStartedPage />} />
+                        <Route path="/test-components" element={<TestComponentsPage />} />
+                        <Route path="/login" element={<LoginPage />} />
                         <Route
                             path="/student-register"
                             element={
@@ -35,11 +41,18 @@ const App: React.FC = () => {
                                 </ProtectedRoute>
                             }
                         />
-                        <Route path="/login" element={<div className="p-20 text-center">Login Page Placeholder</div>} />
-                        <Route path="/test-components" element={<TestComponentsPage />} />
-                    </Routes>
-                    <Footer />
-                </div>
+                    </Route>
+
+                    {/* Dashboard Route - Standalone Layout */}
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <DashboardPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Routes>
             </Router>
         </AuthProvider>
     );

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from app.database.mongodb import get_database
+from pymongo.errors import DuplicateKeyError
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
 from app.schemas.user import UserCreate, UserResponse
@@ -36,8 +37,18 @@ async def register_user(user_in: UserCreate, db = Depends(get_database)):
     )
     
     # Save to database
-    new_user = await db["users"].insert_one(user_model.model_dump(by_alias=True, exclude=["id"]))
-    created_user = await db["users"].find_one({"_id": new_user.inserted_id})
+    try:
+        user_dict = user_model.model_dump(by_alias=True, exclude=["id"])
+        if user_dict.get("_id") is None:
+            user_dict.pop("_id", None)
+            
+        new_user = await db["users"].insert_one(user_dict)
+        created_user = await db["users"].find_one({"_id": new_user.inserted_id})
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exists"
+        )
     
     return created_user
 

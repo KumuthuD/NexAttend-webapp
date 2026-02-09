@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import MouseFollower from "../components/MouseFollower";
 import FeatureCard from "../components/FeatureCard";
 import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
 import kumuthuImg from "../assets/team/kumuthu.jpg";
@@ -189,6 +190,7 @@ const LandingPage = () => {
 
   return (
     <div className="relative overflow-hidden">
+      <MouseFollower />
       {/* ===== HERO SECTION ===== */}
       <section id="home" className="relative min-h-screen bg-gray-900 pt-20 md:pt-24 flex flex-col justify-center">
         {/* Background gradient */}
