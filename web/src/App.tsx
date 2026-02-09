@@ -10,6 +10,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import LoginPage from './pages/LoginPage';
+import ClassroomPage from './pages/ClassroomPage';
 
 // Layout for marketing/public pages
 const MarketingLayout = () => {
@@ -21,6 +22,8 @@ const MarketingLayout = () => {
         </div>
     );
 };
+
+
 
 const App: React.FC = () => {
     return (
@@ -49,6 +52,16 @@ const App: React.FC = () => {
                         element={
                             <ProtectedRoute>
                                 <DashboardPage />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* Classroom Route */}
+                    <Route
+                        path="/dashboard/classroom/:id"
+                        element={
+                            <ProtectedRoute>
+                                <ClassroomPage />
                             </ProtectedRoute>
                         }
                     />

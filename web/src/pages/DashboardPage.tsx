@@ -145,7 +145,7 @@ const DashboardPage: React.FC = () => {
                                 icon={classroom.icon}
                                 iconBgClass={classroom.iconBg}
                                 actionButtonText="View Classroom"
-                                onAction={() => console.log(`Action for ${classroom.title}`)}
+                                onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
                             />
                         ))}
 
