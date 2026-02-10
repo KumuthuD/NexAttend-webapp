@@ -144,8 +144,7 @@ const DashboardPage: React.FC = () => {
                                 accessCode={classroom.accessCode}
                                 icon={classroom.icon}
                                 iconBgClass={classroom.iconBg}
-                                actionButtonText={isTeacher ? "Start Attendance" : "View Classroom"}
-                                onAction={() => navigate(`/classroom/${classroom.id}`)}
+
                                 actionButtonText="View Classroom"
                                 onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
                             />

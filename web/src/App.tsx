@@ -55,8 +55,6 @@ const App: React.FC = () => {
                             </ProtectedRoute>
                         }
                     />
-                    <Route
-                        path="/classroom/:id"
 
                     {/* Classroom Route */}
                     <Route
