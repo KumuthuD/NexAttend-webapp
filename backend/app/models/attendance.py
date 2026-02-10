@@ -4,33 +4,55 @@ from datetime import datetime
 from uuid import uuid4
 
 class AttendanceRecord(BaseModel):
-    student_id: str
+    """
+    Represents an individual student's attendance record within a session.
+    """
+    student_id: str = Field(..., description="ID of the student (UUID)")
+    status: str = Field(..., description="Attendance status (present, absent, late)")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-    confidence: float = 1.0
-    method: str = "face" # face, manual
+    confidence: Optional[float] = Field(1.0, description="AI confidence score for face recognition")
+    method: str = Field("face", description="Method used to mark attendance (face, manual)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "student_id": "student_uuid_123",
+                "status": "present",
+                "timestamp": "2024-02-09T10:00:00Z",
+                "confidence": 0.98,
+                "method": "face"
+            }
+        }
 
 class AttendanceSession(BaseModel):
+    """
+    Represents an attendance session for a specific classroom.
+    """
     id: str = Field(default_factory=lambda: str(uuid4()), alias="_id")
-    classroom_id: str
+    classroom_id: str = Field(..., description="Reference to Classroom ID")
     session_date: datetime = Field(default_factory=datetime.utcnow)
-    status: str = "active" # active, completed
+    status: str = Field("active", description="Session status (active, completed)")
     
-    # List of student IDs marked present
-    present_student_ids: List[str] = []
+    # List of student IDs marked present (for quick indexing/lookups)
+    present_student_ids: List[str] = Field(default_factory=list)
     
-    # Full records with timestamps and confidence
-    records: List[AttendanceRecord] = []
+    # Detailed records
+    records: List[AttendanceRecord] = Field(default_factory=list)
     
     start_time: datetime = Field(default_factory=datetime.utcnow)
     end_time: Optional[datetime] = None
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         populate_by_name = True
         json_schema_extra = {
             "example": {
-                "classroom_id": "class_123",
-                "session_date": "2024-02-10T09:00:00",
+                "classroom_id": "classroom_uuid_456",
+                "session_date": "2024-02-10T09:00:00Z",
                 "status": "active",
-                "present_student_ids": []
+                "present_student_ids": [],
+                "records": []
             }
         }
