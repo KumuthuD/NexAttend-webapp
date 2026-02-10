@@ -10,7 +10,7 @@ class AttendanceRecord(BaseModel):
     student_id: str = Field(..., description="ID of the student (UUID)")
     status: str = Field(..., description="Attendance status (present, absent, late)")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-    confidence: Optional[float] = Field(1.0, description="AI confidence score for face recognition")
+    confidence: Optional[float] = Field(None, description="AI confidence score for face recognition")
     method: str = Field("face", description="Method used to mark attendance (face, manual)")
 
     class Config:
