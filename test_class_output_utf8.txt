@@ -1,0 +1,378 @@
+﻿python : E
+At line:1 char:28
++ ... ="backend"; python backen
+d/test_class_embeddings.py > 
+test_class_outp ...
++                 ~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo          :  
+   NotSpecified: (E:String) [  
+  ], RemoteException
+    + FullyQualifiedErrorId :  
+   NativeCommandError
+ 
+===============================
+===============================
+========
+ERROR: 
+test_get_class_embeddings (__ma
+in__.TestClassEmbeddings.test_g
+et_class_embeddings)
+Verify that the class 
+embeddings endpoint correctly 
+joins classroom, student, and 
+embedding data.
+-------------------------------
+-------------------------------
+--------
+Traceback (most recent call 
+last):
+  File "C:\Program Files\Window
+sApps\PythonSoftwareFoundation.
+Python.3.12_3.12.2800.0_x64__qb
+z5n2kfra8p0\Lib\asyncio\runners
+.py", line 118, in run
+    return self._loop.run_until
+_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+  File "C:\Program Files\Window
+sApps\PythonSoftwareFoundation.
+Python.3.12_3.12.2800.0_x64__qb
+z5n2kfra8p0\Lib\asyncio\base_ev
+ents.py", line 691, in 
+run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\Desktop\
+NexAttend-webapp\backend\test_c
+lass_embeddings.py", line 67, 
+in test_get_class_embeddings
+    response = client.get(f"/ap
+i/v1/classes/{class_id}/embeddi
+ngs")
+               ^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\testclient.py", line 473, in 
+get
+    return super().get(
+           ^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\httpx\_c
+lient.py", line 1053, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\testclient.py", line 445, in 
+request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\httpx\_c
+lient.py", line 825, in request
+    return self.send(request, 
+auth=auth, follow_redirects=fol
+low_redirects)
+           ^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\httpx\_c
+lient.py", line 914, in send
+    response = 
+self._send_handling_auth(
+               
+^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\httpx\_c
+lient.py", line 942, in 
+_send_handling_auth
+    response = 
+self._send_handling_redirects(
+               
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\httpx\_c
+lient.py", line 979, in 
+_send_handling_redirects
+    response = self._send_singl
+e_request(request)
+               ^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\httpx\_c
+lient.py", line 1014, in 
+_send_single_request
+    response = transport.handle
+_request(request)
+               ^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\testclient.py", line 348, in 
+handle_request
+    raise exc
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\testclient.py", line 345, in 
+handle_request
+    portal.call(self.app, 
+scope, receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\anyio\fr
+om_thread.py", line 334, in 
+call
+    return cast(T_Retval, 
+self.start_task_soon(func, 
+*args).result())
+                          ^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+  File "C:\Program Files\Window
+sApps\PythonSoftwareFoundation.
+Python.3.12_3.12.2800.0_x64__qb
+z5n2kfra8p0\Lib\concurrent\futu
+res\_base.py", line 456, in 
+result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Window
+sApps\PythonSoftwareFoundation.
+Python.3.12_3.12.2800.0_x64__qb
+z5n2kfra8p0\Lib\concurrent\futu
+res\_base.py", line 401, in 
+__get_result
+    raise self._exception
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\anyio\fr
+om_thread.py", line 259, in 
+_call_func
+    retval = await 
+retval_or_awaitable
+             
+^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\fastapi\
+applications.py", line 1135, 
+in __call__
+    await 
+super().__call__(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\applications.py", line 107, 
+in __call__
+    await 
+self.middleware_stack(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\middleware\errors.py", line 
+186, in __call__
+    raise exc
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\middleware\errors.py", line 
+164, in __call__
+    await self.app(scope, 
+receive, _send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\middleware\cors.py", line 
+85, in __call__
+    await self.app(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\middleware\exceptions.py", 
+line 63, in __call__
+    await wrap_app_handling_exc
+eptions(self.app, conn)(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\_exception_handler.py", line 
+53, in wrapped_app
+    raise exc
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\_exception_handler.py", line 
+42, in wrapped_app
+    await app(scope, receive, 
+sender)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\fastapi\
+middleware\asyncexitstack.py", 
+line 18, in __call__
+    await self.app(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\routing.py", line 716, in 
+__call__
+    await 
+self.middleware_stack(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\routing.py", line 736, in app
+    await route.handle(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\routing.py", line 290, in 
+handle
+    await self.app(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\fastapi\
+routing.py", line 115, in app
+    await wrap_app_handling_exc
+eptions(app, request)(scope, 
+receive, send)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\_exception_handler.py", line 
+53, in wrapped_app
+    raise exc
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\starlett
+e\_exception_handler.py", line 
+42, in wrapped_app
+    await app(scope, receive, 
+sender)
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\fastapi\
+routing.py", line 101, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\fastapi\
+routing.py", line 355, in app
+    raw_response = await 
+run_endpoint_function(
+                   
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\AppData\
+Local\Packages\PythonSoftwareFo
+undation.Python.3.12_qbz5n2kfra
+8p0\LocalCache\local-packages\P
+ython312\site-packages\fastapi\
+routing.py", line 243, in 
+run_endpoint_function
+    return await 
+dependant.call(**values)
+           
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MSI-G\Desktop\
+NexAttend-webapp\backend\app\ap
+i\routes\classrooms.py", line 
+20, in get_class_embeddings
+    classroom = await db["class
+rooms"].find_one({"_id": 
+class_id})
+                      
+~~^^^^^^^^^^^^^^
+TypeError: 'NoneType' object 
+is not subscriptable
+
+-------------------------------
+-------------------------------
+--------
+Ran 1 test in 0.038s
+
+FAILED (errors=1)
+
+Testing Get Class Embeddings Endpoint...
