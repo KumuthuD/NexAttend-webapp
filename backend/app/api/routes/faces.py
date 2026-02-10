@@ -1,4 +1,3 @@
-
 """
 Face Management Routes
 Handles face registration and related operations.
@@ -38,11 +37,11 @@ async def register_face(
     3. Generates embedding.
     4. Saves embedding to the user's profile in MongoDB.
     """
-    # 1. Validate File Type
+    #Validate File Type
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
-    # 2. Read Image
+    #Read Image
     try:
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
@@ -54,8 +53,8 @@ async def register_face(
         logger.error(f"Error reading file: {e}")
         raise HTTPException(status_code=400, detail="Invalid image file")
 
-    # 3. Detect Face
-    # We want exactly ONE face for strict registration
+    #Detect Face
+    #We want exactly ONE face for strict registration
     faces = detector.detect_faces(image)
     
     if len(faces) == 0:
@@ -67,17 +66,17 @@ async def register_face(
         # For now, reject to be safe.
         raise HTTPException(status_code=400, detail="Multiple faces detected. Please ensure only you are in the photo.")
 
-    # 4. Generate Embedding
+    #Generate Embedding
     target_face = faces[0]
     
-    # Optional: Check face quality/blurriness here? (Detector has some checks)
+    #Optional: Check face quality/blurriness here? (Detector has some checks)
     
-    # Crop the face (with padding)
+    #Crop the face (with padding)
     x, y, w, h = target_face['box']
     
-    # Basic bounds check for cropping
+    #Basic bounds check for cropping
     h_img, w_img = image.shape[:2]
-    # Add minimal padding for embedding generation stability
+    #Add minimal padding for embedding generation stability
     pad = int(w * 0.1)
     x1, y1 = max(0, x - pad), max(0, y - pad)
     x2, y2 = min(w_img, x + w + pad), min(h_img, y + h + pad)
@@ -89,7 +88,7 @@ async def register_face(
     if not embedding:
         raise HTTPException(status_code=500, detail="Failed to generate face embedding. Please try again.")
 
-    # 5. Save to Database
+    #Save to Database
     try:
         # Update the user document with the new embedding
         result = await db.db["users"].update_one(
