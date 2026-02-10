@@ -35,6 +35,30 @@ if success:
 camera.release_camera()
 ```
 
+### 1b. Real-Time Frame Capture Loop (1 fps)
+
+```python
+from app.services.ai.camera_service import CameraService
+
+def process_frame(frame):
+    # process each frame for attendance marking
+    print(f"Processing frame: {frame.shape}")
+    # detect faces, recognize students, mark attendance
+
+camera = CameraService(camera_id=0)
+camera.start_camera()
+
+# start loop at 1 fps
+camera.start_capture_loop(callback=process_frame, fps=1)
+
+# loop runs continuously until stopped
+# ... attendance session in progress ...
+
+# stop when session ends
+camera.stop_capture_loop()
+camera.release_camera()
+```
+
 ### 2. Detect Faces in Image
 
 ```python
