@@ -4,7 +4,7 @@ from app.database.mongodb import get_database
 from pymongo.errors import DuplicateKeyError
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
-from app.schemas.user import UserCreate, UserResponse
+
 from app.schemas.token import Token
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.api import deps

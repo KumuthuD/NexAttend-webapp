@@ -76,6 +76,10 @@ const GetStartedPage = () => {
                     role: formData.role,
                     password: formData.password,
                 }, profileImages);
+
+                // Auto-login after registration
+                await login(formData.email, formData.password);
+
                 setAuthSuccess("Account created successfully! Redirecting...");
             } else {
                 await login(formData.email, formData.password);

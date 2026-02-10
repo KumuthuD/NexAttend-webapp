@@ -12,6 +12,7 @@ import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import LoginPage from './pages/LoginPage';
 import CalendarPage from './pages/CalendarPage';
 import ClassroomPage from './pages/ClassroomPage';
+import ValidationDemo from './pages/ValidationDemo';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Layout for marketing/public pages
@@ -38,6 +39,7 @@ const App: React.FC = () => {
                             <Route path="/" element={<LandingPage />} />
                             <Route path="/get-started" element={<GetStartedPage />} />
                             <Route path="/test-components" element={<TestComponentsPage />} />
+                            <Route path="/validation-demo" element={<ValidationDemo />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route
                                 path="/student-register"

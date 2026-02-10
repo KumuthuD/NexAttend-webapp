@@ -1,5 +1,8 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, BeforeValidator
+from typing import Optional, Annotated
+
+# Helper for Pydantic v2 to handle ObjectId
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class UserCreate(BaseModel):
     full_name: str
@@ -19,7 +22,7 @@ class UserCreate(BaseModel):
     )
 
 class UserResponse(BaseModel):
-    id: str = Field(..., alias="_id")
+    id: PyObjectId = Field(..., alias="_id")
     full_name: str
     email: EmailStr
     role: str
