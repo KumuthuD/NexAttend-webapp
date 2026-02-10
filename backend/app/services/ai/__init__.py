@@ -1,10 +1,15 @@
 """
 AI Services Module
 ==================
-Exports camera service and image processing utilities
+Exports camera service, image processing utilities, face recognition services
 """
 
 from .camera_service import CameraService
+from .face_recognizer import FaceRecognizer
+from .single_face_recognition_service import (
+    SingleFaceRecognitionService,
+    single_face_service
+)
 from .image_processor import (
     resize_image,
     resize_with_aspect_ratio,
@@ -22,6 +27,9 @@ from .image_processor import (
 
 __all__ = [
     'CameraService',
+    'FaceRecognizer',
+    'SingleFaceRecognitionService',
+    'single_face_service',
     'resize_image',
     'resize_with_aspect_ratio',
     'convert_bgr_to_rgb',
