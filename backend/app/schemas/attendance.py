@@ -5,20 +5,38 @@ from datetime import datetime
 class AttendanceStartRequest(BaseModel):
     classroom_id: str
 
-class AttendanceRecordResponse(BaseModel):
+class AttendanceRecordBase(BaseModel):
     student_id: str
-    timestamp: datetime
-    confidence: float
-    method: str
-
-class AttendanceSessionResponse(BaseModel):
-    id: str = Field(..., alias="_id")
-    classroom_id: str
-    session_date: datetime
     status: str
-    present_student_ids: List[str]
-    start_time: datetime
-    end_time: Optional[datetime] = None
+    confidence: Optional[float] = None
+
+class AttendanceRecordCreate(AttendanceRecordBase):
+    pass
+
+class AttendanceRecordResponse(AttendanceRecordBase):
+    timestamp: datetime
+    method: str = "face"
 
     class Config:
+        from_attributes = True
+
+class AttendanceSessionBase(BaseModel):
+    classroom_id: str
+    session_date: datetime
+    status: str = "active"
+
+class AttendanceSessionCreate(AttendanceSessionBase):
+    pass
+
+class AttendanceSessionResponse(AttendanceSessionBase):
+    id: str = Field(..., alias="_id")
+    present_student_ids: List[str] = []
+    records: List[AttendanceRecordResponse] = []
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
         populate_by_name = True
