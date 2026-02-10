@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Camera } from 'lucide-react';
+import { Send, Camera, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash } from 'lucide-react';
 import CameraCapture from '../components/common/WebcamCapture';
 
 const ClassroomPage: React.FC = () => {
@@ -10,16 +11,8 @@ const ClassroomPage: React.FC = () => {
     const navigate = useNavigate();
     const { logout } = useAuth();
     const [isCameraOpen, setIsCameraOpen] = useState(false);
-
-    // Mock data - in a real app, fetch based on ID
-    const classroom = {
-        id: id,
-        title: 'Algorithms',
-        code: 'AML-2025',
-        studentCount: 0,
-        nextSession: 'Today, 2:00 PM',
-        description: 'Advanced algorithms and data structures.',
-    };
+    const [announcementText, setAnnouncementText] = useState('');
+    const [chatText, setChatText] = useState('');
 
     const handleLogout = () => {
         logout();
@@ -28,21 +21,13 @@ const ClassroomPage: React.FC = () => {
 
     const handleCapture = (file: File) => {
         console.log("Captured file:", file);
-        // Here you would typically upload the file to your backend
-        // For now, we'll just close the camera
         setIsCameraOpen(false);
         alert("Attendance marked successfully!");
     };
 
-    // Mock Data based on screenshot
+    // Mock Data
     const classroomName = "Advance Client Side Development";
-
-    const announcement = {
-        author: "Asini Silva",
-        role: "Admin",
-        time: "4.48PM - 11.11.25",
-        content: "Please note that the following lecture and tutorials conducted by Ms. Asini, Ms. Theja, Mr. Ammar, and Mr. Sachindu have been rescheduled as detailed below:"
-    };
+    const accessCode = "ACS-2025";
 
     const chatMessages = [
         {
@@ -50,9 +35,9 @@ const ClassroomPage: React.FC = () => {
             author: "Thiviru",
             time: "9:54 AM",
             date: "November 20, 2025",
-            content: "How does React’s reconciliation algorithm work?",
-            avatarBg: "bg-blue-600",
-            initial: "D" // Assuming D for now as per screenshot icon
+            content: "How does React's reconciliation algorithm work?",
+            color: "bg-violet-500",
+            initial: "T"
         },
         {
             id: 2,
@@ -60,80 +45,117 @@ const ClassroomPage: React.FC = () => {
             time: "9:39 AM",
             date: "November 27, 2025",
             content: "Can you explain the concept of fiber architecture?",
-            avatarBg: "bg-orange-300",
-            initial: null,
-            avatarImg: true // Placeholder logic for image
+            color: "bg-amber-500",
+            initial: "S"
         },
         {
             id: 3,
             author: "Sudam",
             time: "9:56 AM",
-            date: "", // Same day
+            date: "",
             content: "How does React handle reconciliation for list updates?",
-            avatarBg: "bg-orange-300",
-            initial: null,
-            avatarImg: true
+            color: "bg-amber-500",
+            initial: "S"
         },
         {
             id: 4,
             author: "Thiviru",
             time: "10:05 AM",
             date: "",
-            content: "Ma’am can you explain it again please?",
-            avatarBg: "bg-blue-600",
-            initial: "D"
+            content: "Ma'am can you explain it again please?",
+            color: "bg-violet-500",
+            initial: "T"
         }
     ];
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-[#4facfe] to-[#00f2fe]">
+        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
             <Sidebar />
 
-            <main className="flex-1 ml-64 p-8">
+            <main className="flex-1 ml-64 p-10 relative">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
-                    <div className="flex-1 text-center">
-                        <h1 className="text-3xl font-bold text-pink-600 drop-shadow-sm">
-                            {classroomName}
-                        </h1>
-                    </div>
+                <div className="flex justify-between items-center mb-6">
                     <button
-                        onClick={handleLogout}
-                        className="px-6 py-2 bg-transparent border-2 border-white text-white rounded-xl hover:bg-white/10 transition-colors font-semibold shadow-sm"
+                        onClick={() => navigate('/dashboard')}
+                        className="flex items-center gap-2 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors duration-200 text-sm font-medium"
                     >
-                        Logout
+                        <ArrowLeft size={16} />
+                        <span className="">Back to Dashboard</span>
                     </button>
+                    
+                    <div className="flex items-center gap-4">
+                        <ThemeToggle />
+                        <button
+                            onClick={handleLogout}
+                            className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
+                        >
+                            Logout
+                        </button>
+                    </div>
                 </div>
 
-                {/* Divider */}
-                <div className="w-full h-0.5 bg-white/30 mb-8" />
+                {/* Classroom Header Card */}
+                <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 mb-8 shadow-sm transition-colors duration-300">
+                    <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-80 rounded-full -mt-6 mx-[-24px] mb-5" style={{ width: 'calc(100% + 48px)', marginTop: '-24px', borderRadius: '16px 16px 0 0' }} />
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">{classroomName}</h1>
+                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                                <span className="flex items-center gap-1.5">
+                                    <Hash size={14} className="text-gray-400 dark:text-gray-500" />
+                                    <span className="font-mono text-violet-600 dark:text-violet-400 font-medium">{accessCode}</span>
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Users size={14} className="text-gray-400 dark:text-gray-500" />
+                                    0 students
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Clock size={14} className="text-gray-400 dark:text-gray-500" />
+                                    0 sessions
+                                </span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsCameraOpen(true)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
+                        >
+                            <Camera size={16} />
+                            Mark Attendance
+                        </button>
+                    </div>
+                </div>
 
-                <div className="max-w-5xl mx-auto space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
                     {/* Announcements Section */}
                     <section>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-pink-600">Important Announcements</h2>
-                            <button
-                                onClick={() => setIsCameraOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-semibold transition-colors shadow-md"
-                            >
-                                <Camera size={18} />
-                                Mark Attendance
-                            </button>
+                        <div className="flex items-center gap-2.5 mb-4">
+                            <Megaphone size={16} className="text-gray-400 dark:text-gray-500" />
+                            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">Announcements</h2>
                         </div>
 
-                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
+                        <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden h-[460px] flex flex-col shadow-sm transition-colors duration-300">
+                            {/* Empty state */}
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors duration-300">
+                                        <Megaphone size={28} className="text-gray-300 dark:text-gray-600" />
+                                    </div>
+                                    <p className="text-gray-400 dark:text-gray-500 text-sm font-medium transition-colors duration-300">No announcements yet</p>
+                                </div>
+                            </div>
 
                             {/* Input Area */}
-                            <div className="p-6 border-t border-gray-100 bg-white/50">
+                            <div className="p-4 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/50 dark:bg-black/20 transition-colors duration-300">
                                 <div className="relative">
                                     <input
                                         type="text"
+                                        value={announcementText}
+                                        onChange={(e) => setAnnouncementText(e.target.value)}
                                         placeholder="Post an announcement..."
-                                        className="w-full pl-6 pr-12 py-4 bg-white rounded-full text-gray-700 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all shadow-sm"
+                                        className="w-full pl-4 pr-11 py-3 bg-white dark:bg-white/[0.05] rounded-xl text-gray-800 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 border border-gray-200 dark:border-white/[0.1] focus:outline-none focus:border-violet-400 dark:focus:border-violet-500/40 focus:ring-2 focus:ring-violet-50 dark:focus:ring-violet-500/10 transition-all duration-200"
                                     />
-                                    <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors text-blue-500">
-                                        <Send size={20} />
+                                    <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-violet-50 dark:hover:bg-white/10 transition-colors text-gray-400 dark:text-gray-500 hover:text-violet-600 dark:hover:text-violet-400">
+                                        <Send size={15} />
                                     </button>
                                 </div>
                             </div>
@@ -142,19 +164,53 @@ const ClassroomPage: React.FC = () => {
 
                     {/* Chat Section */}
                     <section>
-                        <h2 className="text-xl font-bold text-pink-600 mb-4">Chat</h2>
-                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden flex flex-col h-[600px]">
-                            
+                        <div className="flex items-center gap-2.5 mb-4">
+                            <MessageCircle size={16} className="text-gray-400 dark:text-gray-500" />
+                            <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">Discussion</h2>
+                        </div>
+
+                        <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden flex flex-col h-[460px] shadow-sm transition-colors duration-300">
+                            {/* Messages */}
+                            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                                {chatMessages.map((msg) => (
+                                    <div key={msg.id}>
+                                        {msg.date && (
+                                            <div className="text-center mb-5">
+                                                <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 px-3 py-1 bg-gray-50 dark:bg-white/5 rounded-full border border-gray-100 dark:border-white/5 uppercase tracking-wide transition-colors duration-300">
+                                                    {msg.date}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-start gap-3 group">
+                                            <div className={`w-8 h-8 rounded-lg ${msg.color} flex-shrink-0 flex items-center justify-center text-white font-bold text-xs shadow-sm`}>
+                                                {msg.initial}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-baseline gap-2 mb-0.5">
+                                                    <span className="font-bold text-gray-800 dark:text-white text-sm transition-colors duration-300">{msg.author}</span>
+                                                    <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium transition-colors duration-300">{msg.time}</span>
+                                                </div>
+                                                <div className="bg-gray-50 dark:bg-white/5 rounded-xl rounded-tl-sm px-3.5 py-2.5 border border-gray-100 dark:border-white/5 transition-colors duration-300">
+                                                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed transition-colors duration-300">{msg.content}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
                             {/* Input Area */}
-                            <div className="p-6 border-t border-gray-100 bg-white/50">
-                                <div className="absolute bottom-0 left-0 right-0 p-6">
+                            <div className="p-4 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/50 dark:bg-black/20 transition-colors duration-300">
+                                <div className="relative">
                                     <input
                                         type="text"
+                                        value={chatText}
+                                        onChange={(e) => setChatText(e.target.value)}
                                         placeholder="Type a message..."
-                                        className="w-full pl-6 pr-12 py-4 bg-white rounded-full text-gray-700 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all shadow-sm"
+                                        className="w-full pl-4 pr-11 py-3 bg-white dark:bg-white/[0.05] rounded-xl text-gray-800 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 border border-gray-200 dark:border-white/[0.1] focus:outline-none focus:border-violet-400 dark:focus:border-violet-500/40 focus:ring-2 focus:ring-violet-50 dark:focus:ring-violet-500/10 transition-all duration-200"
                                     />
-                                    <button className="absolute right-9 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors text-blue-500">
-                                        <Send size={20} />
+                                    <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-violet-50 dark:hover:bg-white/10 transition-colors text-gray-400 dark:text-gray-500 hover:text-violet-600 dark:hover:text-violet-400">
+                                        <Send size={15} />
                                     </button>
                                 </div>
                             </div>

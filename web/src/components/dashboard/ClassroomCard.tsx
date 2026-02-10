@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users } from 'lucide-react';
+import { Users, ArrowRight } from 'lucide-react';
 
 interface ClassroomCardProps {
     title: string;
@@ -20,36 +20,53 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
     actionButtonText,
     onAction,
     colorClass = 'text-gray-800',
-    iconBgClass = 'bg-orange-100'
+    iconBgClass = 'bg-violet-50'
 }) => {
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm flex flex-col h-full min-h-[250px]">
-            <h3 className={`text-xl font-bold mb-4 ${colorClass}`}>{title}</h3>
+        <div
+            className="group relative bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] hover:border-violet-200 dark:hover:border-violet-500/25 transition-all duration-300 flex flex-col h-full min-h-[240px] overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-violet-500/[0.06] dark:hover:shadow-violet-500/[0.08]"
+            onClick={onAction}
+        >
+            {/* Subtle top accent bar */}
+            <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
 
-            <div className="flex items-start space-x-4 mb-6">
-                <div className={`p-3 rounded-xl ${iconBgClass} flex-shrink-0`}>
-                    {icon || <Users size={24} className="text-gray-600" />}
+            <div className="p-6 flex-1 flex flex-col">
+                {/* Header row */}
+                <div className="flex items-start justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/10 flex items-center justify-center group-hover:bg-violet-100 dark:group-hover:bg-violet-500/15 transition-colors duration-300">
+                            {icon || <Users size={22} className="text-violet-500 dark:text-violet-400" />}
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-white leading-tight transition-colors duration-300">{title}</h3>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 transition-colors duration-300">Classroom</p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <p className="font-bold text-gray-900">{studentCount} Students</p>
-                    <p className="text-sm text-gray-500">Access Code : {accessCode}</p>
-                </div>
-            </div>
 
-            <div className="mt-auto">
-                <button
-                    onClick={onAction}
-                    className="w-full py-3 px-4 bg-[#5663CD] hover:bg-[#4552BC] text-white font-bold rounded-xl flex items-center justify-center space-x-2 transition-colors"
-                >
-                    {/* Camera icon wrapper if needed, for now just text/icon from usage */}
-                    {actionButtonText.includes('Start') && (
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    )}
-                    <span>{actionButtonText}</span>
-                </button>
+                {/* Stats */}
+                <div className="flex items-center gap-6 mb-6">
+                    <div>
+                        <p className="text-2xl font-bold text-gray-800 dark:text-white transition-colors duration-300">{studentCount}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium transition-colors duration-300">Students</p>
+                    </div>
+                    <div className="w-px h-8 bg-gray-100 dark:bg-white/[0.06] transition-colors duration-300" />
+                    <div>
+                        <p className="text-sm font-mono font-semibold text-violet-600 dark:text-violet-400 transition-colors duration-300">{accessCode}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium transition-colors duration-300">Access Code</p>
+                    </div>
+                </div>
+
+                {/* Action */}
+                <div className="mt-auto">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onAction(); }}
+                        className="w-full py-2.5 px-4 bg-violet-50 hover:bg-violet-600 dark:bg-violet-500/10 dark:hover:bg-violet-500 text-violet-600 hover:text-white dark:text-violet-400 dark:hover:text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all duration-300 border border-violet-100 hover:border-violet-600 dark:border-violet-500/15 dark:hover:border-violet-500 text-sm group/btn"
+                    >
+                        <span>{actionButtonText}</span>
+                        <ArrowRight size={16} className="group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+                    </button>
+                </div>
             </div>
         </div>
     );

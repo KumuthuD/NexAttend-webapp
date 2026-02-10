@@ -11,6 +11,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import LoginPage from './pages/LoginPage';
 import ClassroomPage from './pages/ClassroomPage';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Layout for marketing/public pages
 const MarketingLayout = () => {
@@ -27,47 +28,49 @@ const MarketingLayout = () => {
 
 const App: React.FC = () => {
     return (
-        <AuthProvider>
-            <Router>
-                <Routes>
-                    {/* Public / Marketing Routes */}
-                    <Route element={<MarketingLayout />}>
-                        <Route path="/" element={<LandingPage />} />
-                        <Route path="/get-started" element={<GetStartedPage />} />
-                        <Route path="/test-components" element={<TestComponentsPage />} />
-                        <Route path="/login" element={<LoginPage />} />
+        <ThemeProvider>
+            <AuthProvider>
+                <Router>
+                    <Routes>
+                        {/* Public / Marketing Routes */}
+                        <Route element={<MarketingLayout />}>
+                            <Route path="/" element={<LandingPage />} />
+                            <Route path="/get-started" element={<GetStartedPage />} />
+                            <Route path="/test-components" element={<TestComponentsPage />} />
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route
+                                path="/student-register"
+                                element={
+                                    <ProtectedRoute>
+                                        <StudentRegistrationPage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                        </Route>
+
+                        {/* Dashboard Route - Standalone Layout */}
                         <Route
-                            path="/student-register"
+                            path="/dashboard"
                             element={
                                 <ProtectedRoute>
-                                    <StudentRegistrationPage />
+                                    <DashboardPage />
                                 </ProtectedRoute>
                             }
                         />
-                    </Route>
 
-                    {/* Dashboard Route - Standalone Layout */}
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <ProtectedRoute>
-                                <DashboardPage />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    {/* Classroom Route */}
-                    <Route
-                        path="/dashboard/classroom/:id"
-                        element={
-                            <ProtectedRoute>
-                                <ClassroomPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                </Routes>
-            </Router>
-        </AuthProvider>
+                        {/* Classroom Route */}
+                        <Route
+                            path="/dashboard/classroom/:id"
+                            element={
+                                <ProtectedRoute>
+                                    <ClassroomPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Routes>
+                </Router>
+            </AuthProvider>
+        </ThemeProvider>
     );
 };
 
