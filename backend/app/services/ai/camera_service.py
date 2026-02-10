@@ -7,16 +7,20 @@ Responsible for:
 - Processing video stream
 - Converting image formats (BGR to RGB)
 - Saving captured images
+- Real-time frame capture loop for attendance sessions
 
 Author: Viraj
 Date: Week 01 Day 3
+Updated: Week 03 Day 11 - Added frame capture loop
 """
 
 import cv2
 import numpy as np
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Callable
 import os
 from datetime import datetime
+import time
+import threading
 
 
 class CameraService:
@@ -34,6 +38,8 @@ class CameraService:
         self.camera_id = camera_id
         self.cap = None
         self.is_active = False
+        self.loop_active = False
+        self.loop_thread = None
         
     def start_camera(self) -> bool:
         """
@@ -111,6 +117,10 @@ class CameraService:
         """
         Release the webcam resources
         """
+        # stop loop if running
+        if self.loop_active:
+            self.stop_capture_loop()
+        
         if self.cap is not None:
             self.cap.release()
             self.is_active = False
@@ -227,6 +237,105 @@ class CameraService:
             bool: True if camera is active, False otherwise
         """
         return self.is_active and self.cap is not None and self.cap.isOpened()
+    
+    def start_capture_loop(self, callback: Callable[[np.ndarray], None], fps: int = 1) -> bool:
+        """
+        Start real-time frame capture loop at specified fps
+        Used for attendance marking sessions
+        
+        Args:
+            callback (Callable): Function to call with each captured frame
+            fps (int): Frames per second to capture (default: 1)
+            
+        Returns:
+            bool: True if loop started successfully, False otherwise
+            
+        Example:
+            def process_frame(frame):
+                # detect faces, recognize students, mark attendance
+                print(f"Processing frame: {frame.shape}")
+            
+            camera.start_capture_loop(process_frame, fps=1)
+        """
+        if not self.is_camera_active():
+            print("Error: Camera not active. Call start_camera() first.")
+            return False
+        
+        if self.loop_active:
+            print("Warning: Capture loop already running")
+            return False
+        
+        self.loop_active = True
+        self.loop_thread = threading.Thread(
+            target=self._capture_loop_worker,
+            args=(callback, fps),
+            daemon=True
+        )
+        self.loop_thread.start()
+        print(f"Frame capture loop started at {fps} fps")
+        return True
+    
+    def _capture_loop_worker(self, callback: Callable[[np.ndarray], None], fps: int):
+        """
+        Worker thread for frame capture loop
+        Internal method - do not call directly
+        
+        Args:
+            callback (Callable): Function to process each frame
+            fps (int): Target frames per second
+        """
+        interval = 1.0 / fps  # time between frames in seconds
+        
+        print(f"Capture loop worker started (interval: {interval}s)")
+        
+        while self.loop_active:
+            start_time = time.time()
+            
+            # capture frame
+            success, frame = self.capture_frame()
+            
+            if success and frame is not None:
+                try:
+                    # call the callback function with the frame
+                    callback(frame)
+                except Exception as e:
+                    print(f"Error in frame callback: {str(e)}")
+            else:
+                print("Warning: Failed to capture frame in loop")
+            
+            # wait for next frame based on fps
+            elapsed = time.time() - start_time
+            sleep_time = max(0, interval - elapsed)
+            time.sleep(sleep_time)
+        
+        print("Capture loop worker stopped")
+    
+    def stop_capture_loop(self):
+        """
+        Stop the frame capture loop
+        """
+        if not self.loop_active:
+            print("Warning: Capture loop not running")
+            return
+        
+        print("Stopping capture loop...")
+        self.loop_active = False
+        
+        # wait for thread to finish
+        if self.loop_thread is not None:
+            self.loop_thread.join(timeout=2.0)
+            self.loop_thread = None
+        
+        print("Capture loop stopped")
+    
+    def is_loop_active(self) -> bool:
+        """
+        Check if frame capture loop is currently running
+        
+        Returns:
+            bool: True if loop is active, False otherwise
+        """
+        return self.loop_active
     
     def __del__(self):
         """
