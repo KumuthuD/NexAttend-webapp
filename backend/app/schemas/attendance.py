@@ -24,12 +24,26 @@ class AttendanceSessionBase(BaseModel):
 class AttendanceSessionCreate(AttendanceSessionBase):
     pass
 
+class AttendanceMarkRequest(BaseModel):
+    session_id: str
+    student_id: str
+    confidence: Optional[float] = None
+    method: str = "face" # face, manual
+
+class AttendanceMarkResponse(BaseModel):
+    message: str
+    student_name: str
+    status: str
+    timestamp: datetime
+
 class AttendanceSessionResponse(AttendanceSessionBase):
     id: str = Field(..., alias="_id")
+    present_student_ids: List[str] = []
     records: List[AttendanceRecordResponse] = []
+    start_time: datetime
+    end_time: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
-        populate_by_name = True
