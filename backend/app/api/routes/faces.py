@@ -120,11 +120,11 @@ async def detect_faces_only(
     Detect faces in an image and return bounding boxes.
     Used for frontend video overlay (drawing boxes on faces).
     """
-    # 1. Validate File Type
+    #Validate File Type
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
-    # 2. Read Image
+    #Read Image
     try:
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
@@ -132,7 +132,7 @@ async def detect_faces_only(
         
         if image is None:
             raise HTTPException(status_code=400, detail="Could not decode image")
-    # 3. Detect Faces
+    #Detect Faces
     except Exception as e:
         logger.error(f"Error reading file: {e}")
         raise HTTPException(status_code=400, detail="Invalid image file")
@@ -142,7 +142,7 @@ async def detect_faces_only(
     faces_data = []
     if len(faces) > 0:
         for face in faces:
-            # Convert numpy types to native Python types for JSON
+    #Convert numpy types to native Python types for JSON
             box = [int(coord) for coord in face['box']]
             conf = float(face['confidence'])
             kps = {k: [int(coord) for coord in v] for k, v in face['keypoints'].items()}
