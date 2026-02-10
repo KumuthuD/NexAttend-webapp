@@ -80,9 +80,9 @@ const ClassroomPage: React.FC = () => {
                         className="flex items-center gap-2 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors duration-200 text-sm font-medium"
                     >
                         <ArrowLeft size={16} />
-                        <span className="">Back to Dashboard</span>
+                        <span className="">Dashboard</span>
                     </button>
-                    
+
                     <div className="flex items-center gap-4">
                         <ThemeToggle />
                         <button
@@ -125,7 +125,7 @@ const ClassroomPage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 max-w-6xl mx-auto">
                     {/* Announcements Section */}
                     <section>
                         <div className="flex items-center gap-2.5 mb-4">
@@ -133,7 +133,7 @@ const ClassroomPage: React.FC = () => {
                             <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">Announcements</h2>
                         </div>
 
-                        <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden h-[460px] flex flex-col shadow-sm transition-colors duration-300">
+                        <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden h-[260px] flex flex-col  shadow-sm transition-colors duration-300 mb-10">
                             {/* Empty state */}
                             <div className="flex-1 flex items-center justify-center">
                                 <div className="text-center">
