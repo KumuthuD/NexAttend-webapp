@@ -110,3 +110,50 @@ async def register_face(
     except Exception as e:
         logger.error(f"Database update error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error saving registration")
+
+
+@router.post("/detect", status_code=status.HTTP_200_OK)
+async def detect_faces_only(
+    file: UploadFile = File(...)
+):
+    """
+    Detect faces in an image and return bounding boxes.
+    Used for frontend video overlay (drawing boxes on faces).
+    """
+    #Validate File Type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+
+    #Read Image
+    try:
+        contents = await file.read()
+        nparr = np.frombuffer(contents, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if image is None:
+            raise HTTPException(status_code=400, detail="Could not decode image")
+    #Detect Faces
+    except Exception as e:
+        logger.error(f"Error reading file: {e}")
+        raise HTTPException(status_code=400, detail="Invalid image file")
+
+    faces = detector.detect_faces(image)
+    
+    faces_data = []
+    if len(faces) > 0:
+        for face in faces:
+    #Convert numpy types to native Python types for JSON
+            box = [int(coord) for coord in face['box']]
+            conf = float(face['confidence'])
+            kps = {k: [int(coord) for coord in v] for k, v in face['keypoints'].items()}
+            
+            faces_data.append({
+                "box": box,
+                "confidence": conf,
+                "keypoints": kps
+            })
+            
+    return {
+        "count": len(faces_data),
+        "faces": faces_data
+    }
