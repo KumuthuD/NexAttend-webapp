@@ -93,14 +93,38 @@ The recognition flow identifies students in real-time during attendance sessions
 - `start_camera()` - initialize webcam connection
 - `capture_frame()` - capture single frame as numpy array
 - `capture_multiple_frames(n)` - capture n consecutive frames
+- `start_capture_loop(callback, fps)` - start real-time frame capture loop
+- `stop_capture_loop()` - stop the frame capture loop
+- `is_loop_active()` - check if loop is running
 - `release_camera()` - properly close webcam connection
 - `convert_to_rgb()` - convert BGR to RGB for AI models
 - `save_image()` - save frame to disk
 
+**Frame Capture Loop (New):**
+The real-time frame capture loop runs continuously at a specified fps (default 1 fps) and processes each frame through a callback function. This is used for attendance marking sessions.
+
+**Usage Example:**
+```python
+def process_frame(frame):
+    # detect faces, recognize students, mark attendance
+    faces = detector.detect_faces(frame)
+    for face in faces:
+        embedding = recognizer.get_embedding(face)
+        student = identify_student(embedding)
+        mark_attendance(student)
+
+camera = CameraService()
+camera.start_camera()
+camera.start_capture_loop(callback=process_frame, fps=1)
+# runs continuously at 1 fps
+# call camera.stop_capture_loop() to stop
+```
+
 **Configuration:**
 - Default camera ID: 0 (primary webcam)
 - Frame size: 640x480 pixels
-- Frame rate: 30 fps
+- Camera frame rate: 30 fps
+- Capture loop default: 1 fps (for attendance sessions)
 
 ### Image Processor
 

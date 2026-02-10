@@ -23,6 +23,8 @@ const MarketingLayout = () => {
     );
 };
 
+
+
 const App: React.FC = () => {
     return (
         <AuthProvider>
@@ -55,6 +57,10 @@ const App: React.FC = () => {
                     />
                     <Route
                         path="/classroom/:id"
+
+                    {/* Classroom Route */}
+                    <Route
+                        path="/dashboard/classroom/:id"
                         element={
                             <ProtectedRoute>
                                 <ClassroomPage />
