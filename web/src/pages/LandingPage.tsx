@@ -313,19 +313,6 @@ const LandingPage = () => {
               </Link>
             </div>
           </div>
-
-          {/* Scroll Indicator */}
-          <div className="animate-fade-in stagger-6 pb-6 flex-shrink-0 w-full flex justify-center mt-8 md:mt-12">
-            <a
-              href="#features"
-              className="flex flex-col items-center gap-2 text-gray-400 hover:text-violet-400 transition-colors"
-            >
-              <span className="text-sm">Scroll to explore</span>
-              <div className="w-6 h-10 border-2 border-current rounded-full flex justify-center pt-2">
-                <div className="w-1.5 h-3 bg-violet-400 rounded-full animate-bounce"></div>
-              </div>
-            </a>
-          </div>
         </div>
       </section >
 

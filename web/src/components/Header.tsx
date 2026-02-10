@@ -74,7 +74,7 @@ const Header = () => {
             <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 md:pt-6 px-4">
                 <nav
                     className={`
-                        relative flex items-center gap-2 md:gap-4 
+                        relative flex items-center gap-2 md:gap-6 
                         px-4 md:px-6 py-2.5 md:py-3
                         bg-gray-900/80 backdrop-blur-xl
                         border border-white/10
@@ -95,21 +95,18 @@ const Header = () => {
                     `}></div>
 
                     {/* Logo */}
-                    <button
-                        onClick={() => scrollToSection('home')}
-                        className="relative z-10 flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-white/5 transition-all group"
-                    >
-                        <LogoIcon className="w-7 h-7 md:w-8 md:h-8 group-hover:scale-110 transition-transform" />
-                        <span className="hidden sm:block text-base font-bold text-white group-hover:text-violet-400 transition-colors">
+                    <div className="flex items-center gap-2">
+                        <LogoIcon className="w-7 h-7 md:w-8 md:h-8 mr-0" />
+                        <span className="hidden sm:block text-base font-bold text-white">
                             NexAttend
                         </span>
-                    </button>
+                    </div>
 
                     {/* Divider */}
                     <div className="hidden md:block w-px h-6 bg-white/10"></div>
 
                     {/* Desktop Nav Links */}
-                    <div className="hidden md:flex items-center gap-1">
+                    <div className="hidden md:flex items-center gap-10">
                         {navLinks.map((link) => (
                             <button
                                 key={link.id}
@@ -129,20 +126,6 @@ const Header = () => {
                             </button>
                         ))}
                     </div>
-
-                    {/* Divider */}
-                    <div className="hidden md:block w-px h-6 bg-white/10"></div>
-
-                    {/* CTA Button */}
-                    <button
-                        onClick={goToGetStarted}
-                        className="relative z-10 hidden md:flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white text-sm font-bold rounded-full transition-all transform hover:scale-105 shadow-lg shadow-violet-500/25"
-                    >
-                        Get Started
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </button>
 
                     {/* Mobile Menu Button */}
                     <button
