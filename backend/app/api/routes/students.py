@@ -4,6 +4,7 @@ from pydantic import EmailStr
 from app.database.mongodb import get_database
 from app.models.student import Student
 from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate
+from app.schemas.face import ClassEmbeddingResponse
 from app.models.face_embedding import FaceEmbedding
 from app.services.face_detector import FaceDetector
 from app.services.embedding_service import embedding_service
