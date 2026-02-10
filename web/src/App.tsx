@@ -11,6 +11,10 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import LoginPage from './pages/LoginPage';
 import ClassroomPage from './pages/ClassroomPage';
+import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Layout for marketing/public pages
@@ -38,6 +42,10 @@ const App: React.FC = () => {
                             <Route path="/get-started" element={<GetStartedPage />} />
                             <Route path="/test-components" element={<TestComponentsPage />} />
                             <Route path="/login" element={<LoginPage />} />
+                            <Route path="/signup" element={<SignupPage />} />
+                            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                            <Route path="/verify-email" element={<VerifyEmailPage />} />
+                            <Route path="/reset-password" element={<ResetPasswordPage />} />
                             <Route
                                 path="/student-register"
                                 element={

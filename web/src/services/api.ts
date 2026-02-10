@@ -97,4 +97,20 @@ export const registerStudent = async (studentData: FormData) => {
     }
 };
 
+// Auth - Additional
+export const verifyEmail = async (token: string): Promise<any> => {
+    const response = await api.post('/api/v1/auth/verify-email', { token });
+    return response.data;
+};
+
+export const forgotPassword = async (email: string): Promise<any> => {
+    const response = await api.post('/api/v1/auth/forgot-password', { email });
+    return response.data;
+};
+
+export const resetPassword = async (token: string, newPassword: string): Promise<any> => {
+    const response = await api.post('/api/v1/auth/reset-password', { token, new_password: newPassword });
+    return response.data;
+};
+
 export default api;
