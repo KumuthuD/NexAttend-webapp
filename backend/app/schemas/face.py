@@ -27,3 +27,9 @@ class FaceDetectionResult(BaseModel):
     student_id: Optional[str] = None
     name: Optional[str] = None
     match_score: Optional[float] = None
+
+class ClassEmbeddingResponse(BaseModel):
+    student_id: str
+    name: str
+    roll_number: str
+    embedding: List[float]
