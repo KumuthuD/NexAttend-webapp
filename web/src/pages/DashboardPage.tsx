@@ -12,7 +12,7 @@ const MOCK_CLASSROOMS = [
     {
         id: 1,
         title: 'Algorithms',
-        studentCount: 120,
+        studentCount: 0,
         accessCode: 'AML-2025',
         icon: <Smile className="text-orange-400 w-8 h-8" />,
         iconBg: 'bg-orange-100',
@@ -20,7 +20,7 @@ const MOCK_CLASSROOMS = [
     {
         id: 2,
         title: 'Advance Client Side',
-        studentCount: 100,
+        studentCount: 0,
         accessCode: 'DSA-2025',
         icon: <Smile className="text-green-500 w-8 h-8" />, // Placeholder icon
         iconBg: 'bg-green-100',
@@ -28,7 +28,7 @@ const MOCK_CLASSROOMS = [
     {
         id: 3,
         title: 'Database',
-        studentCount: 110,
+        studentCount: 0,
         accessCode: 'IQC-2025',
         icon: <Smile className="text-blue-400 w-8 h-8" />,
         iconBg: 'bg-blue-100',
@@ -101,7 +101,7 @@ const DashboardPage: React.FC = () => {
                                 icon={classroom.icon}
                                 iconBgClass={classroom.iconBg}
                                 actionButtonText={isTeacher ? "Start Attendance" : "View Classroom"}
-                                onAction={() => console.log(`Action for ${classroom.title}`)}
+                                onAction={() => navigate(`/classroom/${classroom.id}`)}
                             />
                         ))}
 
