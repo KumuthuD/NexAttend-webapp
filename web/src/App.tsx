@@ -10,6 +10,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
 import LoginPage from './pages/LoginPage';
+import CalendarPage from './pages/CalendarPage';
 import ClassroomPage from './pages/ClassroomPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -54,6 +55,16 @@ const App: React.FC = () => {
                             element={
                                 <ProtectedRoute>
                                     <DashboardPage />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        {/* Calendar Route */}
+                        <Route
+                            path="/calendar"
+                            element={
+                                <ProtectedRoute>
+                                    <CalendarPage />
                                 </ProtectedRoute>
                             }
                         />
