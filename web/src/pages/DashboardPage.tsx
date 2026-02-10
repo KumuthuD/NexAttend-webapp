@@ -4,11 +4,31 @@ import Sidebar from '../components/Sidebar';
 import ClassroomCard from '../components/dashboard/ClassroomCard';
 import AddClassroomCard from '../components/dashboard/AddClassroomCard';
 import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
-import { Smile, Database, Code } from 'lucide-react'; // Using lucide-react for icons as placeholders
+import { Smile, Database, Code, BookOpen, Cpu, Palette } from 'lucide-react'; // Using lucide-react for icons as placeholders
 import { useNavigate } from 'react-router-dom';
 
-// Mock data for classrooms
-const MOCK_CLASSROOMS = [
+// Interface for classroom data
+interface Classroom {
+    id: number;
+    title: string;
+    studentCount: number;
+    accessCode: string;
+    icon: React.ReactNode;
+    iconBg: string;
+}
+
+// Icon and color options for new classrooms
+const ICON_OPTIONS = [
+    { icon: (color: string) => <Smile className={`${color} w-8 h-8`} />, color: 'text-orange-400', bg: 'bg-orange-100' },
+    { icon: (color: string) => <Database className={`${color} w-8 h-8`} />, color: 'text-green-500', bg: 'bg-green-100' },
+    { icon: (color: string) => <Code className={`${color} w-8 h-8`} />, color: 'text-blue-400', bg: 'bg-blue-100' },
+    { icon: (color: string) => <BookOpen className={`${color} w-8 h-8`} />, color: 'text-purple-400', bg: 'bg-purple-100' },
+    { icon: (color: string) => <Cpu className={`${color} w-8 h-8`} />, color: 'text-pink-400', bg: 'bg-pink-100' },
+    { icon: (color: string) => <Palette className={`${color} w-8 h-8`} />, color: 'text-indigo-400', bg: 'bg-indigo-100' },
+];
+
+// Initial mock data for classrooms
+const INITIAL_CLASSROOMS: Classroom[] = [
     {
         id: 1,
         title: 'Algorithms',
@@ -22,7 +42,7 @@ const MOCK_CLASSROOMS = [
         title: 'Advance Client Side',
         studentCount: 100,
         accessCode: 'DSA-2025',
-        icon: <Smile className="text-green-500 w-8 h-8" />, // Placeholder icon
+        icon: <Smile className="text-green-500 w-8 h-8" />,
         iconBg: 'bg-green-100',
     },
     {
@@ -35,11 +55,20 @@ const MOCK_CLASSROOMS = [
     }
 ];
 
+// Function to generate random access code
+const generateAccessCode = (title: string): string => {
+    const prefix = title.substring(0, 3).toUpperCase();
+    const randomNum = Math.floor(Math.random() * 9000) + 1000;
+    return `${prefix}-${randomNum}`;
+};
+
 const DashboardPage: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [classrooms, setClassrooms] = useState<Classroom[]>(INITIAL_CLASSROOMS);
+    const [nextId, setNextId] = useState(4); // Start from 4 since we have 3 initial classrooms
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -51,9 +80,24 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleCreateClassroom = (classroomName: string) => {
-        // TODO: Implement actual classroom creation logic with API call
-        console.log('Creating classroom:', classroomName);
-        // For now, just close the modal
+        // Generate random icon and color
+        const randomIconOption = ICON_OPTIONS[Math.floor(Math.random() * ICON_OPTIONS.length)];
+
+        // Create new classroom object
+        const newClassroom: Classroom = {
+            id: nextId,
+            title: classroomName,
+            studentCount: 0, // Start with 0 students
+            accessCode: generateAccessCode(classroomName),
+            icon: randomIconOption.icon(randomIconOption.color),
+            iconBg: randomIconOption.bg,
+        };
+
+        // Add to classrooms list
+        setClassrooms([...classrooms, newClassroom]);
+        setNextId(nextId + 1);
+
+        // Close the modal
         setIsCreateModalOpen(false);
     };
 
@@ -92,7 +136,7 @@ const DashboardPage: React.FC = () => {
 
                     {/* Classroom Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 max-w-5xl w-full">
-                        {MOCK_CLASSROOMS.map((classroom) => (
+                        {classrooms.map((classroom) => (
                             <ClassroomCard
                                 key={classroom.id}
                                 title={classroom.title}
@@ -100,8 +144,8 @@ const DashboardPage: React.FC = () => {
                                 accessCode={classroom.accessCode}
                                 icon={classroom.icon}
                                 iconBgClass={classroom.iconBg}
-                                actionButtonText={isTeacher ? "Start Attendance" : "View Classroom"}
-                                onAction={() => console.log(`Action for ${classroom.title}`)}
+                                actionButtonText="View Classroom"
+                                onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
                             />
                         ))}
 
