@@ -12,8 +12,8 @@ class Database:
         try:
             self.client = AsyncIOMotorClient(
                 settings.MONGODB_URL,
-                tls=True,
-                tlsCAFile=certifi.where()
+                tls=settings.MONGODB_TLS,
+                tlsCAFile=certifi.where() if settings.MONGODB_TLS else None
             )
             self.db = self.client[settings.DATABASE_NAME]
             logging.info("Connected to MongoDB")
