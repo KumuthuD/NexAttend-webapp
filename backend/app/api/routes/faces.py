@@ -156,3 +156,112 @@ async def detect_faces_only(
         "count": len(faces_data),
         "faces": faces_data
     }
+
+@router.post("/recognize", status_code=status.HTTP_200_OK)
+async def recognize_faces(
+    file: UploadFile = File(...)
+):
+    """
+    Recognize faces in an image and return identified students.
+    """
+    # Validate
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+
+    # Read Image
+    try:
+        if not file:
+           logger.error("No file received")
+           raise HTTPException(status_code=400, detail="No file received")
+           
+        contents = await file.read()
+        logger.info(f"Received file: {file.filename}, size: {len(contents)} bytes, type: {file.content_type}")
+        
+        nparr = np.frombuffer(contents, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if image is None:
+            logger.error("cv2.imdecode returned None")
+            raise HTTPException(status_code=400, detail="Could not decode image")
+            
+    except Exception as e:
+        logger.error(f"Error reading file: {e}")
+        # DEBUG: Include exception message in the response
+        raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
+
+    # Detect Faces
+    faces = detector.detect_faces(image)
+    
+    results = []
+    
+    # If no faces, return empty list
+    if not faces:
+        return {"count": 0, "results": []}
+
+    # For each detected face
+    for face in faces:
+        try:
+            # Crop face
+            x, y, w, h = face['box']
+            # Add padding
+            h_img, w_img = image.shape[:2]
+            pad = int(w * 0.1)
+            x1, y1 = max(0, x - pad), max(0, y - pad)
+            x2, y2 = min(w_img, x + w + pad), min(h_img, y + h + pad)
+            
+            face_crop = image[y1:y2, x1:x2]
+            
+            # Generate embedding
+            embedding = embedding_service.generate_embedding(face_crop)
+            
+            # Find match in DB
+            # Note: In a real app, we'd load embeddings into memory/FAISS for speed
+            # For now, we'll query MongoDB (slow but functional for prototype)
+            
+            # We need to compute cosine similarity with ALL users
+            # This is inefficient but okay for < 100 users
+            all_users = await db.db["users"].find({"has_registered_face": True}).to_list(1000)
+            
+            best_match = None
+            best_score = -1.0 # Cosine similarity: -1 to 1
+            
+            if embedding and all_users:
+                vec1 = np.array(embedding)
+                norm1 = np.linalg.norm(vec1)
+                
+                for user in all_users:
+                    if "embedding" in user and user["embedding"]:
+                        vec2 = np.array(user["embedding"])
+                        norm2 = np.linalg.norm(vec2)
+                        
+                        if norm1 > 0 and norm2 > 0:
+                            score = np.dot(vec1, vec2) / (norm1 * norm2)
+                            
+                            if score > best_score:
+                                best_score = score
+                                best_match = user
+            
+            # Threshold check (e.g., 0.6 or 0.7)
+            match_data = None
+            if best_score > 0.6 and best_match:
+                match_data = {
+                    "id": str(best_match["_id"]),
+                    "name": best_match.get("name", "Unknown"),
+                    "email": best_match.get("email", "")
+                }
+            
+            results.append({
+                "box": face['box'],
+                "confidence": float(face['confidence']),
+                "match": match_data,
+                "similarity": float(best_score) if best_match else 0.0
+            })
+            
+        except Exception as e:
+            logger.error(f"Error processing face: {e}")
+            continue
+
+    return {
+        "count": len(results),
+        "results": results
+    }

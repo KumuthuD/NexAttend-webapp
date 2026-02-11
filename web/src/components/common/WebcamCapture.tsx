@@ -4,16 +4,20 @@ import { Camera, X, RefreshCw, Check } from 'lucide-react';
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
     onClose: () => void;
+    mode?: 'single' | 'attendance'; // Add mode prop
 }
 
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose }) => {
+const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode = 'single' }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
+    const [capturedFaces, setCapturedFaces] = useState<any[]>([]); // Store recognition results
+    const [isAutoMode, setIsAutoMode] = useState(false); // Toggle for auto-capture
+
 
     const startCamera = useCallback(async () => {
         try {
@@ -37,12 +41,87 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose }) => 
 
     useEffect(() => {
         startCamera();
+        
+        // Cleanup function
         return () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
         };
     }, []);
+
+    // Auto-capture effect for attendance mode
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout;
+
+        if (mode === 'attendance' && isCameraReady && !capturedImage) {
+            setIsAutoMode(true);
+            
+            intervalId = setInterval(() => {
+                captureAndSendFrame();
+            }, 2000); // 2 seconds interval
+        }
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [mode, isCameraReady, capturedImage]); 
+
+    const captureAndSendFrame = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            const context = canvas.getContext('2d');
+
+            if (context) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const file = new File([blob], "frame.jpg", { type: "image/jpeg" });
+                        sendFrameToBackend(file);
+                    }
+                }, 'image/jpeg', 0.8);
+            }
+        }
+    };
+
+    const sendFrameToBackend = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // We'll need to fetch the token from local storage or context if auth is required
+        // For now assuming the endpoint is protected but we might need to inject auth token
+        const token = localStorage.getItem('token'); 
+
+        try {
+            const response = await fetch('http://localhost:8000/api/v1/face/recognize', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Recognition result:", data);
+                if (data.results && data.results.length > 0) {
+                   setCapturedFaces(data.results);
+                   // Optional: Provide visual feedback or auto-mark attendance here
+                } else {
+                    setCapturedFaces([]);
+                }
+            } else {
+                console.error("Frame send failed:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error sending frame:", error);
+        }
+    };
+
 
     const capturePhoto = () => {
         if (videoRef.current && canvasRef.current) {
@@ -145,6 +224,26 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose }) => 
                     )}
 
                     <canvas ref={canvasRef} className="hidden" />
+                    
+                    {/* Overlay for Recognized Faces */}
+                    {isAutoMode && capturedFaces.map((face, index) => (
+                        <div 
+                            key={index}
+                            className="absolute border-2 border-green-500 rounded-lg transition-all duration-300 pointer-events-none"
+                            style={{
+                                left: `${(face.box[0] / (videoRef.current?.videoWidth || 1)) * 100}%`,
+                                top: `${(face.box[1] / (videoRef.current?.videoHeight || 1)) * 100}%`,
+                                width: `${(face.box[2] / (videoRef.current?.videoWidth || 1)) * 100}%`,
+                                height: `${(face.box[3] / (videoRef.current?.videoHeight || 1)) * 100}%`,
+                            }}
+                        >
+                            {face.match && (
+                                <div className="absolute -top-8 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                                    {face.match.name} ({(face.similarity * 100).toFixed(0)}%)
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
 
                 {/* Controls */}

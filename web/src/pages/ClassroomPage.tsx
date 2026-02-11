@@ -229,11 +229,11 @@ const ClassroomPage: React.FC = () => {
                 </div>
             </main>
 
-            {/* Camera Modal */}
             {isCameraOpen && (
                 <CameraCapture
                     onCapture={handleCapture}
                     onClose={() => setIsCameraOpen(false)}
+                    mode={user?.role === 'teacher' ? 'attendance' : 'single'}
                 />
             )}
         </div>
