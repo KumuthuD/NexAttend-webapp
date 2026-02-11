@@ -286,30 +286,6 @@ const CalendarPage: React.FC = () => {
                                 )}
                             </div>
                         </div>
-
-                        {/* Summary Widget */}
-                        <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-violet-500/30">
-                            <h3 className="font-bold text-lg mb-1">Upcoming Stats</h3>
-                            <p className="text-violet-100 text-sm mb-4">Your activity this week</p>
-
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-violet-100">Classes</span>
-                                    <span className="font-bold">12</span>
-                                </div>
-                                <div className="w-full bg-black/20 rounded-full h-1.5">
-                                    <div className="bg-white/80 h-1.5 rounded-full" style={{ width: '75%' }}></div>
-                                </div>
-
-                                <div className="flex justify-between items-center text-sm mt-2">
-                                    <span className="text-violet-100">Attendance</span>
-                                    <span className="font-bold">92%</span>
-                                </div>
-                                <div className="w-full bg-black/20 rounded-full h-1.5">
-                                    <div className="bg-emerald-400 h-1.5 rounded-full" style={{ width: '92%' }}></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </main>

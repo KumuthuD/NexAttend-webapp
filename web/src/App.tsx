@@ -13,6 +13,7 @@ import LoginPage from './pages/LoginPage';
 import CalendarPage from './pages/CalendarPage';
 import ClassroomPage from './pages/ClassroomPage';
 import ValidationDemo from './pages/ValidationDemo';
+import NotificationPage from './pages/NotificationPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Layout for marketing/public pages
@@ -71,12 +72,23 @@ const App: React.FC = () => {
                             }
                         />
 
+
                         {/* Classroom Route */}
                         <Route
                             path="/dashboard/classroom/:id"
                             element={
                                 <ProtectedRoute>
                                     <ClassroomPage />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        {/* Notification Route */}
+                        <Route
+                            path="/notifications"
+                            element={
+                                <ProtectedRoute>
+                                    <NotificationPage />
                                 </ProtectedRoute>
                             }
                         />
