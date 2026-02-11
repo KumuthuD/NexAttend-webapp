@@ -96,7 +96,7 @@ const ClassroomPage: React.FC = () => {
 
                 {/* Classroom Header Card */}
                 <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 mb-8 shadow-sm transition-colors duration-300">
-                    <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-80 rounded-full -mt-6 mx-[-24px] mb-5" style={{ width: 'calc(100% + 48px)', marginTop: '-24px', borderRadius: '16px 16px 0 0' }} />
+                    <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-80 rounded-full -mt-6 mx-[-24px] mb-5" style={{ width: 'calc(100% + 48px)', marginTop: '-32px', borderRadius: '16px 16px 16px 16px' }} />
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">{classroomName}</h1>

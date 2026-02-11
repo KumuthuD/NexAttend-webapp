@@ -120,7 +120,7 @@ const DashboardPage: React.FC = () => {
             {/* Main Content */}
             <main className="flex-1 ml-64 p-10 relative">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex justify-between items-center mb-5">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
                             {greeting}{user?.name ? `, ${user.name.split(' ')[0]+'!'}` : ''}👋
@@ -139,7 +139,7 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 {/* Divider */}
-                <div className="w-full h-px bg-gray-200 dark:bg-white/[0.06] mb-8 transition-colors duration-300" />
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Section header */}
                 <div className="flex items-center justify-between mb-6">

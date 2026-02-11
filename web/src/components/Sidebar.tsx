@@ -50,7 +50,7 @@ const Sidebar = () => {
         </div>
 
         {/* Divider */}
-        <div className="w-full h-px bg-gray-100 dark:bg-white/[0.06] mb-4 transition-colors duration-300" />
+        <div className="w-full h-1 bg-violet-500 rounded-full dark:bg-white/[0.1] mb-4 transition-colors duration-300" />
 
         {/* Section label */}
         <p className="text-[11px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider px-3 mb-3 transition-colors duration-300">Menu</p>
