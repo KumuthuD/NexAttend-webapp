@@ -10,6 +10,7 @@ class Student(BaseModel):
     email: EmailStr
     course: str
     year: int
+    classroom_id: Optional[str] = None  # Reference to the Classroom ID for faster indexing
     
     # AI Face Recognition Data
     face_embedding_id: Optional[str] = None  # Reference to FaceEmbedding
