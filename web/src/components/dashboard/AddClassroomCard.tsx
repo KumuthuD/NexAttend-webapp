@@ -18,10 +18,10 @@ const AddClassroomCard: React.FC<AddClassroomCardProps> = ({ type, onClick }) =>
                 </div>
                 <div className="text-center">
                     <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-violet-600 dark:group-hover:text-white transition-colors duration-300">
-                        {type === 'create' ? 'Create new Classroom' : 'Join new Classroom'}
+                        {type === 'create' ? 'Create new Classroom' : 'Join New Class'}
                     </h3>
                     <p className="text-xs text-gray-400 dark:text-gray-600 mt-1 transition-colors duration-300">
-                        {type === 'create' ? 'Set up a new class space' : 'Enter an access code'}
+                        {type === 'create' ? 'Set up a new class space' : 'Enter access code'}
                     </p>
                 </div>
             </div>

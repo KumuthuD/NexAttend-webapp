@@ -80,20 +80,29 @@ const DashboardPage: React.FC = () => {
         navigate('/get-started');
     };
 
-    const handleCreateClassroom = (classroomName: string) => {
-        const randomIconOption = ICON_OPTIONS[Math.floor(Math.random() * ICON_OPTIONS.length)];
+    const handleCreateClassroom = (inputValue: string) => {
+        if (isTeacher) {
+            // Create Logic
+            const randomIconOption = ICON_OPTIONS[Math.floor(Math.random() * ICON_OPTIONS.length)];
 
-        const newClassroom: Classroom = {
-            id: nextId,
-            title: classroomName,
-            studentCount: 0,
-            accessCode: generateAccessCode(classroomName),
-            icon: randomIconOption.icon(randomIconOption.color),
-            iconBg: randomIconOption.bg,
-        };
+            const newClassroom: Classroom = {
+                id: nextId,
+                title: inputValue,
+                studentCount: 0,
+                accessCode: generateAccessCode(inputValue),
+                icon: randomIconOption.icon(randomIconOption.color),
+                iconBg: randomIconOption.bg,
+            };
 
-        setClassrooms([...classrooms, newClassroom]);
-        setNextId(nextId + 1);
+            setClassrooms([...classrooms, newClassroom]);
+            setNextId(nextId + 1);
+        } else {
+            // Join Logic (Mock)
+            console.log("Joining classroom with code:", inputValue);
+            // In a real app, this would verify the code and add the student to the class
+            // For now, we'll just simulate adding a class or show an alert
+            alert(`Joined classroom with code: ${inputValue}`);
+        }
         setIsCreateModalOpen(false);
     };
 
@@ -114,13 +123,10 @@ const DashboardPage: React.FC = () => {
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
-                            {greeting}{user?.name ? `, ${user.name}` : ''} 👋
+                            {greeting}{user?.name ? `, ${user.name.split(' ')[0]+'!'}` : ''}👋
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-                            Manage your classrooms and track attendance
-                        </p>
                     </div>
-                    
+
                     <div className="flex items-center gap-4">
                         <ThemeToggle />
                         <button
@@ -169,6 +175,7 @@ const DashboardPage: React.FC = () => {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSubmit={handleCreateClassroom}
+                mode={isTeacher ? 'create' : 'join'}
             />
         </div>
     );

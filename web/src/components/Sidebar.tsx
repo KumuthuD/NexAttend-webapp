@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import {
   LogoIcon,
   HomeIcon,
@@ -13,9 +14,12 @@ import {
 
 import profileImg from '../assets/team/kumuthu.jpg';
 
+
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <HomeIcon className="w-5 h-5" />, path: '/dashboard' },
@@ -91,12 +95,8 @@ const Sidebar = () => {
             <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-[#0f1117] rounded-full" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-800 dark:text-white truncate transition-colors duration-300">Kumuthu</p>
-            <p className="text-[11px] text-gray-500 dark:text-gray-500">Administrator</p>
+            <p className="text-sm font-semibold text-gray-800 dark:text-white truncate transition-colors duration-300">{user?.name}</p>
           </div>
-          <svg className="w-4 h-4 text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-          </svg>
         </div>
 
       </div>

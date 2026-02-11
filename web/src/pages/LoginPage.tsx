@@ -11,12 +11,17 @@ const LoginPage: React.FC = () => {
     const from = (location.state as any)?.from?.pathname || '/dashboard';
 
     const handleLogin = async (role: 'teacher' | 'student') => {
-        await login({
-            name: role === 'teacher' ? 'Jane Doe (Teacher)' : 'John Doe (Student)',
-            email: `${role}@example.com`,
-            role: role,
-        });
-        navigate(from, { replace: true });
+        // In a real app, you would have a form for email/password
+        // For this dev/demo page, we're just calling login with hardcoded credentials
+        // or just the email if the backend mock supports it.
+        // Based on AuthContext, it expects email AND password.
+        try {
+            await login(`${role}@example.com`, 'password');
+            navigate(from, { replace: true });
+        } catch (error) {
+            console.error("Login failed:", error);
+            alert("Login failed. Check console/backend.");
+        }
     };
 
     return (
