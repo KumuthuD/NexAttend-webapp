@@ -9,7 +9,7 @@ import thiviruImg from "../assets/team/thiviru.jpeg";
 import yasithaImg from "../assets/team/yasitha.jpeg";
 import virajImg from "../assets/team/viraj.jpg";
 import sudamImg from "../assets/team/sudam.jpg";
-import demoVideo from "../assets/videos/nexattend-demo.mp4";
+
 import {
   CameraIcon,
   BrainIcon,
@@ -375,14 +375,13 @@ const LandingPage = () => {
 
               <div className="relative z-10">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                  <video
-                    className="w-full rounded-2xl"
-                    controls
-                    playsInline
-                  >
-                    <source src={demoVideo} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
+                  <iframe
+                    className="w-full aspect-video rounded-2xl"
+                    src="https://www.youtube.com/embed/Sw7HK_C15rA"
+                    title="NexAttend Demo"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  ></iframe>
                 </div>
               </div>
             </div>
