@@ -64,7 +64,6 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
                         className="w-full py-2.5 px-4 bg-violet-50 hover:bg-violet-600 dark:bg-violet-500/10 dark:hover:bg-violet-500 text-violet-600 hover:text-white dark:text-violet-400 dark:hover:text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all duration-300 border border-violet-100 hover:border-violet-600 dark:border-violet-500/15 dark:hover:border-violet-500 text-sm group/btn"
                     >
                         <span>{actionButtonText}</span>
-                        <ArrowRight size={16} className="group-hover/btn:translate-x-0.5 transition-transform duration-200" />
                     </button>
                 </div>
             </div>

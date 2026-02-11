@@ -9,7 +9,7 @@ import CameraCapture from '../components/common/WebcamCapture';
 const ClassroomPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [announcementText, setAnnouncementText] = useState('');
     const [chatText, setChatText] = useState('');
@@ -115,13 +115,21 @@ const ClassroomPage: React.FC = () => {
                                 </span>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setIsCameraOpen(true)}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
-                        >
-                            <Camera size={16} />
-                            Mark Attendance
-                        </button>
+                        {user?.role === 'teacher' && (
+                            <button
+                                onClick={() => setIsCameraOpen(true)}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
+                            >
+                                Mark Attendance
+                            </button>
+                        )}
+                        {user?.role === 'student' && (
+                            <button
+                                className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
+                            >
+                                View Attendance
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -144,21 +152,23 @@ const ClassroomPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Input Area */}
-                            <div className="p-4 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/50 dark:bg-black/20 transition-colors duration-300">
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={announcementText}
-                                        onChange={(e) => setAnnouncementText(e.target.value)}
-                                        placeholder="Post an announcement..."
-                                        className="w-full pl-4 pr-11 py-3 bg-white dark:bg-white/[0.05] rounded-xl text-gray-800 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 border border-gray-200 dark:border-white/[0.1] focus:outline-none focus:border-violet-400 dark:focus:border-violet-500/40 focus:ring-2 focus:ring-violet-50 dark:focus:ring-violet-500/10 transition-all duration-200"
-                                    />
-                                    <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-violet-50 dark:hover:bg-white/10 transition-colors text-gray-400 dark:text-gray-500 hover:text-violet-600 dark:hover:text-violet-400">
-                                        <Send size={15} />
-                                    </button>
+                            {/* Input Area - Only for teachers */}
+                            {user?.role === 'teacher' && (
+                                <div className="p-4 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/50 dark:bg-black/20 transition-colors duration-300">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={announcementText}
+                                            onChange={(e) => setAnnouncementText(e.target.value)}
+                                            placeholder="Post an announcement..."
+                                            className="w-full pl-4 pr-11 py-3 bg-white dark:bg-white/[0.05] rounded-xl text-gray-800 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 border border-gray-200 dark:border-white/[0.1] focus:outline-none focus:border-violet-400 dark:focus:border-violet-500/40 focus:ring-2 focus:ring-violet-50 dark:focus:ring-violet-500/10 transition-all duration-200"
+                                        />
+                                        <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-violet-50 dark:hover:bg-white/10 transition-colors text-gray-400 dark:text-gray-500 hover:text-violet-600 dark:hover:text-violet-400">
+                                            <Send size={15} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </section>
 
