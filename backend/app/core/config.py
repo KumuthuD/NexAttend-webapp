@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # Database
     MONGODB_URL: str
     DATABASE_NAME: str = "nexattend_db"
-    MONGODB_TLS: bool = False
+    MONGODB_TLS: bool = True
 
     # Security
     SECRET_KEY: str
