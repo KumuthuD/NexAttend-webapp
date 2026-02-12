@@ -42,10 +42,8 @@ const Sidebar = () => {
       <div className="flex-1 flex flex-col overflow-y-auto px-4">
 
         {/* Logo Section */}
-        <div className="flex items-center gap-3 py-7 px-2">
-          <div className="w-10 h-10 bg-violet-600 dark:bg-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200 dark:shadow-violet-500/20">
-            <LogoIcon className="w-6 h-6 text-white" />
-          </div>
+        <div className="flex items-center gap-2 py-7 px-2">
+          <LogoIcon className="w-10 h-10" />
           <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors duration-300">NexAttend</h1>
         </div>
 

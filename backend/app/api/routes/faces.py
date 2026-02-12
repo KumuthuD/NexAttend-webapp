@@ -1,12 +1,14 @@
 """
 Face Management Routes
-Handles face registration and related operations.
+Handles face registration, detection, and recognition.
 
 Kumuthu Dahanayake
-Week 02 Day 8
+Week 02 Day 8 — Registration & Detection
+Week 03 Day 13 — Single Recognition Pipeline
+Week 03 Day 14 — Multi-Face Recognition with Batch Attendance
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, status
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.services.face_detector import FaceDetector
@@ -15,14 +17,21 @@ from app.database.mongodb import db
 import numpy as np
 import cv2
 import logging
+import time
+from datetime import datetime
 from bson import ObjectId
+from typing import Optional
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Initialize detector for this endpoint
-# We use a slightly stricter threshold for registration to ensure high quality
+# Registration detector — strict threshold for high quality face registration
 detector = FaceDetector(min_face_size=50, min_confidence=0.95)
+
+# Classroom detector — relaxed threshold for multi-face recognition at distance
+# Lower confidence (0.80) catches faces at angles and further away
+# Smaller min_face_size (30) detects students sitting at the back
+classroom_detector = FaceDetector(min_face_size=30, min_confidence=0.80)
 
 @router.post("/register", status_code=status.HTTP_200_OK)
 async def register_face(
@@ -285,5 +294,258 @@ async def recognize_faces(
     return {
         "count": len(results),
         "matched_count": matched_count,
+        "results": results
+    }
+
+
+@router.post("/recognize-multi", status_code=status.HTTP_200_OK)
+async def recognize_multi_faces(
+    file: UploadFile = File(...),
+    classroom_id: Optional[str] = Form(None),
+    session_id: Optional[str] = Form(None)
+):
+    """
+    Multi-face recognition optimized for classroom attendance.
+
+    Uses a relaxed detector (80% confidence, 30px min) to catch faces
+    at distance and angles. Applies NMS to remove duplicate detections.
+    If session_id is provided, auto-marks attendance for all recognized students.
+
+    Kumuthu Dahanayake - Week 03 Day 14
+    """
+    start_time = time.time()
+
+    # Validate file type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+
+    # Read and decode image
+    try:
+        contents = await file.read()
+        if len(contents) == 0:
+            raise HTTPException(status_code=400, detail="Empty file received")
+
+        logger.info(f"[Multi-Face] Processing: {file.filename}, size: {len(contents)} bytes")
+
+        nparr = np.frombuffer(contents, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if image is None:
+            raise HTTPException(status_code=400, detail="Could not decode image")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reading file: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
+
+    # Detect faces using classroom-optimized detector (lower confidence for distance)
+    raw_faces = classroom_detector.detect_faces(image)
+
+    if not raw_faces:
+        processing_time = round((time.time() - start_time) * 1000, 2)
+        return {
+            "count": 0,
+            "matched_count": 0,
+            "attendance_marked": False,
+            "processing_time_ms": processing_time,
+            "results": [],
+            "message": "No faces detected"
+        }
+
+    # Apply Non-Maximum Suppression to remove overlapping detections
+    faces = classroom_detector.filter_overlapping_faces(raw_faces, overlap_threshold=0.5)
+    logger.info(f"[Multi-Face] Detected {len(raw_faces)} raw → {len(faces)} after NMS")
+
+    # Load registered users ONCE (outside the loop — performance optimization)
+    query = {"has_registered_face": True}
+    if classroom_id:
+        query["classroom_id"] = classroom_id
+
+    all_users = await db.db["users"].find(query).to_list(1000)
+
+    if not all_users:
+        processing_time = round((time.time() - start_time) * 1000, 2)
+        return {
+            "count": len(faces),
+            "matched_count": 0,
+            "attendance_marked": False,
+            "processing_time_ms": processing_time,
+            "results": [],
+            "message": "No registered users to compare against"
+        }
+
+    # Crop all faces using the detector's built-in method (15% padding)
+    face_crops = classroom_detector.crop_faces(image, faces, padding=0.15)
+
+    # Process each detected face
+    results = []
+    matched_student_ids = []
+
+    for i, (face, face_crop) in enumerate(zip(faces, face_crops)):
+        try:
+            # Validate face quality (blur, brightness, resolution)
+            is_valid, quality_msg = classroom_detector.validate_face_quality(face_crop)
+
+            if not is_valid:
+                logger.debug(f"[Multi-Face] Face #{i+1} skipped: {quality_msg}")
+                results.append({
+                    "box": [int(c) for c in face['box']],
+                    "detection_confidence": float(face['confidence']),
+                    "matched": False,
+                    "student": None,
+                    "similarity": 0.0,
+                    "status": "low_quality",
+                    "quality_reason": quality_msg,
+                    "attendance": "skipped"
+                })
+                continue
+
+            # Generate embedding for the detected face
+            embedding = embedding_service.generate_embedding(face_crop)
+
+            if not embedding:
+                logger.warning(f"[Multi-Face] Face #{i+1}: embedding generation failed")
+                results.append({
+                    "box": [int(c) for c in face['box']],
+                    "detection_confidence": float(face['confidence']),
+                    "matched": False,
+                    "student": None,
+                    "similarity": 0.0,
+                    "status": "embedding_failed",
+                    "attendance": "skipped"
+                })
+                continue
+
+            # Use embedding_service to find best match
+            best_user, distance = embedding_service.identify_user(embedding, all_users)
+
+            # Convert distance to similarity (lower distance = higher similarity)
+            similarity = round(max(0.0, 1.0 - distance), 4)
+
+            if best_user:
+                student_id = str(best_user["_id"])
+
+                # Prevent same student from being matched twice in one frame
+                if student_id in matched_student_ids:
+                    logger.debug(f"[Multi-Face] Face #{i+1}: duplicate match for {student_id}, skipping")
+                    results.append({
+                        "box": [int(c) for c in face['box']],
+                        "detection_confidence": float(face['confidence']),
+                        "matched": False,
+                        "student": None,
+                        "similarity": similarity,
+                        "status": "duplicate_match",
+                        "attendance": "skipped"
+                    })
+                    continue
+
+                matched_student_ids.append(student_id)
+                results.append({
+                    "box": [int(c) for c in face['box']],
+                    "detection_confidence": float(face['confidence']),
+                    "matched": True,
+                    "student": {
+                        "id": student_id,
+                        "full_name": best_user.get("full_name", "Unknown"),
+                        "email": best_user.get("email", "")
+                    },
+                    "similarity": similarity,
+                    "status": "identified",
+                    "attendance": "pending"
+                })
+            else:
+                results.append({
+                    "box": [int(c) for c in face['box']],
+                    "detection_confidence": float(face['confidence']),
+                    "matched": False,
+                    "student": None,
+                    "similarity": similarity,
+                    "status": "unknown",
+                    "attendance": "skipped"
+                })
+
+        except Exception as e:
+            logger.error(f"[Multi-Face] Error processing face #{i+1}: {e}")
+            continue
+
+    # Batch attendance marking (if session_id is provided)
+    attendance_marked = False
+    if session_id and matched_student_ids:
+        try:
+            # Verify session exists and is active
+            session = await db.db["attendance_sessions"].find_one({
+                "_id": session_id,
+                "status": "active"
+            })
+
+            if session:
+                # Get already-present students to avoid duplicates
+                already_present = set(session.get("present_student_ids", []))
+
+                # Build batch records for new students only
+                new_records = []
+                new_student_ids = []
+
+                for result in results:
+                    if result.get("matched") and result["attendance"] == "pending":
+                        sid = result["student"]["id"]
+
+                        if sid in already_present:
+                            result["attendance"] = "already_marked"
+                            logger.debug(f"[Multi-Face] {sid} already marked present")
+                        else:
+                            new_records.append({
+                                "student_id": sid,
+                                "status": "present",
+                                "confidence": result["similarity"],
+                                "method": "face_recognition",
+                                "timestamp": datetime.utcnow()
+                            })
+                            new_student_ids.append(sid)
+                            result["attendance"] = "marked"
+
+                # Single atomic DB update for all new students
+                if new_records:
+                    await db.db["attendance_sessions"].update_one(
+                        {"_id": session_id},
+                        {
+                            "$push": {"records": {"$each": new_records}},
+                            "$addToSet": {"present_student_ids": {"$each": new_student_ids}}
+                        }
+                    )
+                    attendance_marked = True
+                    logger.info(f"[Multi-Face] Batch marked {len(new_records)} students present")
+            else:
+                logger.warning(f"[Multi-Face] Session {session_id} not found or inactive")
+                # Mark all as skipped
+                for result in results:
+                    if result.get("attendance") == "pending":
+                        result["attendance"] = "session_not_found"
+
+        except Exception as e:
+            logger.error(f"[Multi-Face] Batch attendance error: {e}")
+            for result in results:
+                if result.get("attendance") == "pending":
+                    result["attendance"] = "error"
+    else:
+        # No session_id provided — mark pending as skipped
+        for result in results:
+            if result.get("attendance") == "pending":
+                result["attendance"] = "no_session"
+
+    # Calculate summary
+    processing_time = round((time.time() - start_time) * 1000, 2)
+    matched_count = sum(1 for r in results if r["matched"])
+
+    logger.info(
+        f"[Multi-Face] Done: {len(results)} faces, {matched_count} matched, "
+        f"{processing_time}ms, attendance_marked={attendance_marked}"
+    )
+
+    return {
+        "count": len(results),
+        "matched_count": matched_count,
+        "attendance_marked": attendance_marked,
+        "processing_time_ms": processing_time,
         "results": results
     }
