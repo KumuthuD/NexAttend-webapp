@@ -97,25 +97,6 @@ async def login_user(user_in: UserLogin, db = Depends(get_database)):
         )
     )
 
-@router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db = Depends(get_database)) -> Any:
-    """
-    OAuth2 compatible token login, get an access token for future requests.
-    """
-    user = await db["users"].find_one({"email": form_data.username})
-    
-    if not user or not verify_password(form_data.password, user["password_hash"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-        )
-    
-    access_token = create_access_token(subject=str(user["_id"]))
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-    }
-
 @router.get("/me", response_model=UserResponse)
 async def read_user_me(
     current_user: User = Depends(deps.get_current_user),
