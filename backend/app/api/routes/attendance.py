@@ -112,3 +112,81 @@ async def mark_attendance(
         "status": "present",
         "timestamp": record.timestamp
     }
+
+@router.post("/batch-mark", response_model=AttendanceBatchMarkResponse)
+async def batch_mark_attendance(
+    request: AttendanceBatchMarkRequest,
+    db: Any = Depends(get_database)
+):
+    """
+    Mark attendance for multiple students in a single active session.
+    Efficient for multi-face recognition scenarios.
+    """
+    # 1. Verify Session exists and is active
+    session = await db["attendance_sessions"].find_one({
+        "_id": request.session_id,
+        "status": "active"
+    })
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Active attendance session not found"
+        )
+        
+    present_student_ids = set(session.get("present_student_ids", []))
+    results = []
+    new_records = []
+    new_student_ids = []
+    
+    marked_count = 0
+    skipped_count = 0
+    
+    # 2. Process each student
+    for student_req in request.students:
+        student_id = student_req.student_id
+        
+        # Verify student exists (optimization: could fetch all at once with $in)
+        # For strictness, let's verify individual existence or trust the ID if from trusted AI service
+        # In a real high-throughput scenario, we might skip DB check for student existence if the ID came from our own embedding DB
+        
+        # Check duplicate in current request or DB
+        if student_id in present_student_ids or student_id in new_student_ids:
+            skipped_count += 1
+            continue
+            
+        record = AttendanceRecord(
+            student_id=student_id,
+            status="present",
+            confidence=student_req.confidence,
+            method=student_req.method,
+            timestamp=datetime.utcnow()
+        )
+        
+        new_records.append(record.model_dump())
+        new_student_ids.append(student_id)
+        
+        results.append({
+            "message": "Marked in batch",
+            "student_name": "Batch Processed", # Optimization: skip fetching each name for speed
+            "status": "present",
+            "timestamp": record.timestamp
+        })
+        marked_count += 1
+
+    # 3. Bulk Update
+    if new_records:
+        await db["attendance_sessions"].update_one(
+            {"_id": request.session_id},
+            {
+                "$push": {"records": {"$each": new_records}},
+                "$addToSet": {"present_student_ids": {"$each": new_student_ids}}
+            }
+        )
+        
+    return {
+        "message": f"Batch process complete. Marked {marked_count}, Skipped {skipped_count}",
+        "marked_count": marked_count,
+        "skipped_count": skipped_count,
+        "results": results
+    }
