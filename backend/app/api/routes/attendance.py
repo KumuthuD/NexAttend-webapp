@@ -1,13 +1,14 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends
 from app.database.mongodb import get_database
 from app.models.attendance import AttendanceSession, AttendanceRecord
-from app.schemas.attendance import (
     AttendanceStartRequest, 
     AttendanceSessionResponse,
     AttendanceMarkRequest,
-    AttendanceMarkResponse
+    AttendanceMarkResponse,
+    AttendanceBatchMarkRequest,
+    AttendanceBatchMarkResponse
 )
-from typing import Any
+from typing import Any, List
 from datetime import datetime
 
 router = APIRouter()

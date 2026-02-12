@@ -47,3 +47,19 @@ class AttendanceSessionResponse(AttendanceSessionBase):
 
     class Config:
         from_attributes = True
+
+class AttendanceBatchMarkRequest(BaseModel):
+    """
+    Request model for marking attendance for multiple students at once.
+    """
+    session_id: str
+    students: List[AttendanceMarkRequest] # Reusing single mark request structure minus session_id which is common
+
+class AttendanceBatchMarkResponse(BaseModel):
+    """
+    Response model for batch attendance marking.
+    """
+    message: str
+    marked_count: int
+    skipped_count: int
+    results: List[AttendanceMarkResponse]
