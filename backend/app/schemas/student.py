@@ -9,6 +9,7 @@ class StudentBase(BaseModel):
     email: EmailStr
     course: str
     year: int
+    classroom_id: Optional[str] = None
 
 # Properties to receive on registration
 class StudentCreate(StudentBase):
@@ -20,6 +21,7 @@ class StudentUpdate(BaseModel):
     email: Optional[EmailStr] = None
     course: Optional[str] = None
     year: Optional[int] = None
+    classroom_id: Optional[str] = None
 
 # Properties to return via API
 class StudentResponse(StudentBase):

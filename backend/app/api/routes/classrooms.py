@@ -15,21 +15,17 @@ async def get_class_embeddings(class_id: str, db = Depends(get_database)):
     Used by the recognition system to load authorized faces.
     """
     
-    # 1. Fetch classroom
+    # 1. Fetch classroom to verify existence
     classroom = await db["classrooms"].find_one({"_id": class_id})
     if not classroom:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
             detail=f"Classroom with ID {class_id} not found"
         )
-    
-    student_ids = classroom.get("student_ids", [])
-    if not student_ids:
-        return []
 
-    # 2. Join students with embeddings
+    # 2. Optimized Join: Match students directly by classroom_id
     pipeline = [
-        {"$match": {"_id": {"$in": student_ids}}},
+        {"$match": {"classroom_id": class_id}},
         {
             "$lookup": {
                 "from": "face_embeddings",
