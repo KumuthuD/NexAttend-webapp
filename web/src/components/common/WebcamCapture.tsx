@@ -5,10 +5,11 @@ interface CameraCaptureProps {
     onCapture: (file: File) => void;
     onClose: () => void;
     mode?: 'single' | 'attendance'; // Add mode prop
+    onFaceRecognized?: (data: any) => void;
 }
 
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode = 'single' }) => {
+const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode = 'single', onFaceRecognized }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -110,6 +111,15 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                 console.log("Recognition result:", data);
                 if (data.results && data.results.length > 0) {
                     setCapturedFaces(data.results);
+                    setCapturedFaces(data.results);
+                    // Notify parent about recognized faces
+                    if (onFaceRecognized) {
+                        data.results.forEach((face: any) => {
+                            if (face.matched && face.student) {
+                                onFaceRecognized(face);
+                            }
+                        });
+                    }
                     // Optional: Provide visual feedback or auto-mark attendance here
                 } else {
                     setCapturedFaces([]);
