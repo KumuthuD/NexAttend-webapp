@@ -143,13 +143,21 @@ async def batch_mark_attendance(
     skipped_count = 0
     
     # 2. Process each student
+    # distinct validation/error handling for partial success
+    failed_ids = []
+    
     for student_req in request.students:
         student_id = student_req.student_id
         
-        # Verify student exists (optimization: could fetch all at once with $in)
-        # For strictness, let's verify individual existence or trust the ID if from trusted AI service
-        # In a real high-throughput scenario, we might skip DB check for student existence if the ID came from our own embedding DB
-        
+        # Verify student exists (in batch scenarios, we might want to verify)
+        # For now, let's do a quick check if strict mode. 
+        # But for speed, we'll assume the recognition service sends valid IDs.
+        # If we really want to verify, we should do:
+        # student = await db["students"].find_one({"_id": student_id})
+        # if not student:
+        #     failed_ids.append(student_id)
+        #     continue
+
         # Check duplicate in current request or DB
         if student_id in present_student_ids or student_id in new_student_ids:
             skipped_count += 1
@@ -168,7 +176,7 @@ async def batch_mark_attendance(
         
         results.append({
             "message": "Marked in batch",
-            "student_name": "Batch Processed", # Optimization: skip fetching each name for speed
+            "student_name": "Batch Processed", 
             "status": "present",
             "timestamp": record.timestamp
         })
@@ -176,13 +184,19 @@ async def batch_mark_attendance(
 
     # 3. Bulk Update
     if new_records:
-        await db["attendance_sessions"].update_one(
-            {"_id": request.session_id},
-            {
-                "$push": {"records": {"$each": new_records}},
-                "$addToSet": {"present_student_ids": {"$each": new_student_ids}}
-            }
-        )
+        try:
+            await db["attendance_sessions"].update_one(
+                {"_id": request.session_id},
+                {
+                    "$push": {"records": {"$each": new_records}},
+                    "$addToSet": {"present_student_ids": {"$each": new_student_ids}}
+                }
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error updating batch records: {str(e)}"
+            )
         
     return {
         "message": f"Batch process complete. Marked {marked_count}, Skipped {skipped_count}",
