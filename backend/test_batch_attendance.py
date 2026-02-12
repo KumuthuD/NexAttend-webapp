@@ -20,10 +20,25 @@ sys.modules["app.services.face_detector"] = MagicMock()
 sys.modules["app.services.embedding_service"] = MagicMock()
 sys.modules["deepface"] = MagicMock()
 
-from app.main import app
+from fastapi import FastAPI
+from app.api.routes.attendance import router as attendance_router
 from app.database.mongodb import get_database
 
+# Create isolated app for testing
+app = FastAPI()
+app.include_router(attendance_router, prefix="/api/v1/attendance")
+
+# Mock DB dependency
+async def override_get_database():
+    return MagicMock()
+
+app.dependency_overrides[get_database] = override_get_database
+
 client = TestClient(app)
+import app.schemas.attendance
+print(f"DEBUG: Loaded schemas from {app.schemas.attendance.__file__}")
+print(f"DEBUG: Attributes in schemas: {dir(app.schemas.attendance)}")
+
 
 class TestBatchAttendance(unittest.IsolatedAsyncioTestCase):
     def setUp(self):

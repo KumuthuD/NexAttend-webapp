@@ -6,9 +6,11 @@ from app.schemas.attendance import (
     AttendanceSessionResponse,
     AttendanceMarkRequest,
     AttendanceMarkResponse,
+)
+from app.schemas.batch_attendance import (
     AttendanceBatchMarkRequest,
     AttendanceBatchMarkResponse,
-    AttendanceBatchRecord,
+    AttendanceBatchRecord
 )
 from typing import Any, List
 from datetime import datetime
