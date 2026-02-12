@@ -19,9 +19,49 @@ import {
 import Input from '../components/common/Input';
 
 const SettingsPage: React.FC = () => {
-    const { logout, user } = useAuth();
+    const { logout, user, updateUser } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('profile');
+    
+    // Profile Update State
+    const [newName, setNewName] = useState(user?.name || '');
+    const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || '');
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    // Sync local state with user when user changes (e.g. after update or initial load)
+    React.useEffect(() => {
+        if (user) {
+            setNewName(user.name);
+            setSelectedAvatar(user.avatar || '');
+        }
+    }, [user]);
+
+    // Professional Avatars (DiceBear - Personas, Initials, Lorelei)
+    const avatarOptions = [
+        `https://api.dicebear.com/7.x/initials/svg?seed=${newName || 'User'}&backgroundColor=e5e7eb&textColor=374151`,
+        "https://api.dicebear.com/7.x/personas/svg?seed=Felix",
+        "https://api.dicebear.com/7.x/personas/svg?seed=Aneka",
+        "https://api.dicebear.com/7.x/personas/svg?seed=Marco",
+        "https://api.dicebear.com/7.x/personas/svg?seed=Paula",
+        "https://api.dicebear.com/7.x/personas/svg?seed=Jocelyn",
+        "https://api.dicebear.com/7.x/lorelei/svg?seed=Felix",
+        "https://api.dicebear.com/7.x/lorelei/svg?seed=Aneka",
+    ];
+
+    const handleUpdateProfile = async () => {
+        setIsUpdating(true);
+        try {
+            await updateUser({
+                name: newName,
+                avatar: selectedAvatar
+            });
+            // Show success message or toast here if available
+        } catch (error) {
+            console.error("Failed to update profile", error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
     // Mock states for form interactions
     const [notifications, setNotifications] = useState({
@@ -127,35 +167,83 @@ const SettingsPage: React.FC = () => {
 
                             {/* Profile Section */}
                             {activeTab === 'profile' && (
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-4 pb-6 border-b border-gray-100 dark:border-white/[0.06]">
-                                        <div className="w-20 h-20 rounded-2xl bg-violet-100 dark:bg-violet-900/20 flex items-center justify-center text-violet-600 dark:text-violet-400 text-2xl font-bold">
-                                            {user?.name?.charAt(0) || 'U'}
+                                <div className="space-y-8">
+                                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                                        {/* Avatar Selection */}
+                                        <div className="w-full md:w-auto flex flex-col items-center gap-4">
+                                            <div className="relative group">
+                                                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-[#1a1d2e] shadow-xl">
+                                                    <img 
+                                                        src={selectedAvatar || user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}&backgroundColor=e5e7eb&textColor=374151`}
+                                                        alt="Profile" 
+                                                        className="w-full h-full object-cover bg-violet-100 dark:bg-violet-900/20"
+                                                    />
+                                                </div>
+                                                <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                                    <span className="text-white text-xs font-medium">Change</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="text-center">
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{user?.name}</h3>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{user?.role} Account</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{user?.name}</h3>
-                                            <p className="text-gray-500 dark:text-gray-400">{user?.role === 'teacher' ? 'Teacher' : 'Student'} Account</p>
-                                        </div>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-                                            <input
-                                                type="text"
-                                                value={user?.name || ''}
-                                                readOnly
-                                                className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-800 dark:text-gray-200"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
-                                            <input
-                                                type="email"
-                                                value={user?.email || ''}
-                                                readOnly
-                                                className="w-full px-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-800 dark:text-gray-200"
-                                            />
+                                        {/* Edit Form */}
+                                        <div className="flex-1 w-full space-y-6">
+                                            <div>
+                                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Select Avatar</h4>
+                                                <div className="flex gap-3 flex-wrap">
+                                                    {avatarOptions.map((avatar, index) => (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => setSelectedAvatar(avatar)}
+                                                            className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all ${selectedAvatar === avatar ? 'border-violet-600 scale-110' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
+                                                        >
+                                                            <img src={avatar} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover bg-gray-100" />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                                                    <Input
+                                                        type="text"
+                                                        value={newName}
+                                                        onChange={(e) => setNewName(e.target.value)}
+                                                        className="bg-gray-50 dark:bg-white/5"
+                                                        placeholder="Enter your full name"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                                                    <input
+                                                        type="email"
+                                                        value={user?.email || ''}
+                                                        readOnly
+                                                        className="w-full px-4 py-2 bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                                    />
+                                                    <p className="text-xs text-gray-500 mt-1">Email address cannot be changed</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-4 flex justify-end">
+                                                <button
+                                                    onClick={handleUpdateProfile}
+                                                    disabled={isUpdating || (newName === user?.name && selectedAvatar === user?.avatar)}
+                                                    className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {isUpdating ? 'Saving...' : (
+                                                        <>
+                                                            <Save size={18} />
+                                                            Save Changes
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
