@@ -22,9 +22,7 @@ sys.modules["deepface"] = MagicMock()
 
 from fastapi import FastAPI
 from app.database.mongodb import get_database
-import app.schemas.all_attendance
-print(f"DEBUG: Loaded schemas from {app.schemas.all_attendance.__file__}")
-print(f"DEBUG: Attributes in schemas: {dir(app.schemas.all_attendance)}")
+from app.schemas import all_attendance
 
 from app.api.routes.attendance import router as attendance_router
 
@@ -39,10 +37,6 @@ async def override_get_database():
 app.dependency_overrides[get_database] = override_get_database
 
 client = TestClient(app)
-import app.schemas.attendance
-print(f"DEBUG: Loaded schemas from {app.schemas.attendance.__file__}")
-print(f"DEBUG: Attributes in schemas: {dir(app.schemas.attendance)}")
-
 
 class TestBatchAttendance(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
@@ -75,9 +69,9 @@ class TestBatchAttendance(unittest.IsolatedAsyncioTestCase):
         payload = {
             "session_id": session_id,
             "students": [
-                {"session_id": session_id, "student_id": student1, "confidence": 0.99},
-                {"session_id": session_id, "student_id": student2, "confidence": 0.95},
-                {"session_id": session_id, "student_id": student3, "confidence": 0.99} # Duplicate
+                {"student_id": student1, "confidence": 0.99},
+                {"student_id": student2, "confidence": 0.95},
+                {"student_id": student3, "confidence": 0.99} # Duplicate
             ]
         }
         
