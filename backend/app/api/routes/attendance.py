@@ -7,7 +7,9 @@ from app.schemas.attendance import (
     AttendanceMarkRequest,
     AttendanceMarkResponse
 )
-from typing import Any
+from app.models.logs import RecognitionLog
+from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
+from typing import Any, List
 from datetime import datetime
 
 router = APIRouter()
@@ -111,3 +113,33 @@ async def mark_attendance(
         "status": "present",
         "timestamp": record.timestamp
     }
+
+
+@router.post("/logs", response_model=RecognitionLogResponse, status_code=status.HTTP_201_CREATED)
+async def create_recognition_log(
+    log_data: RecognitionLogCreate = Body(...),
+    db: Any = Depends(get_database)
+):
+    """
+    Log a recognition attempt (success, failure, etc.) for auditing.
+    """
+    # Create log entry
+    log_entry = RecognitionLog(**log_data.model_dump())
+    
+    await db["recognition_logs"].insert_one(log_entry.model_dump(by_alias=True))
+    
+    created_log = await db["recognition_logs"].find_one({"_id": log_entry.id})
+    return created_log
+
+
+@router.get("/logs/{session_id}", response_model=List[RecognitionLogResponse])
+async def get_session_logs(
+    session_id: str,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve all recognition logs for a specific session.
+    """
+    logs_cursor = db["recognition_logs"].find({"session_id": session_id}).sort("timestamp", -1)
+    logs = await logs_cursor.to_list(length=1000)
+    return logs
