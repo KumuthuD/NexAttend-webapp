@@ -4,12 +4,19 @@ import { Camera, X, RefreshCw, Check } from 'lucide-react';
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
     onClose: () => void;
-    mode?: 'single' | 'attendance'; // Add mode prop
-    onFaceRecognized?: (data: any) => void;
+    mode?: 'single' | 'attendance';
+    classroomId?: string; // Add classroomId prop
+    sessionId?: string;   // Add sessionId prop
 }
 
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode = 'single', onFaceRecognized }) => {
+const CameraCapture: React.FC<CameraCaptureProps> = ({ 
+    onCapture, 
+    onClose, 
+    mode = 'single',
+    classroomId,
+    sessionId 
+}) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -93,12 +100,23 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
         const formData = new FormData();
         formData.append('file', file);
 
+        // Add context for attendance mode
+        if (mode === 'attendance') {
+            if (classroomId) formData.append('classroom_id', classroomId);
+            if (sessionId) formData.append('session_id', sessionId);
+        }
+
         // We'll need to fetch the token from local storage or context if auth is required
         // For now assuming the endpoint is protected but we might need to inject auth token
         const token = localStorage.getItem('token');
+        
+        // Determine endpoint based on mode
+        const endpoint = mode === 'attendance' 
+            ? 'http://localhost:8000/api/v1/face/recognize-multi'
+            : 'http://localhost:8000/api/v1/face/recognize';
 
         try {
-            const response = await fetch('http://localhost:8000/api/v1/face/recognize', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -186,7 +204,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                 <div className="flex items-center justify-between p-4 border-b border-gray-800">
                     <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                         <Camera className="w-5 h-5 text-violet-400" />
-                        Take Photo
+                        {mode === 'attendance' ? 'Attendance Scanner' : 'Take Photo'}
                     </h3>
                     <button
                         onClick={onClose}
@@ -239,7 +257,11 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                     {isAutoMode && capturedFaces.map((face, index) => (
                         <div
                             key={index}
-                            className="absolute border-2 border-green-500 rounded-lg transition-all duration-300 pointer-events-none"
+                            className={`absolute border-2 rounded-lg transition-all duration-300 pointer-events-none ${
+                                face.attendance === 'marked' ? 'border-green-500' : 
+                                face.attendance === 'already_marked' ? 'border-blue-500' :
+                                'border-yellow-500'
+                            }`}
                             style={{
                                 left: `${(face.box[0] / (videoRef.current?.videoWidth || 1)) * 100}%`,
                                 top: `${(face.box[1] / (videoRef.current?.videoHeight || 1)) * 100}%`,
@@ -248,8 +270,13 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                             }}
                         >
                             {face.matched && face.student && (
-                                <div className="absolute -top-8 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                                    {face.student.full_name} ({(face.similarity * 100).toFixed(0)}%)
+                                <div className={`absolute -top-8 left-0 text-white text-xs px-2 py-1 rounded ${
+                                    face.attendance === 'marked' ? 'bg-green-500' : 
+                                    face.attendance === 'already_marked' ? 'bg-blue-500' :
+                                    'bg-yellow-500'
+                                }`}>
+                                    {face.student.full_name} ({Math.round(face.similarity * 100)}%)
+                                    {face.attendance === 'already_marked' && ' (Already Marked)'}
                                 </div>
                             )}
                         </div>
@@ -266,7 +293,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                                 className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-violet-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                             >
                                 <Camera size={20} />
-                                Capture
+                                {mode === 'attendance' ? 'Stop Scanning' : 'Capture'}
                             </button>
                         ) : (
                             <>
