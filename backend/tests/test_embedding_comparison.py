@@ -54,9 +54,9 @@ def test_comparison():
     img1_path = os.path.join(temp_dir, "test_face_1.jpg")
     img2_path = os.path.join(temp_dir, "test_face_2.jpg")
     
-    # Elon Musk images
-    url1 = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Elon_Musk_Royal_Society_%28cropped%29.jpg/220px-Elon_Musk_Royal_Society_%28cropped%29.jpg"
-    url2 = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Elon_Musk_Colorado_2022_%28cropped2%29.jpg/220px-Elon_Musk_Colorado_2022_%28cropped2%29.jpg"
+    # Reliable test images
+    url1 = "https://www.w3schools.com/howto/img_avatar.png"
+    url2 = "https://www.w3schools.com/howto/img_avatar2.png"
     
     if not os.path.exists(img1_path):
         download_image(url1, img1_path)
