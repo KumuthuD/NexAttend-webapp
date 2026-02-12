@@ -79,16 +79,6 @@ async def mark_attendance(
             detail=f"Student with ID {request.student_id} not found"
         )
 
-    # 3. Check for Duplicate (Idempotency)
-    # Check if student_id is already in present_student_ids
-    if request.student_id in session.get("present_student_ids", []):
-        return {
-            "message": "Attendance already marked",
-            "student_name": student.get("full_name", "Unknown"),
-            "status": "present",
-            "timestamp": datetime.utcnow() # Return current time or fetch from record
-        }
-
     # 4. Create Record
     record = AttendanceRecord(
         student_id=request.student_id,
@@ -98,14 +88,29 @@ async def mark_attendance(
         timestamp=datetime.utcnow()
     )
     
-    # 5. Atomic Update
-    await db["attendance_sessions"].update_one(
-        {"_id": request.session_id},
+    # 5. Atomic Update with Duplicate Prevention
+    # We add a filter to ONLY update if student_id is NOT in present_student_ids
+    # This prevents race conditions where multiple requests for the same student arrive at once
+    result = await db["attendance_sessions"].update_one(
+        {
+            "_id": request.session_id,
+            "status": "active",
+            "present_student_ids": {"$ne": request.student_id}
+        },
         {
             "$push": {"records": record.model_dump()},
             "$addToSet": {"present_student_ids": request.student_id}
         }
     )
+    
+    # If modified_count is 0, it means the student was already in the list
+    if result.modified_count == 0:
+        return {
+            "message": "Attendance already marked",
+            "student_name": student.get("full_name", "Unknown"),
+            "status": "present",
+            "timestamp": datetime.utcnow()
+        }
     
     return {
         "message": "Attendance marked successfully",
