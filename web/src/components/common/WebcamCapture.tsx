@@ -129,6 +129,15 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                 console.log("Recognition result:", data);
                 if (data.results && data.results.length > 0) {
                     setCapturedFaces(data.results);
+                    setCapturedFaces(data.results);
+                    // Notify parent about recognized faces
+                    if (onFaceRecognized) {
+                        data.results.forEach((face: any) => {
+                            if (face.matched && face.student) {
+                                onFaceRecognized(face);
+                            }
+                        });
+                    }
                     // Optional: Provide visual feedback or auto-mark attendance here
                 } else {
                     setCapturedFaces([]);
