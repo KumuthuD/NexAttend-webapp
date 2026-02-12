@@ -49,7 +49,9 @@ class TestBatchAttendance(unittest.IsolatedAsyncioTestCase):
         })
         
         # 2. Mock Update
-        self.mock_db["attendance_sessions"].update_one = AsyncMock(return_value=MagicMock(modified_count=1))
+        mock_result = MagicMock()
+        mock_result.modified_count = 1
+        self.mock_db["attendance_sessions"].update_one = AsyncMock(return_value=mock_result)
         
         payload = {
             "session_id": session_id,

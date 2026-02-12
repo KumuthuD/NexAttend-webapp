@@ -7,7 +7,8 @@ from app.schemas.attendance import (
     AttendanceMarkRequest,
     AttendanceMarkResponse,
     AttendanceBatchMarkRequest,
-    AttendanceBatchMarkResponse
+    AttendanceBatchMarkResponse,
+    AttendanceBatchRecord,
 )
 from typing import Any, List
 from datetime import datetime

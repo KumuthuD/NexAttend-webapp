@@ -48,12 +48,21 @@ class AttendanceSessionResponse(AttendanceSessionBase):
     class Config:
         from_attributes = True
 
+class AttendanceBatchRecord(BaseModel):
+    """
+    Individual student item in a batch request.
+    Does not need session_id as it's in the parent request.
+    """
+    student_id: str
+    confidence: Optional[float] = None
+    method: str = "face"
+
 class AttendanceBatchMarkRequest(BaseModel):
     """
     Request model for marking attendance for multiple students at once.
     """
     session_id: str
-    students: List[AttendanceMarkRequest] # Reusing single mark request structure minus session_id which is common
+    students: List[AttendanceBatchRecord] 
 
 class AttendanceBatchMarkResponse(BaseModel):
     """
