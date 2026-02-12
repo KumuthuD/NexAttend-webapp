@@ -258,68 +258,82 @@ const SettingsPage: React.FC = () => {
                                 <div className="space-y-6">
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Security</h3>
 
-                                    <form onSubmit={handleSavePassword} className="space-y-4 max-w-md">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
-                                            <div className="relative">
-                                                <Input
-                                                    type="password"
-                                                    name="current"
-                                                    value={passwordData.current}
-                                                    onChange={handlePasswordChange}
-                                                    placeholder="Enter current password"
-                                                    className="pl-10"
-                                                    leftIcon={<Lock size={18} />}
-                                                />
+                                    <div className="flex flex-col lg:flex-row gap-10">
+                                        {/* Left Side: Form */}
+                                        <div className="flex-1">
+                                            <form onSubmit={handleSavePassword} className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="password"
+                                                            name="current"
+                                                            value={passwordData.current}
+                                                            onChange={handlePasswordChange}
+                                                            placeholder="Enter current password"
+                                                            className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
+                                                            leftIcon={<Lock size={18} />}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="password"
+                                                            name="new"
+                                                            value={passwordData.new}
+                                                            onChange={handlePasswordChange}
+                                                            placeholder="Enter new password"
+                                                            className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
+                                                            leftIcon={<Lock size={18} />}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="password"
+                                                            name="confirm"
+                                                            value={passwordData.confirm}
+                                                            onChange={handlePasswordChange}
+                                                            placeholder="Confirm new password"
+                                                            className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
+                                                            leftIcon={<Lock size={18} />}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-6 flex justify-center">
+                                                    <button
+                                                        type="submit"
+                                                        className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none"
+                                                    >
+                                                        <Save size={18} />
+                                                        Update Password
+                                                    </button>
+                                                </div>
+                                            </form>
+
+                                            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/[0.06]">
+                                                <button className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2">
+                                                    <LogOut size={16} />
+                                                    Sign out from all devices
+                                                </button>
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+                                        {/* Right Side: Illustration */}
+                                        <div className="hidden lg:flex flex-1 items-center justify-center bg-violet-50 dark:bg-white/5 rounded-2xl p-8 border border-violet-100 dark:border-white/[0.06]">
                                             <div className="relative">
-                                                <Input
-                                                    type="password"
-                                                    name="new"
-                                                    value={passwordData.new}
-                                                    onChange={handlePasswordChange}
-                                                    placeholder="Enter new password"
-                                                    className="pl-10"
-                                                    leftIcon={<Lock size={18} />}
-                                                />
+                                                <div className="w-64 h-64 bg-violet-100 dark:bg-violet-900/20 rounded-full flex items-center justify-center animate-pulse">
+                                                    <Shield size={120} className="text-violet-500 dark:text-violet-400" />
+                                                </div>
                                             </div>
                                         </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
-                                            <div className="relative">
-                                                <Input
-                                                    type="password"
-                                                    name="confirm"
-                                                    value={passwordData.confirm}
-                                                    onChange={handlePasswordChange}
-                                                    placeholder="Confirm new password"
-                                                    className="pl-10"
-                                                    leftIcon={<Lock size={18} />}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-4">
-                                            <button
-                                                type="submit"
-                                                className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none"
-                                            >
-                                                <Save size={18} />
-                                                Update Password
-                                            </button>
-                                        </div>
-                                    </form>
-
-                                    <div className="mt-8 pt-8 border-t border-gray-100 dark:border-white/[0.06]">
-                                        <button className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2">
-                                            <LogOut size={16} />
-                                            Sign out from all devices
-                                        </button>
                                     </div>
                                 </div>
                             )}
