@@ -41,7 +41,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
 
     useEffect(() => {
         startCamera();
-        
+
         // Cleanup function
         return () => {
             if (stream) {
@@ -56,7 +56,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
 
         if (mode === 'attendance' && isCameraReady && !capturedImage) {
             setIsAutoMode(true);
-            
+
             intervalId = setInterval(() => {
                 captureAndSendFrame();
             }, 2000); // 2 seconds interval
@@ -65,7 +65,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
         return () => {
             if (intervalId) clearInterval(intervalId);
         };
-    }, [mode, isCameraReady, capturedImage]); 
+    }, [mode, isCameraReady, capturedImage]);
 
     const captureAndSendFrame = () => {
         if (videoRef.current && canvasRef.current) {
@@ -77,7 +77,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
+
                 canvas.toBlob((blob) => {
                     if (blob) {
                         const file = new File([blob], "frame.jpg", { type: "image/jpeg" });
@@ -91,10 +91,10 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
     const sendFrameToBackend = async (file: File) => {
         const formData = new FormData();
         formData.append('file', file);
-        
+
         // We'll need to fetch the token from local storage or context if auth is required
         // For now assuming the endpoint is protected but we might need to inject auth token
-        const token = localStorage.getItem('token'); 
+        const token = localStorage.getItem('token');
 
         try {
             const response = await fetch('http://localhost:8000/api/v1/face/recognize', {
@@ -109,8 +109,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                 const data = await response.json();
                 console.log("Recognition result:", data);
                 if (data.results && data.results.length > 0) {
-                   setCapturedFaces(data.results);
-                   // Optional: Provide visual feedback or auto-mark attendance here
+                    setCapturedFaces(data.results);
+                    // Optional: Provide visual feedback or auto-mark attendance here
                 } else {
                     setCapturedFaces([]);
                 }
@@ -224,10 +224,10 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                     )}
 
                     <canvas ref={canvasRef} className="hidden" />
-                    
+
                     {/* Overlay for Recognized Faces */}
                     {isAutoMode && capturedFaces.map((face, index) => (
-                        <div 
+                        <div
                             key={index}
                             className="absolute border-2 border-green-500 rounded-lg transition-all duration-300 pointer-events-none"
                             style={{
@@ -237,9 +237,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                                 height: `${(face.box[3] / (videoRef.current?.videoHeight || 1)) * 100}%`,
                             }}
                         >
-                            {face.match && (
+                            {face.matched && face.student && (
                                 <div className="absolute -top-8 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                                    {face.match.name} ({(face.similarity * 100).toFixed(0)}%)
+                                    {face.student.full_name} ({(face.similarity * 100).toFixed(0)}%)
                                 </div>
                             )}
                         </div>
