@@ -116,152 +116,174 @@ async def detect_faces_only(
     file: UploadFile = File(...)
 ):
     """
-    Detect faces in an image and return bounding boxes.
-    Used for frontend video overlay (drawing boxes on faces).
+    detect faces in an image and return bounding boxes.
+    used by frontend to draw real-time overlays on webcam feed.
+
+    Kumuthu Dahanayake - Week 03 Day 12
     """
-    #Validate File Type
+#validate file type
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
-    #Read Image
+#read and decode image
     try:
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
+
         if image is None:
             raise HTTPException(status_code=400, detail="Could not decode image")
-    #Detect Faces
     except Exception as e:
         logger.error(f"Error reading file: {e}")
         raise HTTPException(status_code=400, detail="Invalid image file")
 
+    #detect faces using MTCNN
     faces = detector.detect_faces(image)
-    
+
+#convert numpy types to native Python types for JSON serialization
     faces_data = []
-    if len(faces) > 0:
-        for face in faces:
-    #Convert numpy types to native Python types for JSON
-            box = [int(coord) for coord in face['box']]
-            conf = float(face['confidence'])
-            kps = {k: [int(coord) for coord in v] for k, v in face['keypoints'].items()}
-            
-            faces_data.append({
-                "box": box,
-                "confidence": conf,
-                "keypoints": kps
-            })
-            
+    for face in faces:
+        box = [int(coord) for coord in face['box']]
+        conf = float(face['confidence'])
+        kps = {k: [int(coord) for coord in v] for k, v in face['keypoints'].items()}
+
+        faces_data.append({
+            "box": box,
+            "confidence": conf,
+            "keypoints": kps
+        })
+
     return {
         "count": len(faces_data),
         "faces": faces_data
     }
 
+
 @router.post("/recognize", status_code=status.HTTP_200_OK)
 async def recognize_faces(
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    classroom_id: str = None
 ):
     """
     Recognize faces in an image and return identified students.
+
+    system takes an image (webcam frame), detects all faces,
+    generates embeddings, and matches against registered users in our mongoDB.
+    also optionally filters by classroom_id.
+
+    Kumuthu Dahanayake - Week 03 Day 13
     """
-    # Validate
+#validate file type
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 
-    # Read Image
+    #read and decode image
     try:
-        if not file:
-           logger.error("No file received")
-           raise HTTPException(status_code=400, detail="No file received")
-           
         contents = await file.read()
-        logger.info(f"Received file: {file.filename}, size: {len(contents)} bytes, type: {file.content_type}")
-        
+        if len(contents) == 0:
+            raise HTTPException(status_code=400, detail="Empty file received")
+
+        logger.info(f"Processing image: {file.filename}, size: {len(contents)} bytes")
+
         nparr = np.frombuffer(contents, np.uint8)
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
+
         if image is None:
-            logger.error("cv2.imdecode returned None")
             raise HTTPException(status_code=400, detail="Could not decode image")
-            
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error reading file: {e}")
-        # DEBUG: Include exception message in the response
         raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
 
-    # Detect Faces
+    #detect all faces in the image
     faces = detector.detect_faces(image)
-    
-    results = []
-    
-    # If no faces, return empty list
-    if not faces:
-        return {"count": 0, "results": []}
 
-    # For each detected face
+    if not faces:
+        return {"count": 0, "matched_count": 0, "results": [], "message": "No faces detected"}
+
+#load registered users ONCE (outside the loop - performance fix)
+    query = {"has_registered_face": True}
+    if classroom_id:
+        query["classroom_id"] = classroom_id
+
+    all_users = await db.db["users"].find(query).to_list(1000)
+
+    if not all_users:
+        return {
+            "count": len(faces),
+            "matched_count": 0,
+            "results": [],
+            "message": "No registered users to compare against"
+        }
+
+#process each detected face
+    results = []
     for face in faces:
         try:
-            # Crop face
+        #crop face with 15% padding for better embedding accuracy
             x, y, w, h = face['box']
-            # Add padding
             h_img, w_img = image.shape[:2]
-            pad = int(w * 0.1)
+            pad = int(w * 0.15)
             x1, y1 = max(0, x - pad), max(0, y - pad)
             x2, y2 = min(w_img, x + w + pad), min(h_img, y + h + pad)
-            
+
             face_crop = image[y1:y2, x1:x2]
-            
-            # Generate embedding
+
+    #generate embedding for the detected face
             embedding = embedding_service.generate_embedding(face_crop)
-            
-            # Find match in DB
-            # Note: In a real app, we'd load embeddings into memory/FAISS for speed
-            # For now, we'll query MongoDB (slow but functional for prototype)
-            
-            # We need to compute cosine similarity with ALL users
-            # This is inefficient but okay for < 100 users
-            all_users = await db.db["users"].find({"has_registered_face": True}).to_list(1000)
-            
-            best_match = None
-            best_score = -1.0 # Cosine similarity: -1 to 1
-            
-            if embedding and all_users:
-                vec1 = np.array(embedding)
-                norm1 = np.linalg.norm(vec1)
-                
-                for user in all_users:
-                    if "embedding" in user and user["embedding"]:
-                        vec2 = np.array(user["embedding"])
-                        norm2 = np.linalg.norm(vec2)
-                        
-                        if norm1 > 0 and norm2 > 0:
-                            score = np.dot(vec1, vec2) / (norm1 * norm2)
-                            
-                            if score > best_score:
-                                best_score = score
-                                best_match = user
-            
-            # Threshold check (e.g., 0.6 or 0.7)
-            match_data = None
-            if best_score > 0.6 and best_match:
-                match_data = {
-                    "id": str(best_match["_id"]),
-                    "name": best_match.get("name", "Unknown"),
-                    "email": best_match.get("email", "")
-                }
-            
-            results.append({
-                "box": face['box'],
-                "confidence": float(face['confidence']),
-                "match": match_data,
-                "similarity": float(best_score) if best_match else 0.0
-            })
-            
+
+            if not embedding:
+                logger.warning("Failed to generate embedding for a detected face")
+                results.append({
+                    "box": [int(c) for c in face['box']],
+                    "detection_confidence": float(face['confidence']),
+                    "matched": False,
+                    "student": None,
+                    "similarity": 0.0,
+                    "status": "embedding_failed"
+                })
+                continue
+
+#use embedding_service.identify_user for matching (proper service layer)
+            best_user, distance = embedding_service.identify_user(embedding, all_users)
+
+    #convert distance to confidence (lower distance = higher confidence)
+            confidence = round(max(0.0, 1.0 - distance), 4)
+
+            if best_user:
+                results.append({
+                    "box": [int(c) for c in face['box']],
+                    "detection_confidence": float(face['confidence']),
+                    "matched": True,
+                    "student": {
+                        "id": str(best_user["_id"]),
+                        "full_name": best_user.get("full_name", "Unknown"),
+                        "email": best_user.get("email", "")
+                    },
+                    "similarity": confidence,
+                    "status": "identified"
+                })
+            else:
+                results.append({
+                    "box": [int(c) for c in face['box']],
+                    "detection_confidence": float(face['confidence']),
+                    "matched": False,
+                    "student": None,
+                    "similarity": confidence,
+                    "status": "unknown"
+                })
+
         except Exception as e:
             logger.error(f"Error processing face: {e}")
             continue
 
+#summary
+    matched_count = sum(1 for r in results if r["matched"])
+    logger.info(f"Recognition complete: {len(results)} faces, {matched_count} matched")
+
     return {
         "count": len(results),
+        "matched_count": matched_count,
         "results": results
     }
