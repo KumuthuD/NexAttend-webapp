@@ -234,6 +234,7 @@ const ClassroomPage: React.FC = () => {
                     onCapture={handleCapture}
                     onClose={() => setIsCameraOpen(false)}
                     mode={user?.role === 'teacher' ? 'attendance' : 'single'}
+                    classroomId={id}
                 />
             )}
         </div>
