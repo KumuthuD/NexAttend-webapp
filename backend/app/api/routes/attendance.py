@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends
 from app.database.mongodb import get_database
 from app.models.attendance import AttendanceSession, AttendanceRecord
+from app.schemas.attendance import (
     AttendanceStartRequest, 
     AttendanceSessionResponse,
     AttendanceMarkRequest,
