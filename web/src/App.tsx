@@ -14,6 +14,7 @@ import CalendarPage from './pages/CalendarPage';
 import ClassroomPage from './pages/ClassroomPage';
 import ValidationDemo from './pages/ValidationDemo';
 import NotificationPage from './pages/NotificationPage';
+import SettingsPage from './pages/SettingsPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Layout for marketing/public pages
@@ -89,6 +90,16 @@ const App: React.FC = () => {
                             element={
                                 <ProtectedRoute>
                                     <NotificationPage />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        {/* Settings Route */}
+                        <Route
+                            path="/settings"
+                            element={
+                                <ProtectedRoute>
+                                    <SettingsPage />
                                 </ProtectedRoute>
                             }
                         />
