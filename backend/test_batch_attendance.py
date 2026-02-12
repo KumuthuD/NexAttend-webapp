@@ -21,8 +21,12 @@ sys.modules["app.services.embedding_service"] = MagicMock()
 sys.modules["deepface"] = MagicMock()
 
 from fastapi import FastAPI
-from app.api.routes.attendance import router as attendance_router
 from app.database.mongodb import get_database
+import app.schemas.all_attendance
+print(f"DEBUG: Loaded schemas from {app.schemas.all_attendance.__file__}")
+print(f"DEBUG: Attributes in schemas: {dir(app.schemas.all_attendance)}")
+
+from app.api.routes.attendance import router as attendance_router
 
 # Create isolated app for testing
 app = FastAPI()
