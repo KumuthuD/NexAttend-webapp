@@ -24,6 +24,9 @@ class AttendanceSessionBase(BaseModel):
 class AttendanceSessionCreate(AttendanceSessionBase):
     pass
 
+class AttendanceStartRequest(BaseModel):
+    classroom_id: str
+
 class AttendanceMarkRequest(BaseModel):
     session_id: str
     student_id: str

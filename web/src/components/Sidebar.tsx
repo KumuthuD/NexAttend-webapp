@@ -12,7 +12,7 @@ import {
   UserCircleIcon
 } from './icons';
 
-import profileImg from '../assets/team/kumuthu.jpg';
+
 
 
 const Sidebar = () => {
@@ -42,10 +42,8 @@ const Sidebar = () => {
       <div className="flex-1 flex flex-col overflow-y-auto px-4">
 
         {/* Logo Section */}
-        <div className="flex items-center gap-3 py-7 px-2">
-          <div className="w-10 h-10 bg-violet-600 dark:bg-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200 dark:shadow-violet-500/20">
-            <LogoIcon className="w-6 h-6 text-white" />
-          </div>
+        <div className="flex items-center gap-2 py-7 px-2">
+          <LogoIcon className="w-10 h-10" />
           <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors duration-300">NexAttend</h1>
         </div>
 
@@ -88,9 +86,9 @@ const Sidebar = () => {
         <div className="mt-auto flex items-center gap-3 px-3 py-3 mb-5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors duration-200 group border border-transparent hover:border-gray-100 dark:hover:border-white/[0.06]">
           <div className="relative">
             <img
-              src={profileImg}
+              src={user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}&backgroundColor=e5e7eb&textColor=374151`}
               alt="User"
-              className="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-white/10"
+              className="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-gray-800"
             />
             <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-[#0f1117] rounded-full" />
           </div>

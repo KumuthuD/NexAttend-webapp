@@ -10,6 +10,8 @@ from app.schemas.all_attendance import (
     AttendanceBatchMarkResponse,
     AttendanceBatchRecord
 )
+from app.models.logs import RecognitionLog
+from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
 from typing import Any, List
 from datetime import datetime
 
@@ -80,16 +82,6 @@ async def mark_attendance(
             detail=f"Student with ID {request.student_id} not found"
         )
 
-    # 3. Check for Duplicate (Idempotency)
-    # Check if student_id is already in present_student_ids
-    if request.student_id in session.get("present_student_ids", []):
-        return {
-            "message": "Attendance already marked",
-            "student_name": student.get("full_name", "Unknown"),
-            "status": "present",
-            "timestamp": datetime.utcnow() # Return current time or fetch from record
-        }
-
     # 4. Create Record
     record = AttendanceRecord(
         student_id=request.student_id,
@@ -99,14 +91,29 @@ async def mark_attendance(
         timestamp=datetime.utcnow()
     )
     
-    # 5. Atomic Update
-    await db["attendance_sessions"].update_one(
-        {"_id": request.session_id},
+    # 5. Atomic Update with Duplicate Prevention
+    # We add a filter to ONLY update if student_id is NOT in present_student_ids
+    # This prevents race conditions where multiple requests for the same student arrive at once
+    result = await db["attendance_sessions"].update_one(
+        {
+            "_id": request.session_id,
+            "status": "active",
+            "present_student_ids": {"$ne": request.student_id}
+        },
         {
             "$push": {"records": record.model_dump()},
             "$addToSet": {"present_student_ids": request.student_id}
         }
     )
+    
+    # If modified_count is 0, it means the student was already in the list
+    if result.modified_count == 0:
+        return {
+            "message": "Attendance already marked",
+            "student_name": student.get("full_name", "Unknown"),
+            "status": "present",
+            "timestamp": datetime.utcnow()
+        }
     
     return {
         "message": "Attendance marked successfully",
@@ -206,3 +213,32 @@ async def batch_mark_attendance(
         "skipped_count": skipped_count,
         "results": results
     }
+
+@router.post("/logs", response_model=RecognitionLogResponse, status_code=status.HTTP_201_CREATED)
+async def create_recognition_log(
+    log_data: RecognitionLogCreate = Body(...),
+    db: Any = Depends(get_database)
+):
+    """
+    Log a recognition attempt (success, failure, etc.) for auditing.
+    """
+    # Create log entry
+    log_entry = RecognitionLog(**log_data.model_dump())
+    
+    await db["recognition_logs"].insert_one(log_entry.model_dump(by_alias=True))
+    
+    created_log = await db["recognition_logs"].find_one({"_id": log_entry.id})
+    return created_log
+
+
+@router.get("/logs/{session_id}", response_model=List[RecognitionLogResponse])
+async def get_session_logs(
+    session_id: str,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve all recognition logs for a specific session.
+    """
+    logs_cursor = db["recognition_logs"].find({"session_id": session_id}).sort("timestamp", -1)
+    logs = await logs_cursor.to_list(length=1000)
+    return logs

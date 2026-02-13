@@ -7,6 +7,7 @@ export interface UserData {
     email: string;
     role: string;
     is_active: boolean;
+    avatar?: string;
 }
 
 export interface LoginResponse {
@@ -95,6 +96,11 @@ export const registerStudent = async (studentData: FormData) => {
         console.error('Student registration failed:', error);
         throw error;
     }
+};
+
+export const updateProfile = async (data: { full_name?: string; avatar?: string }): Promise<UserData> => {
+    const response = await api.put<UserData>('/api/v1/users/me', data);
+    return response.data;
 };
 
 export default api;

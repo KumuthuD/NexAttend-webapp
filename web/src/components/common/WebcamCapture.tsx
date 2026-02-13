@@ -1,21 +1,44 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Camera, X, RefreshCw, Check } from 'lucide-react';
+import api from '../../services/api';
+
+interface FaceResult {
+    box: [number, number, number, number];
+    matched: boolean;
+    student?: {
+        full_name: string;
+        student_id: string;
+        _id: string;
+    };
+    similarity: number;
+    attendance?: 'marked' | 'already_marked' | 'pending';
+}
 
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
     onClose: () => void;
-    mode?: 'single' | 'attendance'; // Add mode prop
+    mode?: 'single' | 'attendance';
+    classroomId?: string; // Add classroomId prop
+    sessionId?: string;   // Add sessionId prop
+    onFaceRecognized?: (face: FaceResult) => void;
 }
 
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode = 'single' }) => {
+const CameraCapture: React.FC<CameraCaptureProps> = ({
+    onCapture,
+    onClose,
+    mode = 'single',
+    classroomId,
+    sessionId,
+    onFaceRecognized
+}) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
-    const [capturedFaces, setCapturedFaces] = useState<any[]>([]); // Store recognition results
+    const [capturedFaces, setCapturedFaces] = useState<FaceResult[]>([]); // Store recognition results
     const [isAutoMode, setIsAutoMode] = useState(false); // Toggle for auto-capture
 
 
@@ -39,9 +62,78 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
         }
     }, []);
 
+    const sendFrameToBackend = useCallback(async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Add context for attendance mode
+        if (mode === 'attendance') {
+            if (classroomId) formData.append('classroom_id', classroomId);
+            if (sessionId) formData.append('session_id', sessionId);
+        }
+
+        // Determine endpoint based on mode
+        const endpoint = mode === 'attendance'
+            ? '/api/v1/faces/recognize-multi'
+            : '/api/v1/faces/recognize';
+
+        try {
+            const response = await api.post(endpoint, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.status === 200) {
+                const data = response.data;
+                console.log("Recognition result:", data);
+                if (data.results && data.results.length > 0) {
+                    setCapturedFaces(data.results);
+                    // Notify parent about recognized faces
+                    if (onFaceRecognized) {
+                        data.results.forEach((face: any) => {
+                            if (face.matched && face.student) {
+                                onFaceRecognized(face);
+                            }
+                        });
+                    }
+                    // Optional: Provide visual feedback or auto-mark attendance here
+                } else {
+                    setCapturedFaces([]);
+                }
+            }
+        } catch (error) {
+            console.error("Error sending frame:", error);
+        }
+    }, [mode, classroomId, sessionId, onFaceRecognized]);
+
+    const captureAndSendFrame = useCallback(() => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            const context = canvas.getContext('2d');
+
+            if (context) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const file = new File([blob], "frame.jpg", { type: "image/jpeg" });
+                        sendFrameToBackend(file);
+                    }
+                }, 'image/jpeg', 0.8);
+            }
+        }
+    }, [sendFrameToBackend]);
+
+
+
+    // Initial camera startup
     useEffect(() => {
         startCamera();
-        
+
         // Cleanup function
         return () => {
             if (stream) {
@@ -56,7 +148,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
 
         if (mode === 'attendance' && isCameraReady && !capturedImage) {
             setIsAutoMode(true);
-            
+
             intervalId = setInterval(() => {
                 captureAndSendFrame();
             }, 2000); // 2 seconds interval
@@ -65,62 +157,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
         return () => {
             if (intervalId) clearInterval(intervalId);
         };
-    }, [mode, isCameraReady, capturedImage]); 
+    }, [mode, isCameraReady, capturedImage]);
 
-    const captureAndSendFrame = () => {
-        if (videoRef.current && canvasRef.current) {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            const context = canvas.getContext('2d');
 
-            if (context) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        const file = new File([blob], "frame.jpg", { type: "image/jpeg" });
-                        sendFrameToBackend(file);
-                    }
-                }, 'image/jpeg', 0.8);
-            }
-        }
-    };
-
-    const sendFrameToBackend = async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        // We'll need to fetch the token from local storage or context if auth is required
-        // For now assuming the endpoint is protected but we might need to inject auth token
-        const token = localStorage.getItem('token'); 
-
-        try {
-            const response = await fetch('http://localhost:8000/api/v1/face/recognize', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Recognition result:", data);
-                if (data.results && data.results.length > 0) {
-                   setCapturedFaces(data.results);
-                   // Optional: Provide visual feedback or auto-mark attendance here
-                } else {
-                    setCapturedFaces([]);
-                }
-            } else {
-                console.error("Frame send failed:", response.statusText);
-            }
-        } catch (error) {
-            console.error("Error sending frame:", error);
-        }
-    };
 
 
     const capturePhoto = () => {
@@ -176,7 +215,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                 <div className="flex items-center justify-between p-4 border-b border-gray-800">
                     <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                         <Camera className="w-5 h-5 text-violet-400" />
-                        Take Photo
+                        {mode === 'attendance' ? 'Attendance Scanner' : 'Take Photo'}
                     </h3>
                     <button
                         onClick={onClose}
@@ -224,12 +263,15 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                     )}
 
                     <canvas ref={canvasRef} className="hidden" />
-                    
+
                     {/* Overlay for Recognized Faces */}
                     {isAutoMode && capturedFaces.map((face, index) => (
-                        <div 
+                        <div
                             key={index}
-                            className="absolute border-2 border-green-500 rounded-lg transition-all duration-300 pointer-events-none"
+                            className={`absolute border-2 rounded-xl transition-all duration-300 pointer-events-none backdrop-blur-[1px] ${face.matched
+                                    ? 'border-green-500 bg-green-500/10 shadow-[0_0_20px_rgba(34,197,94,0.3)]'
+                                    : 'border-yellow-500 bg-yellow-500/10'
+                                }`}
                             style={{
                                 left: `${(face.box[0] / (videoRef.current?.videoWidth || 1)) * 100}%`,
                                 top: `${(face.box[1] / (videoRef.current?.videoHeight || 1)) * 100}%`,
@@ -237,11 +279,20 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                                 height: `${(face.box[3] / (videoRef.current?.videoHeight || 1)) * 100}%`,
                             }}
                         >
-                            {face.match && (
-                                <div className="absolute -top-8 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                                    {face.match.name} ({(face.similarity * 100).toFixed(0)}%)
+                            {/* Label Badge */}
+                            {face.matched && face.student && (
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap flex items-center gap-1.5 animate-fadeIn">
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                                    {face.student.full_name} ({Math.round(face.similarity * 100)}%)
+                                    {face.attendance === 'already_marked' && ' (Already Marked)'}
                                 </div>
                             )}
+
+                            {/* Corner Accents */}
+                            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white/50 rounded-tl-lg -mt-1 -ml-1"></div>
+                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white/50 rounded-tr-lg -mt-1 -mr-1"></div>
+                            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white/50 rounded-bl-lg -mb-1 -ml-1"></div>
+                            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white/50 rounded-br-lg -mb-1 -mr-1"></div>
                         </div>
                     ))}
                 </div>
@@ -250,14 +301,24 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, mode 
                 <div className="p-6 bg-gray-900/50 backdrop-blur-md border-t border-gray-800">
                     <div className="flex items-center justify-center gap-4">
                         {!capturedImage ? (
-                            <button
-                                onClick={capturePhoto}
-                                disabled={!isCameraReady}
-                                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-violet-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
-                            >
-                                <Camera size={20} />
-                                Capture
-                            </button>
+                            mode === 'attendance' ? (
+                                <button
+                                    onClick={onClose}
+                                    className="flex items-center gap-2 px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-semibold shadow-lg shadow-red-500/20 transition-all active:scale-95 hover:shadow-red-500/30"
+                                >
+                                    <X size={20} />
+                                    Stop Attendance
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={capturePhoto}
+                                    disabled={!isCameraReady}
+                                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-violet-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                                >
+                                    <Camera size={20} />
+                                    Capture
+                                </button>
+                            )
                         ) : (
                             <>
                                 <button

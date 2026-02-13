@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, registerUser, UserData, RegisterData } from '../services/api';
+import { loginUser, registerUser, updateProfile, UserData, RegisterData } from '../services/api';
 
 // Define User types
 export interface User {
@@ -15,6 +15,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => Promise<void>;
+  updateUser: (data: { name?: string; avatar?: string }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -54,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: response.user.full_name,
         email: response.user.email,
         role: response.user.role as 'teacher' | 'student',
+        avatar: response.user.avatar
       };
       
       setUser(newUser);
@@ -95,6 +97,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = async (data: { name?: string; avatar?: string }) => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      const apiData: { full_name?: string; avatar?: string } = {};
+      if (data.name) apiData.full_name = data.name;
+      if (data.avatar) apiData.avatar = data.avatar;
+      
+      const updatedUserFn = await updateProfile(apiData);
+      
+      const updatedUser: User = {
+        ...user,
+        name: updatedUserFn.full_name,
+        avatar: updatedUserFn.avatar
+      };
+      
+      setUser(updatedUser);
+      localStorage.setItem('nexattend_user', JSON.stringify(updatedUser));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('nexattend_user');
@@ -107,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoading,
       login,
       register,
+      updateUser,
       logout,
       isAuthenticated: !!user
     }}>

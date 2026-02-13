@@ -183,6 +183,7 @@ const GetStartedPage = () => {
                                                 value={formData.name}
                                                 onChange={handleChange}
                                                 leftIcon={<User size={18} />}
+                                                className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
                                                 required
                                             />
 
@@ -228,6 +229,7 @@ const GetStartedPage = () => {
                                         onChange={handleChange}
                                         leftIcon={<Mail size={18} />}
                                         error={validationErrors.email}
+                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
                                         required
                                     />
 
@@ -239,6 +241,7 @@ const GetStartedPage = () => {
                                         value={formData.password}
                                         onChange={handleChange}
                                         leftIcon={<Lock size={18} />}
+                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
                                         required
                                     />
 
@@ -252,6 +255,7 @@ const GetStartedPage = () => {
                                             onChange={handleChange}
                                             leftIcon={<Lock size={18} />}
                                             error={validationErrors.confirmPassword}
+                                            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
                                             required
                                         />
                                     )}
@@ -259,7 +263,7 @@ const GetStartedPage = () => {
                                     {activeTab === "login" && (
                                         <div className="flex items-center justify-between text-sm">
                                             <label className="flex items-center text-gray-300 cursor-pointer hover:text-white transition-colors">
-                                                <input type="checkbox" className="mr-2 rounded bg-gray-700 border-gray-600 text-violet-600 focus:ring-violet-500" />
+                                                <input type="checkbox" className="mr-2 w-4 h-4 rounded bg-gray-700 border-gray-600 text-violet-600 focus:ring-violet-500" />
                                                 Remember me
                                             </label>
                                             <a
