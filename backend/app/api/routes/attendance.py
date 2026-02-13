@@ -151,6 +151,19 @@ async def get_attendance_session(
     return session
 
 
+@router.get("/classroom/{classroom_id}/sessions", response_model=List[AttendanceSessionResponse])
+async def list_classroom_sessions(
+    classroom_id: str,
+    db: Any = Depends(get_database)
+):
+    """
+    List all attendance sessions for a specific classroom.
+    """
+    sessions_cursor = db["attendance_sessions"].find({"classroom_id": classroom_id}).sort("session_date", -1)
+    sessions = await sessions_cursor.to_list(length=1000)
+    return sessions
+
+
 @router.get("/logs/{session_id}", response_model=List[RecognitionLogResponse])
 async def get_session_logs(
     session_id: str,
