@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Camera, X, RefreshCw, Check } from 'lucide-react';
+import api from '../../services/api';
 
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
@@ -7,15 +8,17 @@ interface CameraCaptureProps {
     mode?: 'single' | 'attendance';
     classroomId?: string; // Add classroomId prop
     sessionId?: string;   // Add sessionId prop
+    onFaceRecognized?: (face: any) => void;
 }
 
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ 
-    onCapture, 
-    onClose, 
+const CameraCapture: React.FC<CameraCaptureProps> = ({
+    onCapture,
+    onClose,
     mode = 'single',
     classroomId,
-    sessionId 
+    sessionId,
+    onFaceRecognized
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,6 +50,72 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         }
     }, []);
 
+    const sendFrameToBackend = useCallback(async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Add context for attendance mode
+        if (mode === 'attendance') {
+            if (classroomId) formData.append('classroom_id', classroomId);
+            if (sessionId) formData.append('session_id', sessionId);
+        }
+
+        // Determine endpoint based on mode
+        const endpoint = mode === 'attendance'
+            ? '/api/v1/faces/recognize-multi'
+            : '/api/v1/faces/recognize';
+
+        try {
+            const response = await api.post(endpoint, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.status === 200) {
+                const data = response.data;
+                console.log("Recognition result:", data);
+                if (data.results && data.results.length > 0) {
+                    setCapturedFaces(data.results);
+                    // Notify parent about recognized faces
+                    if (onFaceRecognized) {
+                        data.results.forEach((face: any) => {
+                            if (face.matched && face.student) {
+                                onFaceRecognized(face);
+                            }
+                        });
+                    }
+                    // Optional: Provide visual feedback or auto-mark attendance here
+                } else {
+                    setCapturedFaces([]);
+                }
+            }
+        } catch (error) {
+            console.error("Error sending frame:", error);
+        }
+    }, [mode, classroomId, sessionId, onFaceRecognized]);
+
+    const captureAndSendFrame = useCallback(() => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            const context = canvas.getContext('2d');
+
+            if (context) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const file = new File([blob], "frame.jpg", { type: "image/jpeg" });
+                        sendFrameToBackend(file);
+                    }
+                }, 'image/jpeg', 0.8);
+            }
+        }
+    }, [sendFrameToBackend]);
+
     useEffect(() => {
         startCamera();
 
@@ -73,82 +142,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         return () => {
             if (intervalId) clearInterval(intervalId);
         };
-    }, [mode, isCameraReady, capturedImage]);
+    }, [mode, isCameraReady, capturedImage, captureAndSendFrame]);
 
-    const captureAndSendFrame = () => {
-        if (videoRef.current && canvasRef.current) {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            const context = canvas.getContext('2d');
 
-            if (context) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        const file = new File([blob], "frame.jpg", { type: "image/jpeg" });
-                        sendFrameToBackend(file);
-                    }
-                }, 'image/jpeg', 0.8);
-            }
-        }
-    };
-
-    const sendFrameToBackend = async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        // Add context for attendance mode
-        if (mode === 'attendance') {
-            if (classroomId) formData.append('classroom_id', classroomId);
-            if (sessionId) formData.append('session_id', sessionId);
-        }
-
-        // We'll need to fetch the token from local storage or context if auth is required
-        // For now assuming the endpoint is protected but we might need to inject auth token
-        const token = localStorage.getItem('token');
-        
-        // Determine endpoint based on mode
-        const endpoint = mode === 'attendance' 
-            ? 'http://localhost:8000/api/v1/face/recognize-multi'
-            : 'http://localhost:8000/api/v1/face/recognize';
-
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Recognition result:", data);
-                if (data.results && data.results.length > 0) {
-                    setCapturedFaces(data.results);
-                    setCapturedFaces(data.results);
-                    // Notify parent about recognized faces
-                    if (onFaceRecognized) {
-                        data.results.forEach((face: any) => {
-                            if (face.matched && face.student) {
-                                onFaceRecognized(face);
-                            }
-                        });
-                    }
-                    // Optional: Provide visual feedback or auto-mark attendance here
-                } else {
-                    setCapturedFaces([]);
-                }
-            } else {
-                console.error("Frame send failed:", response.statusText);
-            }
-        } catch (error) {
-            console.error("Error sending frame:", error);
-        }
-    };
 
 
     const capturePhoto = () => {
@@ -257,11 +253,10 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                     {isAutoMode && capturedFaces.map((face, index) => (
                         <div
                             key={index}
-                            className={`absolute border-2 rounded-lg transition-all duration-300 pointer-events-none ${
-                                face.attendance === 'marked' ? 'border-green-500' : 
+                            className={`absolute border-2 rounded-lg transition-all duration-300 pointer-events-none ${face.attendance === 'marked' ? 'border-green-500' :
                                 face.attendance === 'already_marked' ? 'border-blue-500' :
-                                'border-yellow-500'
-                            }`}
+                                    'border-yellow-500'
+                                }`}
                             style={{
                                 left: `${(face.box[0] / (videoRef.current?.videoWidth || 1)) * 100}%`,
                                 top: `${(face.box[1] / (videoRef.current?.videoHeight || 1)) * 100}%`,
@@ -270,11 +265,10 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                             }}
                         >
                             {face.matched && face.student && (
-                                <div className={`absolute -top-8 left-0 text-white text-xs px-2 py-1 rounded ${
-                                    face.attendance === 'marked' ? 'bg-green-500' : 
+                                <div className={`absolute -top-8 left-0 text-white text-xs px-2 py-1 rounded ${face.attendance === 'marked' ? 'bg-green-500' :
                                     face.attendance === 'already_marked' ? 'bg-blue-500' :
-                                    'bg-yellow-500'
-                                }`}>
+                                        'bg-yellow-500'
+                                    }`}>
                                     {face.student.full_name} ({Math.round(face.similarity * 100)}%)
                                     {face.attendance === 'already_marked' && ' (Already Marked)'}
                                 </div>

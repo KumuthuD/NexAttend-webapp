@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { UserPlus, Save, AlertCircle } from 'lucide-react';
 import Input from '../components/common/Input';
 import CameraCapture from '../components/common/WebcamCapture';
-import  api, { registerStudent } from '../services/api';
+import api, { registerStudent } from '../services/api';
 
 const StudentRegistrationPage: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '',
-        studentId: '',
+        roll_number: '',
         email: '',
-        department: '',
+        course: '',
+        year: 1,
     });
     const [capturedImage, setCapturedImage] = useState<File | null>(null);
     const [showCamera, setShowCamera] = useState(false);
@@ -28,7 +29,7 @@ const StudentRegistrationPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!capturedImage) {
             setMessage({ type: 'error', text: 'Please capture a photo for facial recognition' });
             return;
@@ -40,16 +41,17 @@ const StudentRegistrationPage: React.FC = () => {
         try {
             const data = new FormData();
             data.append('name', formData.name);
-            data.append('student_id', formData.studentId);
+            data.append('roll_number', formData.roll_number);
             data.append('email', formData.email);
-            data.append('department', formData.department);
-            data.append('image', capturedImage);
+            data.append('course', formData.course);
+            data.append('year', formData.year.toString());
+            data.append('file', capturedImage);
 
             await registerStudent(data);
-            
+
             setMessage({ type: 'success', text: 'Student registered successfully!' });
             // Reset form
-            setFormData({ name: '', studentId: '', email: '', department: '' });
+            setFormData({ name: '', roll_number: '', email: '', course: '', year: 1 });
             setCapturedImage(null);
         } catch (error) {
             setMessage({ type: 'error', text: 'Failed to register student. Please try again.' });
@@ -73,9 +75,8 @@ const StudentRegistrationPage: React.FC = () => {
 
                     <div className="p-8">
                         {message && (
-                            <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
-                                message.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                            }`}>
+                            <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                }`}>
                                 <AlertCircle size={20} />
                                 {message.text}
                             </div>
@@ -92,9 +93,9 @@ const StudentRegistrationPage: React.FC = () => {
                                     required
                                 />
                                 <Input
-                                    label="Student ID"
-                                    name="studentId"
-                                    value={formData.studentId}
+                                    label="Roll Number"
+                                    name="roll_number"
+                                    value={formData.roll_number}
                                     onChange={handleInputChange}
                                     placeholder="e.g. ST2024001"
                                     required
@@ -109,11 +110,20 @@ const StudentRegistrationPage: React.FC = () => {
                                     required
                                 />
                                 <Input
-                                    label="Department"
-                                    name="department"
-                                    value={formData.department}
+                                    label="Course"
+                                    name="course"
+                                    value={formData.course}
                                     onChange={handleInputChange}
                                     placeholder="e.g. Computer Science"
+                                    required
+                                />
+                                <Input
+                                    label="Year"
+                                    name="year"
+                                    type="number"
+                                    value={formData.year.toString()}
+                                    onChange={handleInputChange}
+                                    placeholder="e.g. 1"
                                     required
                                 />
                             </div>
@@ -122,14 +132,14 @@ const StudentRegistrationPage: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-300 mb-4">
                                     Face Registration Data
                                 </label>
-                                
+
                                 <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-600 rounded-xl bg-gray-900/30 hover:bg-gray-900/50 transition-colors">
                                     {capturedImage ? (
                                         <div className="text-center">
                                             <div className="w-48 h-48 mx-auto mb-4 rounded-full overflow-hidden border-4 border-violet-500 shadow-lg shadow-violet-500/30">
-                                                <img 
-                                                    src={URL.createObjectURL(capturedImage)} 
-                                                    alt="Preview" 
+                                                <img
+                                                    src={URL.createObjectURL(capturedImage)}
+                                                    alt="Preview"
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>
