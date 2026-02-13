@@ -1,3 +1,4 @@
+import os
 import sys
 from unittest.mock import MagicMock, AsyncMock
 
@@ -10,7 +11,7 @@ sys.modules['scipy.spatial'] = MagicMock()
 sys.modules['scipy.spatial.distance'] = MagicMock()
 # --- END MOCK ---
 
-import os
+# Add backend to path
 sys.path.append(os.path.join(os.getcwd(), "backend"))
 
 # Mock Env Vars
