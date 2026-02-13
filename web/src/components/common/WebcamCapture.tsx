@@ -1,5 +1,18 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Camera, X, RefreshCw, Check } from 'lucide-react';
+import api from '../../services/api';
+
+interface FaceResult {
+    box: [number, number, number, number];
+    matched: boolean;
+    student?: {
+        full_name: string;
+        student_id: string;
+        _id: string;
+    };
+    similarity: number;
+    attendance?: 'marked' | 'already_marked' | 'pending';
+}
 
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
@@ -7,6 +20,7 @@ interface CameraCaptureProps {
     mode?: 'single' | 'attendance';
     classroomId?: string; // Add classroomId prop
     sessionId?: string;   // Add sessionId prop
+    onFaceRecognized?: (face: FaceResult) => void;
 }
 
 
@@ -114,16 +128,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         }
     }, [sendFrameToBackend]);
 
-    useEffect(() => {
-        startCamera();
 
-        // Cleanup function
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        };
-    }, []);
 
     // Auto-capture effect for attendance mode
     useEffect(() => {
@@ -142,80 +147,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         };
     }, [mode, isCameraReady, capturedImage]);
 
-    const captureAndSendFrame = () => {
-        if (videoRef.current && canvasRef.current) {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            const context = canvas.getContext('2d');
 
-            if (context) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        const file = new File([blob], "frame.jpg", { type: "image/jpeg" });
-                        sendFrameToBackend(file);
-                    }
-                }, 'image/jpeg', 0.8);
-            }
-        }
-    };
-
-    const sendFrameToBackend = async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        // Add context for attendance mode
-        if (mode === 'attendance') {
-            if (classroomId) formData.append('classroom_id', classroomId);
-            if (sessionId) formData.append('session_id', sessionId);
-        }
-
-        // We'll need to fetch the token from local storage or context if auth is required
-        // For now assuming the endpoint is protected but we might need to inject auth token
-        const token = localStorage.getItem('token');
-        
-        // Determine endpoint based on mode
-        const endpoint = mode === 'attendance' 
-            ? 'http://localhost:8000/api/v1/face/recognize-multi'
-            : 'http://localhost:8000/api/v1/face/recognize';
-
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Recognition result:", data);
-                if (data.results && data.results.length > 0) {
-                    setCapturedFaces(data.results);
-                    setCapturedFaces(data.results);
-                    // Notify parent about recognized faces
-                    if (onFaceRecognized) {
-                        data.results.forEach((face: any) => {
-                            if (face.matched && face.student) {
-                                onFaceRecognized(face);
-                            }
-                        });
-                    }
-                    // Optional: Provide visual feedback or auto-mark attendance here
-                } else {
-                    setCapturedFaces([]);
-                }
-            } else {
-                console.error("Frame send failed:", response.statusText);
-            }
-        } catch (error) {
-            console.error("Error sending frame:", error);
-        }
-    };
 
 
     const capturePhoto = () => {
