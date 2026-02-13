@@ -276,6 +276,7 @@ const ClassroomPage: React.FC = () => {
                     onClose={() => setIsCameraOpen(false)}
                     mode={user?.role === 'teacher' ? 'attendance' : 'single'}
                     classroomId={id}
+                    onFaceRecognized={handleFaceRecognized}
                 />
             )}
         </div >
