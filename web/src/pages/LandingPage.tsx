@@ -782,7 +782,7 @@ const LandingPage = () => {
                           value={formData.name}
                           onChange={handleChange}
                           placeholder="Your Name"
-                          className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
+                          className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-2 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
                           required
                         />
                       </div>
@@ -793,7 +793,7 @@ const LandingPage = () => {
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="Your Email"
-                          className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-3.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
+                          className="w-full bg-white/5 border-2 border-white/10 rounded-xl py-2 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/10 transition-all"
                           required
                         />
                       </div>
@@ -814,19 +814,6 @@ const LandingPage = () => {
                       >
                         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                         <span className="relative z-10">Send Message</span>
-                        <svg
-                          className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"
-                          />
-                        </svg>
                       </button>
                     </form>
                   </div>
