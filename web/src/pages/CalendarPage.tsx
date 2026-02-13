@@ -4,6 +4,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Clock, MapPin, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Event {
     id: number;
@@ -28,48 +29,7 @@ const CalendarPage: React.FC = () => {
     };
 
     // Mock Events
-    const events: Event[] = [
-        {
-            id: 1,
-            title: 'Advanced Client Side',
-            date: new Date(new Date().setDate(new Date().getDate() + 0)), // Today
-            startTime: '09:00 AM',
-            endTime: '11:00 AM',
-            location: 'Room 304',
-            type: 'class',
-            color: 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30'
-        },
-        {
-            id: 2,
-            title: 'Database Systems',
-            date: new Date(new Date().setDate(new Date().getDate() + 1)), // Tomorrow
-            startTime: '01:00 PM',
-            endTime: '03:00 PM',
-            location: 'Lab 2',
-            type: 'class',
-            color: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30'
-        },
-        {
-            id: 3,
-            title: 'Project Submission',
-            date: new Date(new Date().setDate(new Date().getDate() + 3)),
-            startTime: '11:59 PM',
-            endTime: '',
-            location: 'Online',
-            type: 'deadline',
-            color: 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/30'
-        },
-        {
-            id: 4,
-            title: 'Team Meeting',
-            date: new Date(new Date().setDate(new Date().getDate() + 0)), // Today
-            startTime: '04:00 PM',
-            endTime: '05:00 PM',
-            location: 'Library',
-            type: 'meeting',
-            color: 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30'
-        }
-    ];
+    const events: Event[] = [];
 
     const daysInMonth = (date: Date) => {
         return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -137,7 +97,12 @@ const CalendarPage: React.FC = () => {
 
             <main className="flex-1 ml-64 p-10 relative">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex justify-between items-center mb-8"
+                >
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
                             Calendar
@@ -156,11 +121,16 @@ const CalendarPage: React.FC = () => {
                             Logout
                         </button>
                     </div>
-                </div>
+                </motion.div>
 
                 <div className="flex flex-col lg:flex-row gap-8 max-w-7xl">
                     {/* Calendar Section */}
-                    <div className="flex-1 bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 shadow-sm transition-colors duration-300">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="flex-1 bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 shadow-sm transition-colors duration-300"
+                    >
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">
                                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
@@ -234,10 +204,15 @@ const CalendarPage: React.FC = () => {
                                 );
                             })}
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Side Panel for Selected Day */}
-                    <div className="w-full lg:w-80 flex flex-col gap-6">
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="w-full lg:w-80 flex flex-col gap-6"
+                    >
                         <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 shadow-sm flex-1 transition-colors duration-300">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
@@ -286,7 +261,7 @@ const CalendarPage: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </main>
         </div>

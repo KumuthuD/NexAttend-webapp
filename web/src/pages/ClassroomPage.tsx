@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Camera, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash } from 'lucide-react';
+import { Send, Camera, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle } from 'lucide-react';
 import CameraCapture from '../components/common/WebcamCapture';
 import AttendanceList from '../components/classroom/AttendanceList';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface Student {
     id: string;
@@ -23,6 +24,8 @@ const ClassroomPage: React.FC = () => {
     const [announcementText, setAnnouncementText] = useState('');
     const [chatText, setChatText] = useState('');
     const [presentStudents, setPresentStudents] = useState<Student[]>([]);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
 
     const handleFaceRecognized = (face: any) => {
         const student = face.student;
@@ -35,6 +38,11 @@ const ClassroomPage: React.FC = () => {
 
             const now = new Date();
             const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Show toast
+            setToastMessage(`${student.full_name} marked present!`);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
 
             return [{
                 id: student.id,
@@ -61,44 +69,7 @@ const ClassroomPage: React.FC = () => {
     const classroomName = "Advance Client Side Development";
     const accessCode = "ACS-2025";
 
-    const chatMessages = [
-        {
-            id: 1,
-            author: "Thiviru",
-            time: "9:54 AM",
-            date: "November 20, 2025",
-            content: "How does React's reconciliation algorithm work?",
-            color: "bg-violet-500",
-            initial: "T"
-        },
-        {
-            id: 2,
-            author: "Sudam",
-            time: "9:39 AM",
-            date: "November 27, 2025",
-            content: "Can you explain the concept of fiber architecture?",
-            color: "bg-amber-500",
-            initial: "S"
-        },
-        {
-            id: 3,
-            author: "Sudam",
-            time: "9:56 AM",
-            date: "",
-            content: "How does React handle reconciliation for list updates?",
-            color: "bg-amber-500",
-            initial: "S"
-        },
-        {
-            id: 4,
-            author: "Thiviru",
-            time: "10:05 AM",
-            date: "",
-            content: "Ma'am can you explain it again please?",
-            color: "bg-violet-500",
-            initial: "T"
-        }
-    ];
+    const chatMessages = [];
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
@@ -127,7 +98,12 @@ const ClassroomPage: React.FC = () => {
                 </div>
 
                 {/* Classroom Header Card */}
-                <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 mb-8 shadow-sm transition-colors duration-300">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 mb-8 shadow-sm transition-colors duration-300"
+                >
                     <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-80 rounded-full -mt-6 mx-[-24px] mb-5" style={{ width: 'calc(100% + 48px)', marginTop: '-32px', borderRadius: '16px 16px 16px 16px' }} />
                     <div className="flex items-center justify-between">
                         <div>
@@ -163,19 +139,28 @@ const ClassroomPage: React.FC = () => {
                             </button>
                         )}
                     </div>
-                </div>
+                </motion.div>
 
                 <div className={`grid grid-cols-1 ${user?.role === 'teacher' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6 max-w-6xl mx-auto`}>
                     {/* Attendance List - New Column - Only for teachers */}
                     {user?.role === 'teacher' && (
-                        <div className="lg:col-span-1">
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            className="lg:col-span-1"
+                        >
                             <AttendanceList students={presentStudents} />
-                        </div>
+                        </motion.div>
                     )}
 
                     <div className={`${user?.role === 'teacher' ? 'lg:col-span-2' : 'lg:col-span-1'} space-y-6`}>
                         {/* Announcements Section */}
-                        <section>
+                        <motion.section
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
                             <div className="flex items-center gap-2.5 mb-4">
                                 <Megaphone size={16} className="text-gray-400 dark:text-gray-500" />
                                 <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">Announcements</h2>
@@ -210,10 +195,14 @@ const ClassroomPage: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                        </section>
+                        </motion.section>
 
                         {/* Chat Section */}
-                        <section>
+                        <motion.section
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.4 }}
+                        >
                             <div className="flex items-center gap-2.5 mb-4">
                                 <MessageCircle size={16} className="text-gray-400 dark:text-gray-500" />
                                 <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">Discussion</h2>
@@ -265,7 +254,7 @@ const ClassroomPage: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </motion.section>
                     </div>
                 </div>
             </main>
@@ -276,8 +265,26 @@ const ClassroomPage: React.FC = () => {
                     onClose={() => setIsCameraOpen(false)}
                     mode={user?.role === 'teacher' ? 'attendance' : 'single'}
                     classroomId={id}
+                    onFaceRecognized={handleFaceRecognized}
                 />
             )}
+
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {showToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-full shadow-lg flex items-center gap-3 z-50"
+                    >
+                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white">
+                            <CheckCircle size={12} strokeWidth={3} />
+                        </div>
+                        <span className="font-medium text-sm">{toastMessage}</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div >
     );
 };

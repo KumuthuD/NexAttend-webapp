@@ -7,6 +7,7 @@ import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
 import ThemeToggle from '../components/ThemeToggle';
 import { Smile, Database, Code, BookOpen, Cpu, Palette } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // Interface for classroom data
 interface Classroom {
@@ -115,12 +116,24 @@ const DashboardPage: React.FC = () => {
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
             {/* Sidebar */}
-            <Sidebar />
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="lg:col-span-1"
+            >
+                <Sidebar />
+            </motion.div>
 
             {/* Main Content */}
             <main className="flex-1 ml-64 p-10 relative">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-5">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex justify-between items-center mb-5"
+                >
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
                             {greeting}{user?.name ? `, ${user.name.split(' ')[0]+'!'}` : ''}👋
@@ -136,7 +149,7 @@ const DashboardPage: React.FC = () => {
                             Logout
                         </button>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Divider */}
                 <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
@@ -148,7 +161,12 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 {/* Classroom Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl"
+                >
                     {classrooms.map((classroom) => (
                         <ClassroomCard
                             key={classroom.id}
@@ -167,7 +185,7 @@ const DashboardPage: React.FC = () => {
                         type={isTeacher ? 'create' : 'join'}
                         onClick={() => setIsCreateModalOpen(true)}
                     />
-                </div>
+                </motion.div>
             </main>
 
             {/* Create Classroom Modal */}

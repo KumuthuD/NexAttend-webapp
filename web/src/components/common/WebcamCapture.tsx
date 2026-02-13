@@ -268,9 +268,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                     {isAutoMode && capturedFaces.map((face, index) => (
                         <div
                             key={index}
-                            className={`absolute border-2 rounded-lg transition-all duration-300 pointer-events-none ${face.attendance === 'marked' ? 'border-green-500' :
-                                face.attendance === 'already_marked' ? 'border-blue-500' :
-                                    'border-yellow-500'
+                            className={`absolute border-2 rounded-xl transition-all duration-300 pointer-events-none backdrop-blur-[1px] ${face.matched
+                                    ? 'border-green-500 bg-green-500/10 shadow-[0_0_20px_rgba(34,197,94,0.3)]'
+                                    : 'border-yellow-500 bg-yellow-500/10'
                                 }`}
                             style={{
                                 left: `${(face.box[0] / (videoRef.current?.videoWidth || 1)) * 100}%`,
@@ -279,15 +279,20 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                                 height: `${(face.box[3] / (videoRef.current?.videoHeight || 1)) * 100}%`,
                             }}
                         >
+                            {/* Label Badge */}
                             {face.matched && face.student && (
-                                <div className={`absolute -top-8 left-0 text-white text-xs px-2 py-1 rounded ${face.attendance === 'marked' ? 'bg-green-500' :
-                                    face.attendance === 'already_marked' ? 'bg-blue-500' :
-                                        'bg-yellow-500'
-                                    }`}>
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap flex items-center gap-1.5 animate-fadeIn">
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
                                     {face.student.full_name} ({Math.round(face.similarity * 100)}%)
                                     {face.attendance === 'already_marked' && ' (Already Marked)'}
                                 </div>
                             )}
+
+                            {/* Corner Accents */}
+                            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white/50 rounded-tl-lg -mt-1 -ml-1"></div>
+                            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white/50 rounded-tr-lg -mt-1 -mr-1"></div>
+                            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white/50 rounded-bl-lg -mb-1 -ml-1"></div>
+                            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white/50 rounded-br-lg -mb-1 -mr-1"></div>
                         </div>
                     ))}
                 </div>
