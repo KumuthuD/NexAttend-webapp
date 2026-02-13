@@ -132,6 +132,25 @@ async def create_recognition_log(
     return created_log
 
 
+@router.get("/session/{session_id}", response_model=AttendanceSessionResponse)
+async def get_attendance_session(
+    session_id: str,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve details and records for a specific attendance session.
+    """
+    session = await db["attendance_sessions"].find_one({"_id": session_id})
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance session with ID {session_id} not found"
+        )
+    
+    return session
+
+
 @router.get("/logs/{session_id}", response_model=List[RecognitionLogResponse])
 async def get_session_logs(
     session_id: str,
