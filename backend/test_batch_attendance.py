@@ -95,7 +95,7 @@ class TestBatchAttendance(unittest.IsolatedAsyncioTestCase):
         self.assertIn("$push", update_op)
         self.assertEqual(len(update_op["$push"]["records"]["$each"]), 2)
         
-        print("✅ Batch marking verified!")
+        print("Batch marking verified!")
 
 if __name__ == "__main__":
     unittest.main()
