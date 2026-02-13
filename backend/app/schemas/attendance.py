@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
@@ -11,10 +11,8 @@ class AttendanceRecordCreate(AttendanceRecordBase):
     pass
 
 class AttendanceRecordResponse(AttendanceRecordBase):
+    model_config = ConfigDict(from_attributes=True)
     timestamp: datetime
-
-    class Config:
-        from_attributes = True
 
 class AttendanceSessionBase(BaseModel):
     classroom_id: str
@@ -39,15 +37,15 @@ class AttendanceMarkResponse(BaseModel):
     status: str
     timestamp: datetime
 
-class AttendanceSessionResponse(AttendanceSessionBase):
+class AttendanceSessionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     id: str = Field(..., alias="_id")
+    classroom_id: str
+    session_date: datetime
+    status: str
     present_student_ids: List[str] = []
     records: List[AttendanceRecordResponse] = []
     start_time: datetime
     end_time: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
-        populate_by_name = True
