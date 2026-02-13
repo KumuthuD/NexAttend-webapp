@@ -130,6 +130,18 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
 
 
 
+    // Initial camera startup
+    useEffect(() => {
+        startCamera();
+
+        // Cleanup function
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
+
     // Auto-capture effect for attendance mode
     useEffect(() => {
         let intervalId: NodeJS.Timeout;
