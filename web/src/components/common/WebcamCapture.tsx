@@ -1,12 +1,25 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Camera, X, RefreshCw, Check } from 'lucide-react';
 
+interface FaceResult {
+    box: [number, number, number, number];
+    matched: boolean;
+    student?: {
+        full_name: string;
+        student_id: string;
+        _id: string;
+    };
+    similarity: number;
+    attendance?: 'marked' | 'already_marked' | 'pending';
+}
+
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
     onClose: () => void;
     mode?: 'single' | 'attendance';
     classroomId?: string; // Add classroomId prop
     sessionId?: string;   // Add sessionId prop
+    onFaceRecognized?: (face: FaceResult) => void;
 }
 
 
@@ -15,7 +28,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
     onClose, 
     mode = 'single',
     classroomId,
-    sessionId 
+    sessionId,
+    onFaceRecognized
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,7 +37,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
-    const [capturedFaces, setCapturedFaces] = useState<any[]>([]); // Store recognition results
+    const [capturedFaces, setCapturedFaces] = useState<FaceResult[]>([]); // Store recognition results
     const [isAutoMode, setIsAutoMode] = useState(false); // Toggle for auto-capture
 
 
@@ -129,10 +143,10 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                 console.log("Recognition result:", data);
                 if (data.results && data.results.length > 0) {
                     setCapturedFaces(data.results);
-                    setCapturedFaces(data.results);
+
                     // Notify parent about recognized faces
                     if (onFaceRecognized) {
-                        data.results.forEach((face: any) => {
+                        data.results.forEach((face: FaceResult) => {
                             if (face.matched && face.student) {
                                 onFaceRecognized(face);
                             }
