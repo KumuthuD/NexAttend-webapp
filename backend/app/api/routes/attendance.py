@@ -164,9 +164,6 @@ async def list_classroom_sessions(
     return sessions
 
 
-    return sessions
-
-
 @router.post("/session/{session_id}/end", response_model=AttendanceSessionResponse)
 async def end_attendance_session(
     session_id: str,
