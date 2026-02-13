@@ -301,14 +301,24 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                 <div className="p-6 bg-gray-900/50 backdrop-blur-md border-t border-gray-800">
                     <div className="flex items-center justify-center gap-4">
                         {!capturedImage ? (
-                            <button
-                                onClick={capturePhoto}
-                                disabled={!isCameraReady}
-                                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-violet-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
-                            >
-                                <Camera size={20} />
-                                {mode === 'attendance' ? 'Stop Scanning' : 'Capture'}
-                            </button>
+                            mode === 'attendance' ? (
+                                <button
+                                    onClick={onClose}
+                                    className="flex items-center gap-2 px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-semibold shadow-lg shadow-red-500/20 transition-all active:scale-95 hover:shadow-red-500/30"
+                                >
+                                    <X size={20} />
+                                    Stop Attendance
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={capturePhoto}
+                                    disabled={!isCameraReady}
+                                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-violet-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                                >
+                                    <Camera size={20} />
+                                    Capture
+                                </button>
+                            )
                         ) : (
                             <>
                                 <button
