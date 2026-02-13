@@ -31,15 +31,12 @@ async def start_attendance(
         )
     
     # 2. Check if there's already an active session for this classroom
-    # (Optional: limit to one active session at a time)
     active_session = await db["attendance_sessions"].find_one({
         "classroom_id": request.classroom_id,
         "status": "active"
     })
     
     if active_session:
-        # We can either return the existing session or raise an error.
-        # Let's return the existing one if it's already active.
         return active_session
 
     # 3. Create new session
@@ -79,14 +76,13 @@ async def mark_attendance(
             detail=f"Student with ID {request.student_id} not found"
         )
 
-    # 3. Check for Duplicate (Idempotency)
-    # Check if student_id is already in present_student_ids
+    # 3. Check for Duplicate
     if request.student_id in session.get("present_student_ids", []):
         return {
             "message": "Attendance already marked",
             "student_name": student.get("full_name", "Unknown"),
             "status": "present",
-            "timestamp": datetime.utcnow() # Return current time or fetch from record
+            "timestamp": datetime.utcnow()
         }
 
     # 4. Create Record
@@ -123,7 +119,6 @@ async def create_recognition_log(
     """
     Log a recognition attempt (success, failure, etc.) for auditing.
     """
-    # Create log entry
     log_entry = RecognitionLog(**log_data.model_dump())
     
     await db["recognition_logs"].insert_one(log_entry.model_dump(by_alias=True))
@@ -166,12 +161,10 @@ async def list_classroom_sessions(
     sessions = await sessions_cursor.to_list(length=1000)
     for s in sessions:
         s["id"] = str(s["_id"])
- Riverside
- Riverside
     return sessions
 
 
-@router.post("/session/{session_id}/end", response_model=dict)
+@router.post("/session/{session_id}/end", response_model=AttendanceSessionResponse)
 async def end_attendance_session(
     session_id: str,
     db: Any = Depends(get_database)
@@ -185,15 +178,14 @@ async def end_attendance_session(
     )
     
     if result.matched_count == 0:
-        # Check if it's already completed or just missing
         session = await db["attendance_sessions"].find_one({"_id": session_id})
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
         session["id"] = str(session["_id"])
-        return session # Already completed or no change needed
+        return session
     
     ended_session = await db["attendance_sessions"].find_one({"_id": session_id})
-    ended_session["session_id"] = str(ended_session["_id"])
+    ended_session["id"] = str(ended_session["_id"])
     return ended_session
 
 
