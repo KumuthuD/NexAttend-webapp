@@ -148,6 +148,9 @@ async def get_attendance_session(
             detail=f"Attendance session with ID {session_id} not found"
         )
     
+    # Map _id to id for the response model
+    session["id"] = str(session["_id"])
+    
     return session
 
 
@@ -161,10 +164,14 @@ async def list_classroom_sessions(
     """
     sessions_cursor = db["attendance_sessions"].find({"classroom_id": classroom_id}).sort("session_date", -1)
     sessions = await sessions_cursor.to_list(length=1000)
+    for s in sessions:
+        s["id"] = str(s["_id"])
+ Riverside
+ Riverside
     return sessions
 
 
-@router.post("/session/{session_id}/end", response_model=AttendanceSessionResponse)
+@router.post("/session/{session_id}/end", response_model=dict)
 async def end_attendance_session(
     session_id: str,
     db: Any = Depends(get_database)
@@ -182,9 +189,11 @@ async def end_attendance_session(
         session = await db["attendance_sessions"].find_one({"_id": session_id})
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
+        session["id"] = str(session["_id"])
         return session # Already completed or no change needed
     
     ended_session = await db["attendance_sessions"].find_one({"_id": session_id})
+    ended_session["session_id"] = str(ended_session["_id"])
     return ended_session
 
 
