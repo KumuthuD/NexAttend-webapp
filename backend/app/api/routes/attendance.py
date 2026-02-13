@@ -164,6 +164,33 @@ async def list_classroom_sessions(
     return sessions
 
 
+    return sessions
+
+
+@router.post("/session/{session_id}/end", response_model=AttendanceSessionResponse)
+async def end_attendance_session(
+    session_id: str,
+    db: Any = Depends(get_database)
+):
+    """
+    Mark an attendance session as completed.
+    """
+    result = await db["attendance_sessions"].update_one(
+        {"_id": session_id, "status": "active"},
+        {"$set": {"status": "completed", "end_time": datetime.utcnow(), "updated_at": datetime.utcnow()}}
+    )
+    
+    if result.matched_count == 0:
+        # Check if it's already completed or just missing
+        session = await db["attendance_sessions"].find_one({"_id": session_id})
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return session # Already completed or no change needed
+    
+    ended_session = await db["attendance_sessions"].find_one({"_id": session_id})
+    return ended_session
+
+
 @router.get("/logs/{session_id}", response_model=List[RecognitionLogResponse])
 async def get_session_logs(
     session_id: str,
