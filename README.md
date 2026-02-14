@@ -2,7 +2,7 @@
 
 > **Automating attendance, ensuring security, and boosting engagement in modern education.**
 
-![NexAttend Banner](src/assets/images/logo.png)
+![NexAttend Banner](web/src/assets/images/logo.png)
 
 ## 📋 Abstract
 NexAttend is a cutting-edge **AI-based multi-face recognition attendance and classroom management system** designed to modernize educational institutions. Unlike traditional manual roll-call or single-student biometric scans, NexAttend uses **MTCNN** and **DeepFace** to detect and identify multiple students simultaneously from a single webcam frame.
