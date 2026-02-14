@@ -1,5 +1,6 @@
+import os
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, AsyncMock
 
 # --- MOCK AI DEPENDENCIES ---
 sys.modules['deepface'] = MagicMock()
@@ -10,10 +11,17 @@ sys.modules['scipy.spatial'] = MagicMock()
 sys.modules['scipy.spatial.distance'] = MagicMock()
 # --- END MOCK ---
 
+# Add backend to path
+sys.path.append(os.path.join(os.getcwd(), "backend"))
+
+# Mock Env Vars
+os.environ["MONGODB_URL"] = "mongodb://localhost:27017/test"
+os.environ["SECRET_KEY"] = "test"
+os.environ["JWT_SECRET"] = "test"
+
 from fastapi.testclient import TestClient
 from app.main import app
 from app.database.mongodb import get_database
-from unittest.mock import AsyncMock
 
 # Mock database
 mock_db = MagicMock()
