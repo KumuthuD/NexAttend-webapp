@@ -242,3 +242,22 @@ async def get_session_logs(
     logs_cursor = db["recognition_logs"].find({"session_id": session_id}).sort("timestamp", -1)
     logs = await logs_cursor.to_list(length=1000)
     return logs
+
+
+@router.get("/session/{session_id}", response_model=AttendanceSessionResponse)
+async def get_session_results(
+    session_id: str,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve the results of a specific attendance session.
+    """
+    session = await db["attendance_sessions"].find_one({"_id": session_id})
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance session with ID {session_id} not found"
+        )
+    
+    return session

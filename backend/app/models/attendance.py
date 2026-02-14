@@ -29,8 +29,11 @@ class AttendanceSession(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()), alias="_id")
     classroom_id: str = Field(..., description="Reference to Classroom ID")
     session_date: datetime = Field(default_factory=datetime.utcnow)
+    start_time: datetime = Field(default_factory=datetime.utcnow)
+    end_time: Optional[datetime] = None
     status: str = Field("active", description="Session status (active, completed)")
     records: List[AttendanceRecord] = Field(default_factory=list)
+    present_student_ids: List[str] = Field(default_factory=list)
     
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
