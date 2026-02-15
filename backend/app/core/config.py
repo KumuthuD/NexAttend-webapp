@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     
     # Face Recognition
     FACE_MODEL: str = "Facenet"
-    SIMILARITY_THRESHOLD: float = 0.7
+    SIMILARITY_THRESHOLD: float = 0.85
     
     # Storage
     UPLOAD_DIR: str = "./data/face_images"

@@ -358,8 +358,10 @@ async def recognize_multi_faces(
 
     # Load registered users ONCE (outside the loop — performance optimization)
     query = {"has_registered_face": True}
-    if classroom_id:
-        query["classroom_id"] = classroom_id
+    # For demo purposes, we disable strict classroom filtering so newly registered students
+    # (who aren't enrolled in a specific class yet) can still be recognized.
+    # if classroom_id:
+    #     query["classroom_id"] = classroom_id
 
     all_users = await db.db["users"].find(query).to_list(1000)
 

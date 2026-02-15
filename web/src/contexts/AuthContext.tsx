@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: userData.role,
       };
       
-      const response = await registerUser(registerData);
+      const response = await registerUser(registerData, images);
       
       // Map API response to User format
       const newUser: User = {

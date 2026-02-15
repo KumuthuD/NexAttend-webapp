@@ -77,8 +77,24 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     return response.data;
 };
 
-export const registerUser = async (data: RegisterData): Promise<UserData> => {
-    const response = await api.post<UserData>('/api/v1/auth/register', data);
+export const registerUser = async (data: RegisterData, images?: File[]): Promise<UserData> => {
+    const formData = new FormData();
+    formData.append('full_name', data.full_name);
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('role', data.role);
+
+    if (images && images.length > 0) {
+        images.forEach((file) => {
+            formData.append('files', file);
+        });
+    }
+
+    const response = await api.post<UserData>('/api/v1/auth/register', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
     return response.data;
 };
 
