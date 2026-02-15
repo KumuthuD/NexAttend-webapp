@@ -80,11 +80,14 @@ class EmbeddingService:
                 min_distance = distance
                 if distance < self.threshold:
                     best_match = user
+            
+            # Debug log to see distances (uncomment if very verbose)
+            # logger.info(f"  - vs {user.get('email', '?')}: {distance:.4f} (Thresh: {self.threshold})")
 
         if best_match:
-            logger.info(f"User identified: {best_match.get('name', 'Unknown')} (Dist: {min_distance:.4f})")
+            logger.info(f"User identified: {best_match.get('full_name', best_match.get('name', 'Unknown'))} (Dist: {min_distance:.4f} < {self.threshold})")
         else:
-            logger.info(f"No match found. Best distance: {min_distance:.4f}")
+            logger.info(f"No match found. Best distance: {min_distance:.4f} (Threshold: {self.threshold})")
 
         return best_match, min_distance
 
