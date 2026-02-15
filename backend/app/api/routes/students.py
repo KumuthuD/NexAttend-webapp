@@ -11,6 +11,7 @@ from app.services.embedding_service import embedding_service
 import numpy as np
 import cv2
 import logging
+from datetime import datetime
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -63,7 +64,7 @@ async def create_student(student: StudentCreate = Body(...)):
     created_student = await db["students"].find_one({"_id": student_model.id})
     return created_student
 
-@router.post("/register", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_student(
     name: str = Form(...),
     roll_number: str = Form(...),
@@ -72,16 +73,22 @@ async def register_student(
     year: int = Form(...),
     file: UploadFile = File(...)
 ):
+    """
+    Registers a student and processes their face image for recognition.
     
-    #Registers a student and processes their face image for recognition.
+    Saves the student into the 'users' collection with role='student' so that
+    /faces/recognize and /faces/recognize-multi can find them for attendance.
+    The face embedding is stored directly on the user document.
     
+    Kumuthu Dahanayake - Week 03 Day 14
+    """
     db = await get_database()
     
-    # 1. Validation: Duplicates
-    existing = await db["students"].find_one({
+    # 1. Validation: Check duplicates in BOTH collections
+    existing_user = await db["users"].find_one({
         "$or": [{"roll_number": roll_number}, {"email": email}]
     })
-    if existing:
+    if existing_user:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Student with this roll number or email already exists")
 
     # 2. Validation: Image
@@ -119,29 +126,40 @@ async def register_student(
     if not embedding:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to generate face embedding")
 
-    # 4. Save Data
-    # Create Student Model (without embedding first)
-    student_model = Student(
-        name=name,
-        roll_number=roll_number,
-        email=email,
-        course=course,
-        year=year,
-        has_registered_face=True # We just got it!
-    )
+    # 4. Save to 'users' collection — unified with /faces/register format
+    # This allows /faces/recognize and /faces/recognize-multi to find this student
     
-    # Save Embedding Document
-    face_emb_doc = FaceEmbedding(
-        student_id=student_model.id,
-        embedding=embedding
-    )
-    await db["face_embeddings"].insert_one(face_emb_doc.model_dump(by_alias=True))
+    user_doc = {
+        "full_name": name,           # matches what /faces/recognize expects
+        "email": email,
+        "role": "student",
+        "roll_number": roll_number,
+        "course": course,
+        "year": year,
+        "embedding": embedding,       # stored directly on user (same as /faces/register)
+        "has_registered_face": True,
+        "is_active": True,
+        "created_at": datetime.utcnow(),
+    }
     
-    # Link and Save Student Document
-    student_model.face_embedding_id = face_emb_doc.id
-    await db["students"].insert_one(student_model.model_dump(by_alias=True))
+    result = await db["users"].insert_one(user_doc)
     
-    return await db["students"].find_one({"_id": student_model.id})
+    logger.info(f"Registered student {name} ({email}) with face embedding into users collection")
+    
+    # Return the created user
+    created_user = await db["users"].find_one({"_id": result.inserted_id})
+    
+    return {
+        "_id": str(created_user["_id"]),
+        "full_name": created_user["full_name"],
+        "email": created_user["email"],
+        "role": created_user["role"],
+        "roll_number": created_user["roll_number"],
+        "course": created_user["course"],
+        "year": created_user["year"],
+        "has_registered_face": created_user["has_registered_face"],
+        "is_active": created_user["is_active"],
+    }
 
 @router.get("/", response_model=List[StudentResponse])
 async def list_students(skip: int = 0, limit: int = 100):
@@ -201,3 +219,4 @@ async def delete_student(id: str):
         raise HTTPException(status_code=404, detail="Student not found")
     
     return
+    
