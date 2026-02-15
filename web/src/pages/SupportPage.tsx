@@ -79,7 +79,7 @@ const SupportPage: React.FC = () => {
                     transition={{ duration: 0.6 }}
                     className="text-center max-w-3xl mx-auto mb-16 pt-24"
                 >
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-6 pb-4 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500 bg-clip-text text-transparent">
                         How can we help you today?
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 text-lg mb-8">
@@ -126,7 +126,7 @@ const SupportPage: React.FC = () => {
                             >
                                 <button
                                     onClick={() => toggleFAQ(index)}
-                                    className="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+                                    className="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:cursor-pointer dark:hover:bg-gray-750"
                                 >
                                     <span className="font-medium text-lg text-gray-900 dark:text-gray-200">{faq.question}</span>
                                     {openPrivacy === index ? (
