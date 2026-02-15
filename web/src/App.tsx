@@ -16,6 +16,7 @@ import ClassroomPage from './pages/ClassroomPage';
 import ValidationDemo from './pages/ValidationDemo';
 import NotificationPage from './pages/NotificationPage';
 import SettingsPage from './pages/SettingsPage';
+import SupportPage from './pages/SupportPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import SplashScreen from './components/common/SplashScreen';
 
@@ -58,6 +59,7 @@ const App: React.FC = () => {
                                     <Route path="/get-started" element={<GetStartedPage />} />
                                     <Route path="/test-components" element={<TestComponentsPage />} />
                                     <Route path="/validation-demo" element={<ValidationDemo />} />
+
                                     <Route path="/login" element={<LoginPage />} />
                                     <Route
                                         path="/student-register"
@@ -106,6 +108,16 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <NotificationPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+
+                                {/* Support Route */}
+                                <Route
+                                    path="/support"
+                                    element={
+                                        <ProtectedRoute>
+                                            <SupportPage />
                                         </ProtectedRoute>
                                     }
                                 />
