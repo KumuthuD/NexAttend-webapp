@@ -10,6 +10,7 @@ from .single_face_recognition_service import (
     SingleFaceRecognitionService,
     single_face_service
 )
+from .lighting_optimizer import LightingOptimizer, lighting_optimizer
 from .image_processor import (
     resize_image,
     resize_with_aspect_ratio,
@@ -30,6 +31,8 @@ __all__ = [
     'FaceRecognizer',
     'SingleFaceRecognitionService',
     'single_face_service',
+    'LightingOptimizer',
+    'lighting_optimizer',
     'resize_image',
     'resize_with_aspect_ratio',
     'convert_bgr_to_rgb',
