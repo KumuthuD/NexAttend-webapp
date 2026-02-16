@@ -84,7 +84,7 @@ class TestDuplicateCheck(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response2.status_code, 200)
         self.assertEqual(response2.json()["message"], "Attendance already marked")
         
-        print("✅ Atomic duplicate prevention verified.")
+        print("Atomic duplicate prevention verified.")
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,14 +2,14 @@ import os
 import sys
 from unittest.mock import MagicMock, AsyncMock
 
-# --- MOCK AI DEPENDENCIES ---
+# MOCK AI DEPENDENCIES 
 sys.modules['deepface'] = MagicMock()
 sys.modules['mtcnn'] = MagicMock()
 sys.modules['cv2'] = MagicMock()
 sys.modules['scipy'] = MagicMock()
 sys.modules['scipy.spatial'] = MagicMock()
 sys.modules['scipy.spatial.distance'] = MagicMock()
-# --- END MOCK ---
+#  END MOCK
 
 # Add backend to path
 sys.path.append(os.path.join(os.getcwd(), "backend"))

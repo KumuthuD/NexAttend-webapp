@@ -88,7 +88,7 @@ def test_student_registration_with_face():
         assert mock_students_col.insert_one.called
         assert mock_embeddings_col.insert_one.called
         
-        print("✅ Student registration with face test passed!")
+        print(" Student registration with face test passed!")
 
 if __name__ == "__main__":
     test_student_registration_with_face()

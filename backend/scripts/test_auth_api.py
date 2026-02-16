@@ -61,7 +61,7 @@ def test_user_registration():
         assert "password" not in data # Should not return password
         assert "password_hash" not in data
         
-        print("✅ Registration test passed!")
+        print(" Registration test passed!")
 
 if __name__ == "__main__":
     test_user_registration()

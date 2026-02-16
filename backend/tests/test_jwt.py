@@ -35,7 +35,7 @@ def test_jwt_flow():
 if __name__ == "__main__":
     try:
         test_jwt_flow()
-        print("\n✅ All JWT tests passed!")
+        print("\n All JWT tests passed!")
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        print(f"\n Test failed: {e}")
         sys.exit(1)

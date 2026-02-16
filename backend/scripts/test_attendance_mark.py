@@ -100,7 +100,7 @@ def test_attendance_mark():
         data_dup = response_dup.json()
         assert data_dup["message"] == "Attendance already marked"
         
-        print("✅ Attendance mark test passed!")
+        print(" Attendance mark test passed!")
 
 if __name__ == "__main__":
     test_attendance_mark()

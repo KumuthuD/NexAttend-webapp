@@ -41,7 +41,7 @@ class TestAuthMiddleware(unittest.IsolatedAsyncioTestCase):
             # Assertions
             self.assertIsInstance(user, User)
             self.assertEqual(user.email, "test@example.com")
-            print("✅ Valid token test passed!")
+            print(" Valid token test passed!")
 
     async def test_get_current_user_invalid_token(self):
         mock_db = MagicMock()
@@ -52,7 +52,7 @@ class TestAuthMiddleware(unittest.IsolatedAsyncioTestCase):
                 await get_current_user(db=mock_db, token=mock_token)
             
             self.assertEqual(cm.exception.status_code, status.HTTP_401_UNAUTHORIZED)
-            print("✅ Invalid token test passed!")
+            print(" Invalid token test passed!")
 
     async def test_get_current_user_not_found(self):
         mock_db = MagicMock()
@@ -66,7 +66,7 @@ class TestAuthMiddleware(unittest.IsolatedAsyncioTestCase):
                 await get_current_user(db=mock_db, token=mock_token)
             
             self.assertEqual(cm.exception.status_code, status.HTTP_404_NOT_FOUND)
-            print("✅ User not found test passed!")
+            print(" User not found test passed!")
 
 if __name__ == "__main__":
     unittest.main()
