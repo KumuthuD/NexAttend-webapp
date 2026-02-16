@@ -16,6 +16,7 @@ import ClassroomPage from './pages/ClassroomPage';
 import ValidationDemo from './pages/ValidationDemo';
 import NotificationPage from './pages/NotificationPage';
 import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
 import SupportPage from './pages/SupportPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import SplashScreen from './components/common/SplashScreen';
@@ -128,6 +129,16 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <SettingsPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+
+                                {/* Profile Route */}
+                                <Route
+                                    path="/profile"
+                                    element={
+                                        <ProtectedRoute>
+                                            <ProfilePage />
                                         </ProtectedRoute>
                                     }
                                 />

@@ -83,7 +83,10 @@ const Sidebar = () => {
         </nav>
 
         {/* User Profile */}
-        <div className="mt-auto flex items-center gap-3 px-3 py-3 mb-5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors duration-200 group border border-transparent hover:border-gray-100 dark:hover:border-white/[0.06]">
+        <div
+          onClick={() => handleNavigation('/profile')}
+          className="mt-auto flex items-center gap-3 px-3 py-3 mb-5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors duration-200 group border border-transparent hover:border-gray-100 dark:hover:border-white/[0.06]"
+        >
           <div className="relative">
             <img
               src={user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}&backgroundColor=e5e7eb&textColor=374151`}
