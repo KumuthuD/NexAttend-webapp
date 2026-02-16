@@ -228,11 +228,11 @@ const SettingsPage: React.FC = () => {
                                                 <div className="grid grid-cols-1 gap-6">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-                                                        <Input
+                                                        <input
                                                             type="text"
                                                             value={newName}
                                                             onChange={(e) => setNewName(e.target.value)}
-                                                            className="w-full px-4 py-2 bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-500 dark:text-gray-400"
+                                                            className="w-full px-4 py-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100"
                                                             placeholder="Enter your full name"
                                                         />
                                                     </div>
@@ -242,7 +242,7 @@ const SettingsPage: React.FC = () => {
                                                             type="email"
                                                             value={user?.email || ''}
                                                             readOnly
-                                                            className="w-full px-4 py-2 bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                                            className="w-full px-4 py-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100 cursor-not-allowed"
                                                         />
                                                         <p className="text-xs text-gray-500 mt-1">Email address cannot be changed</p>
                                                     </div>
