@@ -6,6 +6,7 @@ Kumuthu Dahanayake
 Week 02 Day 8 — Registration & Detection
 Week 03 Day 13 — Single Recognition Pipeline
 Week 03 Day 14 — Multi-Face Recognition with Batch Attendance
+Viraj Jayasiri - Week 04 Day 16 (Low-light optimization)
 """
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status
@@ -13,6 +14,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.services.face_detector import FaceDetector
 from app.services.embedding_service import embedding_service
+from app.services.ai.lighting_optimizer import lighting_optimizer
 from app.database.mongodb import db
 import numpy as np
 import cv2
@@ -91,6 +93,9 @@ async def register_face(
     x2, y2 = min(w_img, x + w + pad), min(h_img, y + h + pad)
     
     face_crop = image[y1:y2, x1:x2]
+    
+    # enhance face crop for better embedding in low-light
+    face_crop = lighting_optimizer.enhance_image(face_crop, auto_mode=True)
     
     embedding = embedding_service.generate_embedding(face_crop)
     
@@ -238,6 +243,9 @@ async def recognize_faces(
             x2, y2 = min(w_img, x + w + pad), min(h_img, y + h + pad)
 
             face_crop = image[y1:y2, x1:x2]
+            
+            # enhance face crop for better embedding quality
+            face_crop = lighting_optimizer.enhance_image(face_crop, auto_mode=True)
 
     #generate embedding for the detected face
             embedding = embedding_service.generate_embedding(face_crop)
