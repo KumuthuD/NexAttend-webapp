@@ -39,11 +39,11 @@ def test_models():
     )
     assert s_schema.name == "Schema Student"
     
-    print("\n✅ All Use Case Models Verified Successfully!")
+    print("\n All Use Case Models Verified Successfully!")
 
 if __name__ == "__main__":
     try:
         test_models()
     except Exception as e:
-        print(f"❌ Test Failed: {e}")
+        print(f" Test Failed: {e}")
         exit(1)
