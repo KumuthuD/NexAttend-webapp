@@ -16,6 +16,7 @@ mock_settings.PROJECT_NAME = "Test"
 mock_settings.MONGODB_URL = "mongodb://localhost:27017"
 mock_settings.SECRET_KEY = "test"
 mock_settings.JWT_SECRET = "test"
+mock_settings.FACE_MODEL = "Facenet"
 sys.modules['app.core.config'] = MagicMock(settings=mock_settings)
 
 # Mock AI services
@@ -34,7 +35,7 @@ async def run_logic_diagnostic():
     
     # Mock student - use ALL fields from StudentResponse to be safe
     mock_student = {
-        "_id": ObjectId("65ce276b9e1e4d98952f1978"),
+        "_id": "65ce276b9e1e4d98952f1978",
         "full_name": "John Doe",
         "name": "John",
         "role": "student",
@@ -68,7 +69,7 @@ async def run_logic_diagnostic():
     mock_collection.find_one.return_value = mock_student
     mock_cursor = AsyncMock()
     mock_cursor.to_list.return_value = mock_history
-    mock_collection.aggregate.return_value = mock_cursor
+    mock_collection.aggregate = MagicMock(return_value=mock_cursor)
     mock_db_instance.__getitem__.return_value = mock_collection
 
     print(f"Executing logic test for {target_id}...")
