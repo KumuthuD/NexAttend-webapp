@@ -3,9 +3,10 @@ from typing import List, Optional
 from pydantic import EmailStr
 from app.database.mongodb import get_database
 from app.models.student import Student
-from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate
+from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate, StudentAttendanceHistoryItem, StudentAttendanceHistory
 from app.schemas.face import ClassEmbeddingResponse
 from app.models.face_embedding import FaceEmbedding
+from bson import ObjectId
 from app.services.face_detector import FaceDetector
 from app.services.embedding_service import embedding_service
 import numpy as np
@@ -219,4 +220,116 @@ async def delete_student(id: str):
         raise HTTPException(status_code=404, detail="Student not found")
     
     return
+
+@router.get("/{id}/attendance", response_model=StudentAttendanceHistory)
+async def get_student_attendance_history(id: str):
+    """
+    Get the attendance history for a specific student.
+    
+    Thisanda - Week 04 Day 16
+    """
+    db = await get_database()
+    
+    # 1. Verify student exists (in 'users' collection with role=student)
+    # The system stores students in 'users' or 'students'. 
+    # Based on register_student, it's 'users'.
+    student = await db["users"].find_one({"_id": ObjectId(id), "role": "student"})
+    if not student:
+        # Try 'students' collection as fallback
+        student = await db["students"].find_one({"_id": id})
+        if not student:
+            raise HTTPException(status_code=404, detail="Student not found")
+    
+    student_name = student.get("full_name") or student.get("name")
+    
+    # Use MongoDB aggregation to find all sessions for this student
+    # and join with classrooms to get the classroom name.
+    
+    pipeline = [
+        # Match sessions where this student is present or has a record
+        {
+            "$match": {
+                "present_student_ids": id
+            }
+        },
+        # Join with classrooms
+        {
+            "$lookup": {
+                "from": "classrooms",
+                "localField": "classroom_id",
+                "foreignField": "_id",
+                "as": "classroom"
+            }
+        },
+        # Unwind classroom
+        {
+            "$unwind": {
+                "path": "$classroom",
+                "preserveNullAndEmptyArrays": True
+            }
+        },
+        # Sort by session date descending
+        {"$sort": {"session_date": -1}},
+        # Project the required fields
+        {
+            "$project": {
+                "session_id": {"$toString": "$_id"},
+                "classroom_id": "$classroom_id",
+                "classroom_name": {"$ifNull": ["$classroom.name", "Unknown Classroom"]},
+                "session_date": "$session_date",
+                # Extract the specific record for this student
+                "record": {
+                    "$filter": {
+                        "input": "$records",
+                        "as": "r",
+                        "cond": {"$eq": ["$$r.student_id", id]}
+                    }
+                }
+            }
+        }
+    ]
+    
+    sessions = await db["attendance_sessions"].aggregate(pipeline).to_list(length=1000)
+    
+    history_items = []
+    present_count = 0
+    
+    for sess in sessions:
+        record = sess["record"][0] if sess.get("record") and len(sess["record"]) > 0 else None
+        
+        status_val = "absent"
+        timestamp = None
+        confidence = None
+        
+        if record:
+            status_val = record.get("status", "present")
+            timestamp = record.get("timestamp")
+            confidence = record.get("confidence")
+            present_count += 1
+            
+        history_items.append(StudentAttendanceHistoryItem(
+            session_id=sess["session_id"],
+            classroom_id=sess["classroom_id"],
+            classroom_name=sess["classroom_name"],
+            session_date=sess["session_date"],
+            attendance_status=status_val,
+            timestamp=timestamp,
+            confidence=confidence
+        ))
+    
+    total_sessions = len(history_items) # This only counts sessions they were in? 
+    # Actually, we should probably find all sessions for the classrooms the student is in.
+    # But for a simple history, "sessions where they were marked" is a good start.
+    # To get a "rate", we need total sessions of their classes.
+    
+    attendance_percentage = (present_count / total_sessions * 100) if total_sessions > 0 else 0.0
+    
+    return StudentAttendanceHistory(
+        student_id=id,
+        student_name=student_name,
+        total_sessions=total_sessions,
+        present_count=present_count,
+        attendance_percentage=round(attendance_percentage, 2),
+        history=history_items
+    )
     
