@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import DashboardLayout from '../components/DashboardLayout';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { Send, Camera, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle } from 'lucide-react';
@@ -72,76 +72,74 @@ const ClassroomPage: React.FC = () => {
     const chatMessages = [];
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
-            <Sidebar />
-
-            <main className="flex-1 ml-64 p-10 relative">
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors duration-200 text-sm font-medium"
-                    >
-                        <ArrowLeft size={16} />
-                        <span className="">Dashboard</span>
-                    </button>
-
-                    <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <button
-                            onClick={handleLogout}
-                            className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-
-                {/* Classroom Header Card */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 mb-8 shadow-sm transition-colors duration-300"
+        <DashboardLayout>
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-2 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors duration-200 text-sm font-medium"
                 >
-                    <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-80 rounded-full -mt-6 mx-[-24px] mb-5" style={{ width: 'calc(100% + 48px)', marginTop: '-32px', borderRadius: '16px 16px 16px 16px' }} />
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">{classroomName}</h1>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-                                <span className="flex items-center gap-1.5">
-                                    <Hash size={14} className="text-gray-400 dark:text-gray-500" />
-                                    <span className="font-mono text-violet-600 dark:text-violet-400 font-medium">{accessCode}</span>
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Users size={14} className="text-gray-400 dark:text-gray-500" />
-                                    0 students
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Clock size={14} className="text-gray-400 dark:text-gray-500" />
-                                    0 sessions
-                                </span>
-                            </div>
-                        </div>
-                        {user?.role === 'teacher' && (
-                            <button
-                                onClick={() => setIsCameraOpen(true)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
-                            >
-                                Mark Attendance
-                            </button>
-                        )}
-                        {user?.role === 'student' && (
-                            <button
-                                className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
-                            >
-                                View Attendance
-                            </button>
-                        )}
-                    </div>
-                </motion.div>
+                    <ArrowLeft size={16} />
+                    <span className="">Dashboard</span>
+                </button>
 
-                <div className={`grid grid-cols-1 ${user?.role === 'teacher' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6 max-w-6xl mx-auto`}>
+                <div className="flex items-center gap-4">
+                    <ThemeToggle />
+                    <button
+                        onClick={handleLogout}
+                        className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
+                    >
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            {/* Classroom Header Card */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 mb-8 shadow-sm transition-colors duration-300"
+            >
+                <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-80 rounded-full -mt-6 mx-[-24px] mb-5" style={{ width: 'calc(100% + 48px)', marginTop: '-32px', borderRadius: '16px 16px 16px 16px' }} />
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">{classroomName}</h1>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                            <span className="flex items-center gap-1.5">
+                                <Hash size={14} className="text-gray-400 dark:text-gray-500" />
+                                <span className="font-mono text-violet-600 dark:text-violet-400 font-medium">{accessCode}</span>
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <Users size={14} className="text-gray-400 dark:text-gray-500" />
+                                0 students
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <Clock size={14} className="text-gray-400 dark:text-gray-500" />
+                                0 sessions
+                            </span>
+                        </div>
+                    </div>
+                    {user?.role === 'teacher' && (
+                        <button
+                            onClick={() => setIsCameraOpen(true)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm w-full md:w-auto justify-center"
+                        >
+                            <Camera size={18} />
+                            Mark Attendance
+                        </button>
+                    )}
+                    {user?.role === 'student' && (
+                        <button
+                            className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm w-full md:w-auto justify-center"
+                        >
+                            View Attendance
+                        </button>
+                    )}
+                </div>
+            </motion.div>
+
+            <div className={`grid grid-cols-1 ${user?.role === 'teacher' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6 max-w-6xl mx-auto`}>
                     {/* Attendance List - New Column - Only for teachers */}
                     {user?.role === 'teacher' && (
                         <motion.div
@@ -257,7 +255,6 @@ const ClassroomPage: React.FC = () => {
                         </motion.section>
                     </div>
                 </div>
-            </main>
 
             {isCameraOpen && (
                 <CameraCapture
@@ -285,7 +282,7 @@ const ClassroomPage: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div >
+        </DashboardLayout>
     );
 };
 

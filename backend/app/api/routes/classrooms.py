@@ -6,7 +6,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from app.models.classroom import Classroom
+from app.models.user import User
+from app.api.deps import get_current_user
+
 router = APIRouter()
+
+@router.get("/", response_model=List[Classroom])
+async def get_classrooms(
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_database)
+):
+    """
+    Get all classrooms for the current teacher.
+    """
+    classrooms = await db["classrooms"].find({"teacher_id": str(current_user.id)}).to_list(1000)
+    return classrooms
 
 @router.get("/{class_id}/embeddings", response_model=List[ClassEmbeddingResponse])
 async def get_class_embeddings(class_id: str, db = Depends(get_database)):

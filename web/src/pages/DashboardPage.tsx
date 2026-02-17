@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import Sidebar from '../components/Sidebar';
+import DashboardLayout from '../components/DashboardLayout';
 import ClassroomCard from '../components/dashboard/ClassroomCard';
 import AddClassroomCard from '../components/dashboard/AddClassroomCard';
 import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
@@ -114,25 +114,14 @@ const DashboardPage: React.FC = () => {
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
-            {/* Sidebar */}
-            <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="lg:col-span-1"
-            >
-                <Sidebar />
-            </motion.div>
-
-            {/* Main Content */}
-            <main className="flex-1 ml-64 p-10 relative">
+        <DashboardLayout>
+            <div className="flex flex-col gap-6">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex justify-between items-center mb-5"
+                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2"
                 >
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
@@ -140,7 +129,7 @@ const DashboardPage: React.FC = () => {
                         </h1>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 self-end md:self-auto">
                         <ThemeToggle />
                         <button
                             onClick={handleLogout}
@@ -152,10 +141,10 @@ const DashboardPage: React.FC = () => {
                 </motion.div>
 
                 {/* Divider */}
-                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-4 transition-colors duration-300" />
 
                 {/* Section header */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">Your Classrooms</h2>
                     <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">{classrooms.length} classrooms</span>
                 </div>
@@ -165,7 +154,7 @@ const DashboardPage: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl"
+                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 w-full"
                 >
                     {classrooms.map((classroom) => (
                         <ClassroomCard
@@ -186,7 +175,7 @@ const DashboardPage: React.FC = () => {
                         onClick={() => setIsCreateModalOpen(true)}
                     />
                 </motion.div>
-            </main>
+            </div>
 
             {/* Create Classroom Modal */}
             <CreateClassroomModal
@@ -195,7 +184,7 @@ const DashboardPage: React.FC = () => {
                 onSubmit={handleCreateClassroom}
                 mode={isTeacher ? 'create' : 'join'}
             />
-        </div>
+        </DashboardLayout>
     );
 };
 

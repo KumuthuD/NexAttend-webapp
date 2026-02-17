@@ -119,4 +119,56 @@ export const updateProfile = async (data: { full_name?: string; avatar?: string 
     return response.data;
 };
 
+// Event Types
+export interface Event {
+    _id?: string;
+    title: string;
+    description?: string;
+    start_time: string;
+    end_time: string;
+    location?: string;
+    type: 'class' | 'meeting' | 'deadline';
+    color?: string;
+    user_id?: string;
+}
+
+export interface EventCreate {
+    title: string;
+    description?: string;
+    start_time: string; // ISO string
+    end_time: string;   // ISO string
+    location?: string;
+    type: 'class' | 'meeting' | 'deadline';
+    color?: string;
+}
+
+export interface Classroom {
+    _id: string;
+    name: string;
+    course_code: string;
+    description?: string;
+    schedule?: string;
+}
+
+// Event API functions
+export const getClassrooms = async (): Promise<Classroom[]> => {
+    const response = await api.get<Classroom[]>('/api/v1/classes');
+    return response.data;
+};
+
+// Event API functions
+export const getEvents = async (): Promise<Event[]> => {
+    const response = await api.get<Event[]>('/api/v1/events');
+    return response.data;
+};
+
+export const createEvent = async (eventData: EventCreate): Promise<Event> => {
+    const response = await api.post<Event>('/api/v1/events', eventData);
+    return response.data;
+};
+
+export const deleteEvent = async (eventId: string): Promise<void> => {
+    await api.delete(`/api/v1/events/${eventId}`);
+};
+
 export default api;

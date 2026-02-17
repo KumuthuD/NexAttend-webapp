@@ -14,7 +14,7 @@ import numpy as np
 from mtcnn import MTCNN
 import logging
 from typing import List, Dict, Tuple, Optional
-from app.services.ai.lighting_optimizer import lighting_optimizer
+# from app.services.ai.lighting_optimizer import lighting_optimizer (Moved local due to circular import)
 
 # configure logging
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +64,7 @@ class FaceDetector:
             # apply lighting optimization for better detection in low-light
             processed_image = image
             if self.enable_lighting_optimization:
+                from app.services.ai.lighting_optimizer import lighting_optimizer
                 processed_image = lighting_optimizer.optimize_for_detection(image)
             
             # convert BGR to RGB (MTCNN expects RGB)
