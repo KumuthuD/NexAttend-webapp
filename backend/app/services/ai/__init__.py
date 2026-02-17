@@ -6,10 +6,8 @@ Exports camera service, image processing utilities, face recognition services
 
 from .camera_service import CameraService
 from .face_recognizer import FaceRecognizer
-from .single_face_recognition_service import (
-    SingleFaceRecognitionService,
-    single_face_service
-)
+# Removed to prevent circular import - import directly if needed:
+# from .single_face_recognition_service import SingleFaceRecognitionService, single_face_service
 from .lighting_optimizer import LightingOptimizer, lighting_optimizer
 from .image_processor import (
     resize_image,
@@ -29,8 +27,8 @@ from .image_processor import (
 __all__ = [
     'CameraService',
     'FaceRecognizer',
-    'SingleFaceRecognitionService',
-    'single_face_service',
+    # 'SingleFaceRecognitionService',  # Commented to prevent circular import
+    # 'single_face_service',            # Import directly from module if needed
     'LightingOptimizer',
     'lighting_optimizer',
     'resize_image',
