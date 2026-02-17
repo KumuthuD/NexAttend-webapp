@@ -221,38 +221,35 @@ async def delete_student(id: str):
     
     return
 
-@router.get("/{id}/attendance", response_model=StudentAttendanceHistory)
-async def get_student_attendance_history(id: str):
+@router.get("/{student_id}/attendance", response_model=StudentAttendanceHistory)
+async def get_student_attendance_history(student_id: str):
     """
     Get the attendance history for a specific student.
     
-    Thisanda - Week 04 Day 16
+    Thisandu - Week 04 Day 16
     """
     db = await get_database()
     
     # 1. Verify student exists (in 'users' collection with role=student)
-    # The system stores students in 'users' or 'students'. 
-    # Based on register_student, it's 'users'.
-    student = await db["users"].find_one({"_id": ObjectId(id), "role": "student"})
+    try:
+        query = {"_id": ObjectId(student_id), "role": "student"}
+    except:
+        query = {"_id": student_id, "role": "student"}
+        
+    student = await db["users"].find_one(query)
+    
     if not student:
         # Try 'students' collection as fallback
-        student = await db["students"].find_one({"_id": id})
+        student = await db["students"].find_one({"_id": student_id})
         if not student:
             raise HTTPException(status_code=404, detail="Student not found")
     
-    student_name = student.get("full_name") or student.get("name")
+    # Safe name retrieval
+    student_name = student.get("full_name") or student.get("name") or "Unknown Student"
     
-    # Use MongoDB aggregation to find all sessions for this student
-    # and join with classrooms to get the classroom name.
-    
+    # Aggregation Pipeline
     pipeline = [
-        # Match sessions where this student is present or has a record
-        {
-            "$match": {
-                "present_student_ids": id
-            }
-        },
-        # Join with classrooms
+        {"$match": {"present_student_ids": student_id}},
         {
             "$lookup": {
                 "from": "classrooms",
@@ -261,30 +258,15 @@ async def get_student_attendance_history(id: str):
                 "as": "classroom"
             }
         },
-        # Unwind classroom
-        {
-            "$unwind": {
-                "path": "$classroom",
-                "preserveNullAndEmptyArrays": True
-            }
-        },
-        # Sort by session date descending
+        {"$unwind": {"path": "$classroom", "preserveNullAndEmptyArrays": True}},
         {"$sort": {"session_date": -1}},
-        # Project the required fields
         {
             "$project": {
                 "session_id": {"$toString": "$_id"},
-                "classroom_id": "$classroom_id",
+                "classroom_id": {"$ifNull": ["$classroom_id", "Unknown"]},
                 "classroom_name": {"$ifNull": ["$classroom.name", "Unknown Classroom"]},
-                "session_date": "$session_date",
-                # Extract the specific record for this student
-                "record": {
-                    "$filter": {
-                        "input": "$records",
-                        "as": "r",
-                        "cond": {"$eq": ["$$r.student_id", id]}
-                    }
-                }
+                "session_date": {"$ifNull": ["$session_date", datetime.utcnow()]},
+                "records": 1
             }
         }
     ]
@@ -295,7 +277,9 @@ async def get_student_attendance_history(id: str):
     present_count = 0
     
     for sess in sessions:
-        record = sess["record"][0] if sess.get("record") and len(sess["record"]) > 0 else None
+        # Extract the specific record for this student from the records list
+        records = sess.get("records") or []
+        record = next((r for r in records if r.get("student_id") == student_id), None)
         
         status_val = "absent"
         timestamp = None
@@ -308,24 +292,20 @@ async def get_student_attendance_history(id: str):
             present_count += 1
             
         history_items.append(StudentAttendanceHistoryItem(
-            session_id=sess["session_id"],
-            classroom_id=sess["classroom_id"],
-            classroom_name=sess["classroom_name"],
-            session_date=sess["session_date"],
+            session_id=sess.get("session_id") or "Unknown",
+            classroom_id=sess.get("classroom_id") or "Unknown",
+            classroom_name=sess.get("classroom_name") or "Unknown Classroom",
+            session_date=sess.get("session_date") or datetime.utcnow(),
             attendance_status=status_val,
             timestamp=timestamp,
             confidence=confidence
         ))
     
-    total_sessions = len(history_items) # This only counts sessions they were in? 
-    # Actually, we should probably find all sessions for the classrooms the student is in.
-    # But for a simple history, "sessions where they were marked" is a good start.
-    # To get a "rate", we need total sessions of their classes.
-    
+    total_sessions = len(history_items)
     attendance_percentage = (present_count / total_sessions * 100) if total_sessions > 0 else 0.0
     
     return StudentAttendanceHistory(
-        student_id=id,
+        student_id=student_id,
         student_name=student_name,
         total_sessions=total_sessions,
         present_count=present_count,

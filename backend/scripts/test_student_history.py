@@ -1,15 +1,21 @@
 import asyncio
 import os
 import sys
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 from bson import ObjectId
 
 # Add project root to path
 sys.path.append(os.path.join(os.getcwd(), 'backend'))
 
+# Mock the heavy AI services BEFORE importing the router
+# This prevents the script from failing if TF/OpenCV are not fully configured in this shell
+sys.modules['app.services.face_detector'] = MagicMock()
+sys.modules['app.services.embedding_service'] = MagicMock()
+sys.modules['app.services.ai.lighting_optimizer'] = MagicMock()
+
+# Now import the route handler
 from app.api.routes.students import get_student_attendance_history
-from app.database.mongodb import get_database
 
 # Setup Mock DB
 mock_db_instance = MagicMock()
@@ -51,43 +57,34 @@ mock_collection.aggregate.return_value = mock_cursor
 # Dictionary access db["users"], db["attendance_sessions"], db["classrooms"]
 mock_db_instance.__getitem__.side_effect = lambda name: mock_collection
 
-# Override get_database dependency in the module where the route is defined
-# Since it's passed as a dependency, but we are calling the function directly,
-# we need to ensure the function uses our mock.
-# In the route: db = await get_database()
-# We can patch get_database in app.api.routes.students
-
 async def test_student_history_async():
     print(f"Testing Student Attendance History for ID: {student_id}")
     
-    # Patch get_database
-    import app.api.routes.students as students_route
-    original_get_db = students_route.get_database
-    students_route.get_database = AsyncMock(return_value=mock_db_instance)
-    
-    try:
-        data = await get_student_attendance_history(student_id)
-        
-        print(f"Result for: {data.student_name}")
-        print(f"Total Sessions: {data.total_sessions}")
-        print(f"Attendance Rate: {data.attendance_percentage}%")
-        
-        assert data.student_id == student_id
-        assert data.student_name == "John Doe"
-        assert len(data.history) == 1
-        assert data.history[0].attendance_status == "present"
-        assert data.history[0].classroom_name == "CS101"
-        
-        print("\n Student Attendance History Logic Verified Successfully!")
-    finally:
-        # Restore original
-        students_route.get_database = original_get_db
+    # Patch get_database dependency
+    with patch('app.api.routes.students.get_database', AsyncMock(return_value=mock_db_instance)):
+        try:
+            data = await get_student_attendance_history(student_id)
+            
+            print(f"Result for: {data.student_name}")
+            print(f"Total Sessions: {data.total_sessions}")
+            print(f"Attendance Rate: {data.attendance_percentage}%")
+            
+            assert data.student_id == student_id
+            assert data.student_name == "John Doe"
+            assert len(data.history) == 1
+            assert data.history[0].attendance_status == "present"
+            assert data.history[0].classroom_name == "CS101"
+            
+            print("\n Student Attendance History Logic Verified Successfully!")
+        except Exception as e:
+            print(f" Logic Error: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
 
 if __name__ == "__main__":
     try:
         asyncio.run(test_student_history_async())
     except Exception as e:
-        print(f" Test Failed: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f" Test Execution Failed: {e}")
         exit(1)
