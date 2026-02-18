@@ -259,5 +259,22 @@ async def get_session_results(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Attendance session with ID {session_id} not found"
         )
-    
     return session
+
+
+@router.get("/classroom/{classroom_id}/history", response_model=List[AttendanceSessionResponse])
+async def get_classroom_attendance_history(
+    classroom_id: str,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve attendance history for a specific classroom.
+    Returns list of sessions sorted by date (newest first).
+    """
+    # Verify classroom exists first? Maybe optional, but good for error messages.
+    # For now, just return empty list if none found or classroom doesn't exist.
+    
+    cursor = db["attendance_sessions"].find({"classroom_id": classroom_id}).sort("session_date", -1)
+    sessions = await cursor.to_list(length=100) # Limit to last 100 sessions for now
+    
+    return sessions
