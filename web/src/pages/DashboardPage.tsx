@@ -72,6 +72,9 @@ const DashboardPage: React.FC = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [classrooms, setClassrooms] = useState<Classroom[]>(INITIAL_CLASSROOMS);
     const [nextId, setNextId] = useState(4);
+    
+    // const isTeacher = user?.role === 'teacher'; // Defined below at line 130
+    // Removed duplicate state variables
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -152,60 +155,60 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </motion.div>
 
-                {/* Divider */}
-                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
+            {/* Divider */}
+            <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
-                {/* Student Attendance Overview */}
-                {!isTeacher && (
-                    <StudentAttendanceOverview
-                        attendancePercentage={85}
-                        totalClasses={40}
-                        presentCount={34}
-                        absentCount={6}
+            {/* Student Attendance Overview */}
+            {!isTeacher && (
+                <StudentAttendanceOverview
+                    attendancePercentage={85}
+                    totalClasses={40}
+                    presentCount={34}
+                    absentCount={6}
+                />
+            )}
+
+            {/* Section header */}
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">Your Classrooms</h2>
+                <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">{classrooms.length} classrooms</span>
+            </div>
+
+            {/* Classroom Grid */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl"
+            >
+                {classrooms.map((classroom) => (
+                    <ClassroomCard
+                        key={classroom.id}
+                        title={classroom.title}
+                        studentCount={classroom.studentCount}
+                        accessCode={classroom.accessCode}
+                        icon={classroom.icon}
+                        iconBgClass={classroom.iconBg}
+                        actionButtonText={isTeacher ? "Manage Class" : "View Attendance"}
+                        onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
                     />
-                )}
+                ))}
 
-                {/* Section header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">Your Classrooms</h2>
-                    <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">{classrooms.length} classrooms</span>
-                </div>
+                {/* Add/Join Card */}
+                <AddClassroomCard
+                    type={isTeacher ? 'create' : 'join'}
+                    onClick={() => setIsCreateModalOpen(true)}
+                />
+            </motion.div>
+        </main>
 
-                {/* Classroom Grid */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl"
-                >
-                    {classrooms.map((classroom) => (
-                        <ClassroomCard
-                            key={classroom.id}
-                            title={classroom.title}
-                            studentCount={classroom.studentCount}
-                            accessCode={classroom.accessCode}
-                            icon={classroom.icon}
-                            iconBgClass={classroom.iconBg}
-                            actionButtonText="View Classroom"
-                            onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
-                        />
-                    ))}
-
-                    {/* Add/Join Card */}
-                    <AddClassroomCard
-                        type={isTeacher ? 'create' : 'join'}
-                        onClick={() => setIsCreateModalOpen(true)}
-                    />
-                </motion.div>
-            </main>
-
-            {/* Create Classroom Modal */}
-            <CreateClassroomModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                onSubmit={handleCreateClassroom}
-                mode={isTeacher ? 'create' : 'join'}
-            />
+        {/* Create Classroom Modal */}
+        <CreateClassroomModal
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            onSubmit={handleCreateClassroom}
+            mode={isTeacher ? 'create' : 'join'}
+        />
         </div>
     );
 };
