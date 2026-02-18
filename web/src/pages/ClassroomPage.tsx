@@ -3,10 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Camera, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle } from 'lucide-react';
+import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History } from 'lucide-react';
 import CameraCapture from '../components/common/WebcamCapture';
 import AttendanceList from '../components/classroom/AttendanceList';
+import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import { AnimatePresence, motion } from 'framer-motion';
+
+// Mock history records for this classroom (replace with API call when ready)
+const MOCK_HISTORY: AttendanceRecord[] = [
+    { id: '1', date: '2026-02-18', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.94 },
+    { id: '2', date: '2026-02-17', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.88 },
+    { id: '3', date: '2026-02-14', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'absent' },
+    { id: '4', date: '2026-02-13', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.91 },
+    { id: '5', date: '2026-02-12', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.85 },
+];
 
 interface Student {
     id: string;
@@ -26,6 +36,7 @@ const ClassroomPage: React.FC = () => {
     const [presentStudents, setPresentStudents] = useState<Student[]>([]);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
+    const [showHistory, setShowHistory] = useState(false);
 
     const handleFaceRecognized = (face: any) => {
         const student = face.student;
@@ -124,12 +135,28 @@ const ClassroomPage: React.FC = () => {
                             </div>
                         </div>
                         {user?.role === 'teacher' && (
-                            <button
-                                onClick={() => setIsCameraOpen(true)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
-                            >
-                                Mark Attendance
-                            </button>
+                            <div className="flex items-center gap-3">
+                                {/* Attendance History toggle — left of Mark Attendance */}
+                                <button
+                                    onClick={() => setShowHistory(prev => !prev)}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border ${
+                                        showHistory
+                                            ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30'
+                                            : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-600 dark:hover:text-violet-400'
+                                    }`}
+                                >
+                                    <History size={15} />
+                                    {showHistory ? 'Hide History' : 'Attendance History'}
+                                </button>
+
+                                {/* Mark Attendance */}
+                                <button
+                                    onClick={() => setIsCameraOpen(true)}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
+                                >
+                                    Mark Attendance
+                                </button>
+                            </div>
                         )}
                         {user?.role === 'student' && (
                             <button
@@ -140,6 +167,26 @@ const ClassroomPage: React.FC = () => {
                         )}
                     </div>
                 </motion.div>
+
+                {/* Attendance History Table — teacher only, collapsible */}
+                <AnimatePresence>
+                    {user?.role === 'teacher' && showHistory && (
+                        <motion.div
+                            key="history-table"
+                            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            animate={{ opacity: 1, height: 'auto', marginBottom: 32 }}
+                            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                            transition={{ duration: 0.35, ease: 'easeInOut' }}
+                            style={{ overflow: 'hidden' }}
+                        >
+                            <div className="flex items-center gap-2 mb-4">
+                                <History size={15} className="text-gray-400 dark:text-gray-500" />
+                                <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attendance History</h2>
+                            </div>
+                            <AttendanceHistoryTable records={MOCK_HISTORY} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <div className={`grid grid-cols-1 ${user?.role === 'teacher' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6 max-w-6xl mx-auto`}>
                     {/* Attendance List - New Column - Only for teachers */}

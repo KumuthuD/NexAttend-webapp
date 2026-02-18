@@ -31,6 +31,15 @@ export interface DashboardStats {
     attendance_percentage: number;
 }
 
+export interface AttendanceRecord {
+    id: string;
+    date: string;
+    classroom_name: string;
+    session_label: string;
+    status: 'present' | 'absent';
+    confidence?: number;
+}
+
 // Create an Axios instance with a base URL
 const api = axios.create({
     baseURL: 'http://127.0.0.1:8000',
@@ -78,6 +87,12 @@ export const healthCheck = async () => {
 
 export const getDashboardStats = async (): Promise<DashboardStats> => {
     const response = await api.get<DashboardStats>('/api/v1/dashboard/stats');
+    return response.data;
+};
+
+export const getAttendanceHistory = async (classroomId?: string): Promise<AttendanceRecord[]> => {
+    const params = classroomId ? { classroom_id: classroomId } : {};
+    const response = await api.get<AttendanceRecord[]>('/api/v1/attendance/history', { params });
     return response.data;
 };
 
