@@ -32,17 +32,14 @@ async def start_attendance(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Classroom with ID {request.classroom_id} not found"
         )
-    
-    # 2. Check if there's already an active session for this classroom
-    # (Optional: limit to one active session at a time)
+
     active_session = await db["attendance_sessions"].find_one({
         "classroom_id": request.classroom_id,
         "status": "active"
     })
     
     if active_session:
-        # We can either return the existing session or raise an error.
-        # Let's return the existing one if it's already active.
+
         return active_session
 
     # 3. Create new session
@@ -92,8 +89,6 @@ async def mark_attendance(
     )
     
     # 5. Atomic Update with Duplicate Prevention
-    # We add a filter to ONLY update if student_id is NOT in present_student_ids
-    # This prevents race conditions where multiple requests for the same student arrive at once
     result = await db["attendance_sessions"].update_one(
         {
             "_id": request.session_id,
@@ -158,16 +153,7 @@ async def batch_mark_attendance(
     for student_req in request.students:
         student_id = student_req.student_id
         
-        # Verify student exists (in batch scenarios, we might want to verify)
-        # For now, let's do a quick check if strict mode. 
-        # But for speed, we'll assume the recognition service sends valid IDs.
-        # If we really want to verify, we should do:
-        # student = await db["students"].find_one({"_id": student_id})
-        # if not student:
-        #     failed_ids.append(student_id)
-        #     continue
 
-        # Check duplicate in current request or DB
         if student_id in present_student_ids or student_id in new_student_ids:
             skipped_count += 1
             continue
@@ -271,8 +257,6 @@ async def get_classroom_attendance_history(
     Retrieve attendance history for a specific classroom.
     Returns list of sessions sorted by date (newest first).
     """
-    # Verify classroom exists first? Maybe optional, but good for error messages.
-    # For now, just return empty list if none found or classroom doesn't exist.
     
     cursor = db["attendance_sessions"].find({"classroom_id": classroom_id}).sort("session_date", -1)
     sessions = await cursor.to_list(length=100) # Limit to last 100 sessions for now
