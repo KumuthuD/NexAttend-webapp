@@ -6,9 +6,11 @@ import AddClassroomCard from '../components/dashboard/AddClassroomCard';
 import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
 import StudentAttendanceOverview from '../components/dashboard/StudentAttendanceOverview';
 import ThemeToggle from '../components/ThemeToggle';
-import { Smile, Database, Code, BookOpen, Cpu, Palette } from 'lucide-react';
+import { Smile, Database, Code, BookOpen, Cpu, Palette, Users, CheckCircle, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import StatsCard from '../components/dashboard/StatsCard';
+import { getDashboardStats, DashboardStats } from '../services/api';
 
 // Interface for classroom data
 interface Classroom {
@@ -72,14 +74,30 @@ const DashboardPage: React.FC = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [classrooms, setClassrooms] = useState<Classroom[]>(INITIAL_CLASSROOMS);
     const [nextId, setNextId] = useState(4);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
     
     // const isTeacher = user?.role === 'teacher'; // Defined below at line 130
     // Removed duplicate state variables
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        
+        // Fetch stats
+        const fetchStats = async () => {
+             if (user?.role === 'teacher') {
+                 try {
+                     const data = await getDashboardStats();
+                     setStats(data);
+                 } catch (error) {
+                     console.error("Failed to fetch dashboard stats", error);
+                 }
+             }
+        };
+
+        fetchStats();
+
         return () => clearInterval(timer);
-    }, []);
+    }, [user?.role]);
 
     const handleLogout = () => {
         navigate('/get-started');
@@ -154,6 +172,45 @@ const DashboardPage: React.FC = () => {
                         </button>
                     </div>
                 </motion.div>
+
+            {/* Stats Cards Section - Only for Teachers */}
+            {isTeacher && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <StatsCard
+                        title="Total Students"
+                        value={stats?.total_students || 0}
+                        icon={<Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+                        color="text-blue-600"
+                        bg="bg-blue-50 dark:bg-blue-500/10"
+                        delay={0.1}
+                    />
+                    <StatsCard
+                        title="Total Classrooms"
+                        value={stats?.total_classrooms || 0}
+                        icon={<BookOpen className="w-5 h-5 text-violet-600 dark:text-violet-400" />}
+                        color="text-violet-600"
+                        bg="bg-violet-50 dark:bg-violet-500/10"
+                        delay={0.2}
+                    />
+                    <StatsCard
+                        title="Today's Attendance"
+                        value={stats?.todays_attendance_count || 0}
+                        icon={<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
+                        trend={{ value: 12, label: "vs yesterday" }}
+                        color="text-green-600"
+                        bg="bg-green-50 dark:bg-green-500/10"
+                        delay={0.3}
+                    />
+                    <StatsCard
+                        title="Attendance Rate"
+                        value={`${stats?.attendance_percentage || 0}%`}
+                        icon={<Activity className="w-5 h-5 text-orange-600 dark:text-orange-400" />}
+                        color="text-orange-600"
+                        bg="bg-orange-50 dark:bg-orange-500/10"
+                        delay={0.4}
+                    />
+                </div>
+            )}
 
             {/* Divider */}
             <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
