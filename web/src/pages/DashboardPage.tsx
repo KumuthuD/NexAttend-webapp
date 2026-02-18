@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import ClassroomCard from '../components/dashboard/ClassroomCard';
 import AddClassroomCard from '../components/dashboard/AddClassroomCard';
 import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
+import StudentAttendanceOverview from '../components/dashboard/StudentAttendanceOverview';
 import ThemeToggle from '../components/ThemeToggle';
 import { Smile, Database, Code, BookOpen, Cpu, Palette } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -136,7 +137,7 @@ const DashboardPage: React.FC = () => {
                 >
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
-                            {greeting}{user?.name ? `, ${user.name.split(' ')[0]+'!'}` : ''}👋
+                            {greeting}{user?.name ? `, ${user.name.split(' ')[0] + '!'}` : ''}👋
                         </h1>
                     </div>
 
@@ -153,6 +154,16 @@ const DashboardPage: React.FC = () => {
 
                 {/* Divider */}
                 <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
+
+                {/* Student Attendance Overview */}
+                {!isTeacher && (
+                    <StudentAttendanceOverview
+                        attendancePercentage={85}
+                        totalClasses={40}
+                        presentCount={34}
+                        absentCount={6}
+                    />
+                )}
 
                 {/* Section header */}
                 <div className="flex items-center justify-between mb-6">
