@@ -75,3 +75,10 @@ class AttendanceBatchMarkResponse(BaseModel):
     marked_count: int
     skipped_count: int
     results: List[AttendanceMarkResponse]
+
+class PaginatedHistoryResponse(BaseModel):
+    items: List[AttendanceSessionResponse]
+    total: int
+    page: int
+    size: int
+    pages: int

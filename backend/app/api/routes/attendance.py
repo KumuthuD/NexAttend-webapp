@@ -8,7 +8,8 @@ from app.schemas.all_attendance import (
     AttendanceMarkResponse,
     AttendanceBatchMarkRequest,
     AttendanceBatchMarkResponse,
-    AttendanceBatchRecord
+    AttendanceBatchRecord,
+    PaginatedHistoryResponse
 )
 from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
@@ -248,17 +249,33 @@ async def get_session_results(
     return session
 
 
-@router.get("/classroom/{classroom_id}/history", response_model=List[AttendanceSessionResponse])
+@router.get("/classroom/{classroom_id}/history", response_model=PaginatedHistoryResponse)
 async def get_classroom_attendance_history(
     classroom_id: str,
+    page: int = 1,
+    limit: int = 20,
     db: Any = Depends(get_database)
 ):
     """
-    Retrieve attendance history for a specific classroom.
-    Returns list of sessions sorted by date (newest first).
+    Retrieve attendance history for a specific classroom with pagination metadata.
+    Returns paginated list of sessions sorted by date (newest first).
     """
+    import math
+    
+    skip = (page - 1) * limit
+    
+    # Get total count
+    total = await db["attendance_sessions"].count_documents({"classroom_id": classroom_id})
     
     cursor = db["attendance_sessions"].find({"classroom_id": classroom_id}).sort("session_date", -1)
-    sessions = await cursor.to_list(length=100) # Limit to last 100 sessions for now
+    sessions = await cursor.skip(skip).limit(limit).to_list(length=limit)
     
-    return sessions
+    pages = math.ceil(total / limit) if limit > 0 else 0
+    
+    return {
+        "items": sessions,
+        "total": total,
+        "page": page,
+        "size": limit,
+        "pages": pages
+    }
