@@ -7,6 +7,7 @@ from app.api.routes import faces
 from app.api.routes import classrooms
 from app.api.routes import dashboard
 from app.api.routes import attendance
+from app.api.routes import analytics
 
 router = APIRouter()
 
@@ -18,6 +19,7 @@ router.include_router(health.router, prefix="/health", tags=["health"])
 router.include_router(users.router, prefix="/users", tags=["users"])
 router.include_router(faces.router, prefix="/faces", tags=["faces"])
 router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 
 @router.get("/health")
 async def health_check():
