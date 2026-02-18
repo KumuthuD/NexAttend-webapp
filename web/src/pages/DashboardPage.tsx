@@ -145,13 +145,13 @@ const DashboardPage: React.FC = () => {
             </motion.div>
 
             {/* Main Content */}
-            <main className="flex-1 ml-64 p-10 relative">
+            <main className="flex-1 ml-64 p-7 relative">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex justify-between items-center mb-5"
+                    className="flex justify-between items-center mb-3"
                 >
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
@@ -170,6 +170,9 @@ const DashboardPage: React.FC = () => {
                         </button>
                     </div>
                 </motion.div>
+
+                {/* Divider */}
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Stats Cards Section - Only for Teachers */}
                 {isTeacher && (
@@ -209,9 +212,6 @@ const DashboardPage: React.FC = () => {
                         />
                     </div>
                 )}
-
-                {/* Divider */}
-                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Student Attendance Overview */}
                 {!isTeacher && (
