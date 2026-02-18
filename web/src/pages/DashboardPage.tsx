@@ -11,8 +11,6 @@ import ThemeToggle from '../components/ThemeToggle';
 import { Smile, Database, Code, BookOpen, Cpu, Palette, Users, CheckCircle, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import StatsCard from '../components/dashboard/StatsCard';
-import { getDashboardStats, DashboardStats } from '../services/api';
 
 // Interface for classroom data
 interface Classroom {
@@ -78,16 +76,20 @@ const DashboardPage: React.FC = () => {
     const [nextId, setNextId] = useState(4);
     const [stats, setStats] = useState<DashboardStats | null>(null);
 
+    const isTeacher = user?.role === 'teacher';
+
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         
-        // Fetch stats
+        // Fetch stats if teacher
         const fetchStats = async () => {
-             try {
-                 const data = await getDashboardStats();
-                 setStats(data);
-             } catch (error) {
-                 console.error("Failed to fetch dashboard stats", error);
+             if (user?.role === 'teacher') {
+                 try {
+                     const data = await getDashboardStats();
+                     setStats(data);
+                 } catch (error) {
+                     console.error("Failed to fetch dashboard stats", error);
+                 }
              }
         };
 
@@ -97,6 +99,7 @@ const DashboardPage: React.FC = () => {
     }, [user?.role]);
 
     const handleLogout = () => {
+        logout(); // Assuming logout function exists in context, otherwise navigate to login
         navigate('/get-started');
     };
 
@@ -120,13 +123,10 @@ const DashboardPage: React.FC = () => {
             // Join Logic (Mock)
             console.log("Joining classroom with code:", inputValue);
             // In a real app, this would verify the code and add the student to the class
-            // For now, we'll just simulate adding a class or show an alert
             alert(`Joined classroom with code: ${inputValue}`);
         }
         setIsCreateModalOpen(false);
     };
-
-    const isTeacher = user?.role === 'teacher';
 
     // Format greeting based on time of day
     const hour = currentTime.getHours();
@@ -221,63 +221,49 @@ const DashboardPage: React.FC = () => {
                         presentCount={34}
                         absentCount={6}
                     />
+                )}
+
+                {/* Section header */}
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">Your Classrooms</h2>
+                    <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">{classrooms.length} classrooms</span>
                 </div>
-            )}
 
-            {/* Divider */}
-            <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
+                {/* Classroom Grid */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl"
+                >
+                    {classrooms.map((classroom) => (
+                        <ClassroomCard
+                            key={classroom.id}
+                            title={classroom.title}
+                            studentCount={classroom.studentCount}
+                            accessCode={classroom.accessCode}
+                            icon={classroom.icon}
+                            iconBgClass={classroom.iconBg}
+                            actionButtonText={isTeacher ? "Manage Class" : "View Attendance"}
+                            onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
+                        />
+                    ))}
 
-            {/* Student Attendance Overview */}
-            {!isTeacher && (
-                <StudentAttendanceOverview
-                    attendancePercentage={85}
-                    totalClasses={40}
-                    presentCount={34}
-                    absentCount={6}
-                />
-            )}
-
-            {/* Section header */}
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">Your Classrooms</h2>
-                <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">{classrooms.length} classrooms</span>
-            </div>
-
-            {/* Classroom Grid */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl"
-            >
-                {classrooms.map((classroom) => (
-                    <ClassroomCard
-                        key={classroom.id}
-                        title={classroom.title}
-                        studentCount={classroom.studentCount}
-                        accessCode={classroom.accessCode}
-                        icon={classroom.icon}
-                        iconBgClass={classroom.iconBg}
-                        actionButtonText={isTeacher ? "Manage Class" : "View Attendance"}
-                        onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
+                    {/* Add/Join Card */}
+                    <AddClassroomCard
+                        type={isTeacher ? 'create' : 'join'}
+                        onClick={() => setIsCreateModalOpen(true)}
                     />
-                ))}
+                </motion.div>
+            </main>
 
-                {/* Add/Join Card */}
-                <AddClassroomCard
-                    type={isTeacher ? 'create' : 'join'}
-                    onClick={() => setIsCreateModalOpen(true)}
-                />
-            </motion.div>
-        </main>
-
-        {/* Create Classroom Modal */}
-        <CreateClassroomModal
-            isOpen={isCreateModalOpen}
-            onClose={() => setIsCreateModalOpen(false)}
-            onSubmit={handleCreateClassroom}
-            mode={isTeacher ? 'create' : 'join'}
-        />
+            {/* Create Classroom Modal */}
+            <CreateClassroomModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSubmit={handleCreateClassroom}
+                mode={isTeacher ? 'create' : 'join'}
+            />
         </div>
     );
 };
