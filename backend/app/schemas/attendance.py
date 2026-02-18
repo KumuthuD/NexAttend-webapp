@@ -40,7 +40,7 @@ class AttendanceMarkResponse(BaseModel):
     timestamp: datetime
 
 class AttendanceSessionResponse(AttendanceSessionBase):
-    id: str = Field(..., alias="_id")
+    id: Optional[str] = Field(None, alias="_id")
     present_student_ids: List[str] = []
     records: List[AttendanceRecordResponse] = []
     start_time: datetime

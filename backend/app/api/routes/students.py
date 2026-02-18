@@ -3,9 +3,10 @@ from typing import List, Optional
 from pydantic import EmailStr
 from app.database.mongodb import get_database
 from app.models.student import Student
-from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate
+from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate, StudentAttendanceHistoryItem, StudentAttendanceHistory
 from app.schemas.face import ClassEmbeddingResponse
 from app.models.face_embedding import FaceEmbedding
+from bson import ObjectId
 from app.services.face_detector import FaceDetector
 from app.services.embedding_service import embedding_service
 import numpy as np
@@ -219,4 +220,96 @@ async def delete_student(id: str):
         raise HTTPException(status_code=404, detail="Student not found")
     
     return
+
+@router.get("/{student_id}/attendance", response_model=StudentAttendanceHistory)
+async def get_student_attendance_history(student_id: str):
+    """
+    Get the attendance history for a specific student.
+    
+    Thisandu - Week 04 Day 16
+    """
+    db = await get_database()
+    
+    # 1. Verify student exists (in 'users' collection with role=student)
+    try:
+        query = {"_id": ObjectId(student_id), "role": "student"}
+    except:
+        query = {"_id": student_id, "role": "student"}
+        
+    student = await db["users"].find_one(query)
+    
+    if not student:
+        # Try 'students' collection as fallback
+        student = await db["students"].find_one({"_id": student_id})
+        if not student:
+            raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Safe name retrieval
+    student_name = student.get("full_name") or student.get("name") or "Unknown Student"
+    
+    # Aggregation Pipeline
+    pipeline = [
+        {"$match": {"present_student_ids": student_id}},
+        {
+            "$lookup": {
+                "from": "classrooms",
+                "localField": "classroom_id",
+                "foreignField": "_id",
+                "as": "classroom"
+            }
+        },
+        {"$unwind": {"path": "$classroom", "preserveNullAndEmptyArrays": True}},
+        {"$sort": {"session_date": -1}},
+        {
+            "$project": {
+                "session_id": {"$toString": "$_id"},
+                "classroom_id": {"$ifNull": ["$classroom_id", "Unknown"]},
+                "classroom_name": {"$ifNull": ["$classroom.name", "Unknown Classroom"]},
+                "session_date": {"$ifNull": ["$session_date", datetime.utcnow()]},
+                "records": 1
+            }
+        }
+    ]
+    
+    sessions = await db["attendance_sessions"].aggregate(pipeline).to_list(length=1000)
+    
+    history_items = []
+    present_count = 0
+    
+    for sess in sessions:
+        # Extract the specific record for this student from the records list
+        records = sess.get("records") or []
+        record = next((r for r in records if r.get("student_id") == student_id), None)
+        
+        status_val = "absent"
+        timestamp = None
+        confidence = None
+        
+        if record:
+            status_val = record.get("status", "present")
+            timestamp = record.get("timestamp")
+            confidence = record.get("confidence")
+            present_count += 1
+            
+        history_items.append(StudentAttendanceHistoryItem(
+            session_id=sess.get("session_id") or "Unknown",
+            classroom_id=sess.get("classroom_id") or "Unknown",
+            classroom_name=sess.get("classroom_name") or "Unknown Classroom",
+            session_date=sess.get("session_date") or datetime.utcnow(),
+            attendance_status=status_val,
+            timestamp=timestamp,
+            confidence=confidence
+        ))
+    
+    total_sessions = len(history_items)
+    attendance_percentage = (present_count / total_sessions * 100) if total_sessions > 0 else 0.0
+    
+    return StudentAttendanceHistory(
+        student_id=student_id,
+        student_name=student_name,
+        total_sessions=total_sessions,
+        present_count=present_count,
+        attendance_percentage=round(attendance_percentage, 2),
+        history=history_items
+    )
     
