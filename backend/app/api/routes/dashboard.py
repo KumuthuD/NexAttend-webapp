@@ -54,7 +54,7 @@ async def get_dashboard_stats(db: Any = Depends(get_database)):
     attendance_result = await db["attendance_sessions"].aggregate(pipeline).to_list(1)
     
     todays_attendance_count = 0
-    if attendance_result and "unique_students" in attendance_result[0]:
+    if attendance_result and len(attendance_result) > 0 and "unique_students" in attendance_result[0]:
         todays_attendance_count = len(attendance_result[0]["unique_students"])
         
     # Calculate percentage based on total registered students

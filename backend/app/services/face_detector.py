@@ -14,7 +14,7 @@ import numpy as np
 from mtcnn import MTCNN
 import logging
 from typing import List, Dict, Tuple, Optional
-from app.services.ai.lighting_optimizer import lighting_optimizer
+from app.services.lighting_optimizer import lighting_optimizer
 
 # configure logging
 logging.basicConfig(level=logging.INFO)

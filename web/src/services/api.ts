@@ -23,6 +23,14 @@ export interface RegisterData {
     role: string;
 }
 
+export interface DashboardStats {
+    total_students: number;
+    total_classrooms: number;
+    total_sessions: number;
+    todays_attendance_count: number;
+    attendance_percentage: number;
+}
+
 // Create an Axios instance with a base URL
 const api = axios.create({
     baseURL: 'http://127.0.0.1:8000',
@@ -66,6 +74,11 @@ export const healthCheck = async () => {
         console.error('Health check failed:', error);
         throw error;
     }
+};
+
+export const getDashboardStats = async (): Promise<DashboardStats> => {
+    const response = await api.get<DashboardStats>('/api/v1/dashboard/stats');
+    return response.data;
 };
 
 // Auth API functions

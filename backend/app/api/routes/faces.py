@@ -14,7 +14,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.services.face_detector import FaceDetector
 from app.services.embedding_service import embedding_service
-from app.services.ai.lighting_optimizer import lighting_optimizer
+from app.services.lighting_optimizer import lighting_optimizer
 from app.database.mongodb import db
 import numpy as np
 import cv2
