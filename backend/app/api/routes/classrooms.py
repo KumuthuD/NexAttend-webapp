@@ -1,12 +1,31 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from app.database.mongodb import get_database
+from app.schemas.classroom import ClassroomResponse
 from app.schemas.face import ClassEmbeddingResponse
 import logging
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.get("/", response_model=List[ClassroomResponse])
+async def list_classrooms(db = Depends(get_database)):
+    """
+    List all classrooms with student counts.
+    """
+    # 1. Fetch classrooms (limit to 100 for now)
+    classrooms = await db["classrooms"].find().to_list(100)
+    
+    response = []
+    for cls in classrooms:
+        # Map fields to ClassroomResponse
+        # Use alias for _id to id mapping
+        response.append(ClassroomResponse(
+            **cls,
+            student_count=len(cls.get("student_ids", []))
+        ))
+    return response
 
 @router.get("/{class_id}/embeddings", response_model=List[ClassEmbeddingResponse])
 async def get_class_embeddings(class_id: str, db = Depends(get_database)):
