@@ -12,13 +12,13 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8000"]
     
     # Database
-    MONGODB_URL: str = "mongodb://localhost:27017"
+    MONGODB_URL: str 
     DATABASE_NAME: str = "nexattend_db"
-    MONGODB_TLS: bool = False # Default to False for local dev
+    MONGODB_TLS: bool = True
 
     # Security
-    SECRET_KEY: str = "your-secret-key-here"
-    JWT_SECRET: str = "your-jwt-secret-here"
+    SECRET_KEY: str 
+    JWT_SECRET: str 
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
