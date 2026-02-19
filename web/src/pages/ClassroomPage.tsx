@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History } from 'lucide-react';
+import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw } from 'lucide-react';
 import CameraCapture from '../components/common/WebcamCapture';
 import AttendanceList from '../components/classroom/AttendanceList';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import { AnimatePresence, motion } from 'framer-motion';
+import DatePicker from '../components/common/DatePicker';
 
 // Mock history records for this classroom (replace with API call when ready)
 const MOCK_HISTORY: AttendanceRecord[] = [
@@ -37,6 +38,12 @@ const ClassroomPage: React.FC = () => {
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [showHistory, setShowHistory] = useState(false);
+    const [selectedDate, setSelectedDate] = useState('');
+
+    // Filter history based on selected date
+    const filteredHistory = selectedDate
+        ? MOCK_HISTORY.filter(record => record.date === selectedDate)
+        : MOCK_HISTORY;
 
     const handleFaceRecognized = (face: any) => {
         const student = face.student;
@@ -139,11 +146,10 @@ const ClassroomPage: React.FC = () => {
                                 {/* Attendance History toggle — left of Mark Attendance */}
                                 <button
                                     onClick={() => setShowHistory(prev => !prev)}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border ${
-                                        showHistory
-                                            ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30'
-                                            : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-600 dark:hover:text-violet-400'
-                                    }`}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border ${showHistory
+                                        ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30'
+                                        : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-600 dark:hover:text-violet-400'
+                                        }`}
                                 >
                                     <History size={15} />
                                     {showHistory ? 'Hide History' : 'Attendance History'}
@@ -183,7 +189,28 @@ const ClassroomPage: React.FC = () => {
                                 <History size={15} className="text-gray-400 dark:text-gray-500" />
                                 <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attendance History</h2>
                             </div>
-                            <AttendanceHistoryTable records={MOCK_HISTORY} />
+
+                            {/* Date Filter */}
+                            <div className="mb-4 max-w-xs flex items-end gap-2">
+                                <DatePicker
+                                    className="flex-1"
+                                    label="Filter by Date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    placeholder="Select date..."
+                                />
+                                {selectedDate && (
+                                    <button
+                                        onClick={() => setSelectedDate('')}
+                                        className="p-2.5 mb-[1px] bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 rounded-lg transition-colors"
+                                        title="Clear Filter"
+                                    >
+                                        <RefreshCw size={20} />
+                                    </button>
+                                )}
+                            </div>
+
+                            <AttendanceHistoryTable records={filteredHistory} />
                         </motion.div>
                     )}
                 </AnimatePresence>
