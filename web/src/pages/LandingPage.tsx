@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import MouseFollower from "../components/MouseFollower";
 import FeatureCard from "../components/FeatureCard";
+import TeamCarousel from "../components/TeamCarousel";
 import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
 import kumuthuImg from "../assets/team/kumuthu.jpg";
 import thisanduImg from "../assets/team/thisandu.jpeg";
@@ -21,58 +22,7 @@ import {
   SparklesIcon,
 } from "../components/icons";
 
-// Team Member Card Component
-const TeamMemberCard = ({
-  name,
-  role,
-  description,
-  image,
-  index = 0,
-}: {
-  name: string;
-  role: string;
-  description: string;
-  image: string;
-  index?: number;
-}) => (
-  <div
-    className={`group glass-card glass-card-hover rounded-2xl overflow-hidden text-white flex flex-col h-full animate-fade-in-up stagger-${(index % 8) + 1
-      }`}
-  >
-    <div className="relative h-64 overflow-hidden">
-      <img
-        src={image}
-        alt={name}
-        className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-80"></div>
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-        <a
-          href="#"
-          className="w-9 h-9 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-violet-500/50 transition-all"
-        >
-          <LinkedInIcon className="w-4 h-4" />
-        </a>
-        <a
-          href="#"
-          className="w-9 h-9 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-pink-500/50 transition-all"
-        >
-          <InstagramIcon className="w-4 h-4" />
-        </a>
-      </div>
-    </div>
-    <div className="p-5 flex-grow flex flex-col">
-      <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 mb-1">
-        {name}
-      </h3>
-      <p className="text-xs font-semibold text-gray-400 mb-3">{role}</p>
-      <p className="text-sm text-gray-300 leading-relaxed flex-grow">
-        {description}
-      </p>
-    </div>
-    <div className="h-1 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-  </div>
-);
+
 
 const LandingPage = () => {
   const [formData, setFormData] = useState({
@@ -94,54 +44,79 @@ const LandingPage = () => {
 
   const features = [
     {
-      icon: <CameraIcon className="w-8 h-8 text-white" />,
+      icon: <CameraIcon className="w-7 h-7 text-white" />,
       title: "Multi-Face Recognition",
       description:
         "Advanced AI cameras detect and mark attendance for the entire class in seconds.",
+      tag: "AI Core",
+      stat: "50+",
+      statLabel: "faces detected simultaneously",
     },
     {
-      icon: <ChartBarIcon className="w-8 h-8 text-white" />,
+      icon: <ChartBarIcon className="w-7 h-7 text-white" />,
       title: "Real-Time Analytics",
       description:
         "Visualize attendance trends and generate comprehensive reports instantly.",
+      tag: "Insights",
+      stat: "100%",
+      statLabel: "live data updates",
     },
     {
-      icon: <ShieldCheckIcon className="w-8 h-8 text-white" />,
+      icon: <ShieldCheckIcon className="w-7 h-7 text-white" />,
       title: "Secure & Private",
       description:
         "Privacy-first architecture with encrypted face data and secure storage.",
+      tag: "Security",
+      stat: "AES-256",
+      statLabel: "grade encryption",
     },
     {
-      icon: <CodeBracketIcon className="w-8 h-8 text-white" />,
+      icon: <CodeBracketIcon className="w-7 h-7 text-white" />,
       title: "Seamless Integration",
       description:
         "Easily syncs with popular LMS like Canvas, Blackboard, and Moodle.",
+      tag: "Platform",
+      stat: "10+",
+      statLabel: "LMS platforms supported",
     },
     {
-      icon: <ClockIcon className="w-8 h-8 text-white" />,
+      icon: <ClockIcon className="w-7 h-7 text-white" />,
       title: "Time-Saving",
       description:
         "Save up to 10 minutes per class while NexAttend handles the admin.",
+      tag: "Efficiency",
+      stat: "10 min",
+      statLabel: "saved per session",
     },
     {
-      icon: <BrainIcon className="w-8 h-8 text-white" />,
+      icon: <BrainIcon className="w-7 h-7 text-white" />,
       title: "Smart Insights",
       description:
         "AI-driven insights help understand engagement and optimize scheduling.",
+      tag: "AI",
+      stat: "98%",
+      statLabel: "recognition accuracy",
     },
     {
-      icon: <UsersIcon className="w-8 h-8 text-white" />,
+      icon: <UsersIcon className="w-7 h-7 text-white" />,
       title: "Student Engagement",
       description:
         "Promote attendance culture with gamified stats and reliable tracking.",
+      tag: "Engagement",
+      stat: "3×",
+      statLabel: "higher student awareness",
     },
     {
-      icon: <SparklesIcon className="w-8 h-8 text-white" />,
+      icon: <SparklesIcon className="w-7 h-7 text-white" />,
       title: "Easy to Use",
       description:
         "Intuitive dashboard for teachers, students, and administrators.",
+      tag: "UX",
+      stat: "<2 min",
+      statLabel: "onboarding time",
     },
   ];
+
 
   const teamMembers = [
     {
@@ -150,6 +125,7 @@ const LandingPage = () => {
       description:
         "Leads NexAttend's direction and develops real-time face recognition using DeepFace and MTCNN.",
       image: kumuthuImg,
+      color: "139, 92, 246",      // violet
     },
     {
       name: "Thisandu Ranadheera",
@@ -157,6 +133,7 @@ const LandingPage = () => {
       description:
         "Develops server infrastructure, API endpoints, and database connectivity using Node.js.",
       image: thisanduImg,
+      color: "6, 182, 212",       // cyan
     },
     {
       name: "Thiviru Igalawithana",
@@ -164,6 +141,7 @@ const LandingPage = () => {
       description:
         "Designs intuitive interfaces in Figma and implements responsive React components.",
       image: thiviruImg,
+      color: "236, 72, 153",      // pink
     },
     {
       name: "Yasitha Peris",
@@ -171,6 +149,7 @@ const LandingPage = () => {
       description:
         "Designs technical architecture and oversees deployment pipelines for CI/CD workflows.",
       image: yasithaImg,
+      color: "16, 185, 129",      // emerald
     },
     {
       name: "Viraj Jayasiri",
@@ -178,6 +157,7 @@ const LandingPage = () => {
       description:
         "Specializes in facial detection systems and optimizing real-time detection accuracy.",
       image: virajImg,
+      color: "249, 115, 22",      // orange
     },
     {
       name: "Sudam Amarajeewa",
@@ -185,6 +165,7 @@ const LandingPage = () => {
       description:
         "Manages backend systems and creates clear technical documentation.",
       image: sudamImg,
+      color: "59, 130, 246",      // blue
     },
   ];
 
@@ -634,19 +615,8 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* Team Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {teamMembers.map((member, index) => (
-              <TeamMemberCard
-                key={member.name}
-                name={member.name}
-                role={member.role}
-                description={member.description}
-                image={member.image}
-                index={index}
-              />
-            ))}
-          </div>
+          {/* Team Carousel */}
+          <TeamCarousel members={teamMembers} />
         </div>
       </section >
 
