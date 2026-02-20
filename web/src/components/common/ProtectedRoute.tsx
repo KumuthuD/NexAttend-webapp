@@ -31,7 +31,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
         // Save the current location they were trying to access to redirect back after login
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        return <Navigate to="/get-started" state={{ from: location }} replace />;
     }
 
     // Check if role-based access is required and if the user has the required role
