@@ -38,7 +38,7 @@ const INITIAL_CLASSROOMS: Classroom[] = [
         id: 1,
         title: 'Algorithms',
         studentCount: 0,
-        accessCode: 'AML-2025',
+        accessCode: '234458',
         icon: <BookOpen className="text-violet-600 dark:text-violet-400 w-6 h-6" />,
         iconBg: 'bg-violet-50 dark:bg-violet-500/10',
     },
@@ -46,7 +46,7 @@ const INITIAL_CLASSROOMS: Classroom[] = [
         id: 2,
         title: 'Advance Client Side',
         studentCount: 0,
-        accessCode: 'DSA-2025',
+        accessCode: '283292',
         icon: <Code className="text-blue-600 dark:text-blue-400 w-6 h-6" />,
         iconBg: 'bg-blue-50 dark:bg-blue-500/10',
     },
@@ -54,17 +54,18 @@ const INITIAL_CLASSROOMS: Classroom[] = [
         id: 3,
         title: 'Database',
         studentCount: 0,
-        accessCode: 'IQC-2025',
+        accessCode: '314758',
         icon: <Database className="text-emerald-600 dark:text-emerald-400 w-6 h-6" />,
         iconBg: 'bg-emerald-50 dark:bg-emerald-500/10',
     }
 ];
 
 // Function to generate random access code
-const generateAccessCode = (title: string): string => {
-    const prefix = title.substring(0, 3).toUpperCase();
-    const randomNum = Math.floor(Math.random() * 9000) + 1000;
-    return `${prefix}-${randomNum}`;
+const generateAccessCode = () => {
+  const array = new Uint8Array(6);
+  crypto.getRandomValues(array);
+
+  return Array.from(array, num => num % 10).join('');
 };
 
 const DashboardPage: React.FC = () => {
@@ -112,7 +113,7 @@ const DashboardPage: React.FC = () => {
                 id: nextId,
                 title: inputValue,
                 studentCount: 0,
-                accessCode: generateAccessCode(inputValue),
+                accessCode: generateAccessCode(),
                 icon: randomIconOption.icon(randomIconOption.color),
                 iconBg: randomIconOption.bg,
             };
