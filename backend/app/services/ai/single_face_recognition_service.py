@@ -12,6 +12,7 @@ This service orchestrates the full flow:
 Author: Viraj Jayasiri
 Date: Week 03 Day 12
 Branch: feature/ai/single-face-recognition
+Updated: Week 04 Day 18 - use ai_config for thresholds/model name
 """
 
 import cv2
@@ -22,6 +23,12 @@ import logging
 from app.services.face_detector import FaceDetector
 from app.services.ai.face_recognizer import FaceRecognizer
 from app.services.ai.image_processor import convert_bgr_to_rgb
+from app.services.ai.ai_config import (
+    FACE_DETECTION_MIN_CONFIDENCE,
+    SIMILARITY_THRESHOLD,
+    FACE_MODEL_NAME,
+    FACE_CROP_PADDING
+)
 
 # configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,10 +41,10 @@ class SingleFaceRecognitionService:
     """
     
     def __init__(
-        self, 
-        min_confidence: float = 0.90,
-        similarity_threshold: float = 0.7,
-        model_name: str = "Facenet"
+        self,
+        min_confidence: float = FACE_DETECTION_MIN_CONFIDENCE,
+        similarity_threshold: float = SIMILARITY_THRESHOLD,
+        model_name: str = FACE_MODEL_NAME
     ):
         """
         Initialize the single face recognition service
@@ -90,10 +97,10 @@ class SingleFaceRecognitionService:
             return None
     
     def crop_detected_face(
-        self, 
-        frame: np.ndarray, 
+        self,
+        frame: np.ndarray,
         face_box: List[int],
-        padding: float = 0.2
+        padding: float = FACE_CROP_PADDING
     ) -> Optional[np.ndarray]:
         """
         Crop the detected face from the frame with padding
