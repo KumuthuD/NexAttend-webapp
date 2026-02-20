@@ -40,6 +40,17 @@ export interface AttendanceRecord {
     confidence?: number;
 }
 
+export interface Classroom {
+    id: string;
+    name: string;
+    course_code: string;
+    description?: string;
+    teacher_id: string;
+    student_count: number;
+    schedule?: string;
+    created_at: string;
+}
+
 // Create an Axios instance with a base URL
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
@@ -144,6 +155,11 @@ export const registerStudent = async (studentData: FormData) => {
 
 export const updateProfile = async (data: { full_name?: string; avatar?: string }): Promise<UserData> => {
     const response = await api.put<UserData>('/api/v1/users/me', data);
+    return response.data;
+};
+
+export const getClassrooms = async (): Promise<Classroom[]> => {
+    const response = await api.get<Classroom[]>('/api/v1/classrooms');
     return response.data;
 };
 
