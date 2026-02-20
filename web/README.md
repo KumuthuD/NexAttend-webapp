@@ -1,50 +1,128 @@
-# NexAttend - AI-Based Multi-Face Recognition & Classroom Management System
+# NexAttend — Frontend (React + Vite)
 
-> **Automating attendance, ensuring security, and boosting engagement in modern education.**
-
-![NexAttend Banner](src/assets/images/logo.png)
-
-## 📋 Abstract
-NexAttend is a cutting-edge **AI-based multi-face recognition attendance and classroom management system** designed to modernize educational institutions. Unlike traditional manual roll-call or single-student biometric scans, NexAttend uses **MTCNN** and **DeepFace** to detect and identify multiple students simultaneously from a single webcam frame.
-
-The system integrates real-time attendance tracking with anomaly detection (anti-spoofing), analytics dashboards, and gamification elements to create a secure and engaging classroom environment.
+> React-based web application for the NexAttend AI attendance system.
 
 ---
 
-## 🚀 Key Features
+## 🛠️ Tech Stack
 
-* **🤖 Multi-Face Recognition:** Detects and identifies multiple students in a single frame using **MTCNN** (detection) and **DeepFace** (recognition).
-* **🛡️ Anomaly Detection:** Automatically flags unknown faces, low-confidence matches, and potential spoofing attempts.
-* **📊 Dual Dashboards:**
-    * **Teacher Dashboard:** Start sessions, view live analytics, and manage class records.
-    * **Student Dashboard:** View personal attendance history, engagement scores, and notifications.
-* **📈 Smart Analytics:** Visualizes attendance trends and participation data using interactive charts.
-* **📧 Automated Notifications:** Sends email alerts to students regarding their attendance status (Present/Absent/Late).
-* **🏆 Gamification:** Precise motivational scoring (e.g., attendance points) to encourage consistent participation.
-
----
-
-## 🛠️ Technology Stack
-
-The project follows a **Microservices / Layered Architecture**.
-
-| Component | Technology | Description |
-| :--- | :--- | :--- |
-| **Frontend** | React.js, Vite, TailwindCSS | Responsive Web Interface |
-| **Backend** | Node.js, Express.js | API Gateway & Business Logic |
-| **AI Service** | Python, Flask, OpenCV | Face Recognition Engine (MTCNN + DeepFace) |
-| **Database** | MongoDB Atlas | Cloud Data Storage for users & logs |
-| **Containerization** | Docker | Service orchestration (Recommended) |
+| Tool | Purpose |
+|---|---|
+| **React 19** | UI framework |
+| **Vite** | Build tool and dev server |
+| **TypeScript** | Type-safe JavaScript |
+| **Tailwind CSS** | Utility-first styling |
+| **Framer Motion** | Animations and transitions |
+| **face-api.js** | Client-side real-time face detection |
+| **Axios** | HTTP requests to backend API |
+| **React Router v7** | Client-side routing |
+| **Recharts** | Analytics charts |
+| **Lucide React** | Icon library |
 
 ---
 
-## 📂 Project Structure
+## 📂 Folder Structure
 
-```text
-NexAttend-System/
-├── ai-service/          # Python Service (MTCNN + DeepFace)
-├── backend/             # Node.js API & Database Logic
-├── database/            # Seeding scripts & DB config
-├── frontend/            # React Web Application
-├── docker-compose.yml   # Orchestration for all services
-└── README.md            # Project Documentation
+```
+web/
+├── public/
+│   └── models/                  # face-api.js model weights (TinyFaceDetector)
+├── src/
+│   ├── assets/                  # Images, logos
+│   ├── components/
+│   │   ├── common/
+│   │   │   └── WebcamCapture.tsx  # Real-time face detection + recognition
+│   │   ├── dashboard/
+│   │   │   ├── ClassroomCard.tsx
+│   │   │   ├── StatsCard.tsx
+│   │   │   └── StudentAttendanceOverview.tsx
+│   │   ├── landing/             # Landing page sections
+│   │   ├── Header.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── ThemeToggle.tsx
+│   ├── contexts/
+│   │   └── AuthContext.tsx       # Global auth state (user, login, logout)
+│   ├── pages/
+│   │   ├── LandingPage.tsx       # Public homepage
+│   │   ├── LoginPage.tsx
+│   │   ├── RegisterPage.tsx
+│   │   ├── DashboardPage.tsx     # Main dashboard (Teacher + Student)
+│   │   └── ClassroomPage.tsx
+│   └── services/
+│       └── api.ts                # All API calls to the backend
+├── .env                          # Environment variables (not committed)
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
+```
+
+---
+
+## ⚙️ Local Setup
+
+### 1. Install dependencies
+```bash
+npm install
+```
+
+### 2. Create `.env` file
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+### 3. Run development server
+```bash
+npm run dev
+# App available at: http://localhost:5173
+```
+
+---
+
+## 📜 Available Scripts
+
+| Script | Command | Description |
+|---|---|---|
+| Dev server | `npm run dev` | Start local development |
+| Production build | `npm run build` | Build for deployment |
+| Type check | `npm run lint:build` | TypeScript check (no emit) |
+| Preview build | `npm run preview` | Preview production build locally |
+
+---
+
+## 🌐 Deployment (Vercel)
+
+The frontend is deployed on **Vercel**.
+
+| Setting | Value |
+|---|---|
+| **Root Directory** | `web` |
+| **Build Command** | `npm run build` |
+| **Output Directory** | `dist` |
+| **Environment Variable** | `VITE_API_BASE_URL=https://nexattend-backend.onrender.com` |
+
+See the full guide: [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)
+
+---
+
+## 🔑 Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_API_BASE_URL` | ✅ | URL of the FastAPI backend |
+
+> **Note:** All Vite environment variables must start with `VITE_` to be accessible in the browser.
+
+---
+
+## 🤖 face-api.js Integration
+
+The `WebcamCapture` component uses `face-api.js` for **client-side** real-time face detection:
+- Model files are stored in `public/models/` (TinyFaceDetector)
+- Bounding boxes are drawn at **~30fps** on a `<canvas>` overlay
+- The backend is called every few seconds for identity recognition
+
+This two-layer approach ensures **smooth box tracking** even when the backend is slow.
+
+---
+
+*Part of the NexAttend project — Thiviru (Frontend Lead), Kumuthu (AI Integration)*
