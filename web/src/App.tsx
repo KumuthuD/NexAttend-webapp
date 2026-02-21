@@ -37,7 +37,7 @@ const App: React.FC = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 2500); // Splash screen duration
+        }, 800); // Splash screen duration
 
         return () => clearTimeout(timer);
     }, []);
