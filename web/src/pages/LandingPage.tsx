@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import MouseFollower from "../components/MouseFollower";
 import FeatureCard from "../components/FeatureCard";
 import TeamCarousel from "../components/TeamCarousel";
+import TechMarquee from "../components/TechMarquee";
 import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
 import kumuthuImg from "../assets/team/kumuthu.jpg";
 import thisanduImg from "../assets/team/thisandu.jpeg";
@@ -317,6 +318,9 @@ const LandingPage = () => {
           </div>
         </div>
       </section >
+
+      {/* ===== TECH STACK MARQUEE ===== */}
+      <TechMarquee />
 
       {/* ===== DEMO VIDEO SECTION ===== */}
       < section id="demo" className="relative py-24 bg-gray-900" >

@@ -160,6 +160,55 @@ body {
   100% { background-position: 200% 50%; }
 }
 
+/* ===== HOLOGRAPHIC FEATURE CARD KEYFRAMES ===== */
+@keyframes particleFloat {
+  0%, 100% { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.45; }
+  33%       { transform: translateY(-10px) translateX(4px) scale(1.15); opacity: 1; }
+  66%       { transform: translateY(5px) translateX(-3px) scale(0.9); opacity: 0.6; }
+}
+
+/* Orbit paths — dot sits at origin, translateX pushes it out, outer rotate spins it */
+@keyframes orbitA {
+  from { transform: rotate(0deg)   translateX(30px); }
+  to   { transform: rotate(360deg) translateX(30px); }
+}
+@keyframes orbitB {
+  from { transform: rotate(120deg) translateX(30px); }
+  to   { transform: rotate(480deg) translateX(30px); }
+}
+@keyframes orbitC {
+  from { transform: rotate(240deg) translateX(30px); }
+  to   { transform: rotate(600deg) translateX(30px); }
+}
+
+/* Light scan sweep across card */
+@keyframes scanLine {
+  from { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  to   { transform: translateX(280%) skewX(-18deg); opacity: 0; }
+}
+
+/* Ring pulse around icon on hover */
+@keyframes ringPulse {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0;   }
+}
+
+/* ===== INFINITE MARQUEE ===== */
+@keyframes marqueeLeft {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes marqueeRight {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+.marquee-left  { animation: marqueeLeft  55s linear infinite; }
+.marquee-right { animation: marqueeRight 48s linear infinite; }
+.marquee-left:hover,
+.marquee-right:hover { animation-play-state: paused; }
+
 /* ===== SHIMMER EFFECT ===== */
 @keyframes shimmer {
   0% {
