@@ -66,7 +66,7 @@ const SupportPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
                 <div className="lg:hidden h-16" /> {/* Spacer for mobile header */}
 
                 {/* Header */}
@@ -74,7 +74,7 @@ const SupportPage: React.FC = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="hidden lg:flex fixed top-0 right-0 left-64 z-50 justify-between items-center px-10 py-6 bg-[#f8f9fc]/80 dark:bg-[#0f1117]/80 backdrop-blur-md transition-colors duration-300"
+                    className="hidden lg:flex justify-between items-center mb-3"
                 >
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
@@ -86,15 +86,29 @@ const SupportPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
+
+                {/* Divider */}
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Hero Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="text-center max-w-3xl mx-auto mb-16 pt-24"
+                    className="text-center max-w-3xl mx-auto mb-16"
                 >
                     <h1 className="text-4xl md:text-5xl font-bold mb-6 pb-4 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500 bg-clip-text text-transparent">
                         How can we help you today?

@@ -109,7 +109,7 @@ const NotificationPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
                 <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
 
                 {/* Header */}
@@ -117,10 +117,10 @@ const NotificationPage: React.FC = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex justify-between items-center mb-8"
+                    className="flex justify-between items-center mb-4"
                 >
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
                             Notifications
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
@@ -129,8 +129,22 @@ const NotificationPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <div className="hidden lg:flex items-center gap-3">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
+
+                {/* Divider */}
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Controls */}
                 <motion.div

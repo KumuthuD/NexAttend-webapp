@@ -94,7 +94,7 @@ const ClassroomPage: React.FC = () => {
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <main className="flex-1 lg:ml-64 p-4 md:p-10 relative">
+            <main className="flex-1 lg:ml-64 p-4 md:p-9 relative">
                 {/* Mobile Header */}
                 <div className="lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-[#0f1117] p-4 -mx-4 -mt-4 border-b border-gray-100 dark:border-white/[0.06] sticky top-0 z-30 transition-colors duration-300">
                     <button
@@ -127,8 +127,22 @@ const ClassroomPage: React.FC = () => {
                     </button>
 
                     <div className="flex items-center gap-4">
+                        <div className="hidden lg:flex items-center gap-3">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Divider */}
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Classroom Header Card */}
                 <motion.div

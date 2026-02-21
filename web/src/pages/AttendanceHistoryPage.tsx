@@ -100,6 +100,18 @@ const AttendanceHistoryPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <div className="hidden lg:flex items-center gap-3 mr-4">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
+
                         {/* Refresh button */}
                         <button
                             onClick={fetchHistory}

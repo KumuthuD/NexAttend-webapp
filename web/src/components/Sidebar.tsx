@@ -131,22 +131,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div className="flex items-center gap-2 px-2 pt-2 border-t border-gray-100 dark:border-white/[0.06]">
-              <div className="flex-1">
-                <ThemeToggle />
-              </div>
-              <button
-                onClick={() => {
-                  logout();
-                  navigate('/get-started');
-                }}
-                className="p-2.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all duration-200"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
-            </div>
           </div>
 
         </div>
