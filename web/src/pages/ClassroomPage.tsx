@@ -117,7 +117,7 @@ const ClassroomPage: React.FC = () => {
                 </div>
 
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-7">
                     <button
                         onClick={() => navigate('/dashboard')}
                         className="flex items-center gap-2 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors duration-200 text-sm font-medium"
@@ -140,9 +140,6 @@ const ClassroomPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Divider */}
-                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Classroom Header Card */}
                 <motion.div
