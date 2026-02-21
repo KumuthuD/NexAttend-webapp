@@ -412,7 +412,7 @@ const LandingPage = () => {
       name: "Yasitha Peris",
       role: "Frontend Developer",
       description:
-        "Designs technical architecture and oversees deployment pipelines for CI/CD workflows.",
+        "Creates responsive and user-friendly web experiences.",
       image: yasithaImg,
     },
     {
