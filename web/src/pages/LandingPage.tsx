@@ -1258,12 +1258,12 @@ const LandingPage = () => {
                         onFocus={e => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(139,92,246,0.15)'; }}
                         onBlur={e => { e.currentTarget.style.boxShadow = 'none'; }}
                       >
-                        <option value="" disabled>What's this about?</option>
-                        <option value="demo">📅  Request a Demo</option>
-                        <option value="pricing">💳  Pricing &amp; Plans</option>
-                        <option value="support">🛠️   Technical Support</option>
-                        <option value="partnership">🤝  Partnership Inquiry</option>
-                        <option value="other">💬  Other</option>
+                        <option value="" disabled style={{ background: '#1a1030', color: '#9ca3af' }}>What's this about?</option>
+                        <option value="demo"        style={{ background: '#1a1030', color: '#e2e8f0' }}>📅  Request a Demo</option>
+                        <option value="pricing"     style={{ background: '#1a1030', color: '#e2e8f0' }}>💳  Pricing &amp; Plans</option>
+                        <option value="support"     style={{ background: '#1a1030', color: '#e2e8f0' }}>🛠️   Technical Support</option>
+                        <option value="partnership" style={{ background: '#1a1030', color: '#e2e8f0' }}>🤝  Partnership Inquiry</option>
+                        <option value="other"       style={{ background: '#1a1030', color: '#e2e8f0' }}>💬  Other</option>
                       </select>
                       {/* Chevron */}
                       <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
