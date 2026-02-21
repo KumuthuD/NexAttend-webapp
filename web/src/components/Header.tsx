@@ -94,6 +94,18 @@ const Header = () => {
                         ${isHovered ? 'opacity-100' : ''}
                     `}></div>
 
+                    {/* Mobile Menu Button */}
+                    <button
+                        className="md:hidden relative z-10 p-2 -ml-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? (
+                            <XMarkIcon className="w-6 h-6" />
+                        ) : (
+                            <Bars3Icon className="w-6 h-6" />
+                        )}
+                    </button>
+
                     {/* Logo */}
                     <div className="flex items-center gap-2">
                         <LogoIcon className="w-7 h-7 md:w-8 md:h-8 mr-0" />
@@ -126,18 +138,6 @@ const Header = () => {
                             </button>
                         ))}
                     </div>
-
-                    {/* Mobile Menu Button */}
-                    <button
-                        className="md:hidden relative z-10 p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-full transition-all"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    >
-                        {isMobileMenuOpen ? (
-                            <XMarkIcon className="w-6 h-6" />
-                        ) : (
-                            <Bars3Icon className="w-6 h-6" />
-                        )}
-                    </button>
                 </nav>
             </header>
 

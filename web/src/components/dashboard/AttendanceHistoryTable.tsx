@@ -6,7 +6,6 @@ export interface AttendanceRecord {
     id: string;
     date: string;           // ISO date string e.g. "2026-02-18"
     classroom_name: string;
-    session_label: string;  // e.g. "Morning Session"
     status: 'present' | 'absent';
     confidence?: number;    // 0–1 float, optional
 }
@@ -25,8 +24,8 @@ const SkeletonRow = ({ index }: { index: number }) => (
         transition={{ delay: index * 0.05 }}
         className="border-b border-gray-100 dark:border-white/[0.05]"
     >
-        {[1, 2, 3, 4, 5].map((col) => (
-            <td key={col} className="px-5 py-4">
+        {[1, 2, 3, 4].map((col) => (
+            <td key={col} className={`px-4 py-4 ${col === 4 ? 'hidden sm:table-cell' : ''}`}>
                 <div className="h-4 bg-gray-100 dark:bg-white/[0.06] rounded-lg animate-pulse" />
             </td>
         ))}
@@ -79,7 +78,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     isLoading = false,
     className = '',
 }) => {
-    const COLUMNS = ['Date', 'Classroom', 'Session', 'Status', 'Confidence'];
+    const COLUMNS = ['Date', 'Status', 'Confidence'];
 
     return (
         <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`}>
@@ -91,7 +90,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                             {COLUMNS.map((col) => (
                                 <th
                                     key={col}
-                                    className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                    className="px-4 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                                 >
                                     {col}
                                 </th>
@@ -108,7 +107,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                         {/* Empty state */}
                         {!isLoading && records.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-5 py-16 text-center">
+                                <td colSpan={3} className="px-5 py-16 text-center">
                                     <div className="flex flex-col items-center gap-3">
                                         <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
                                             <BookOpen className="w-6 h-6 text-violet-500 dark:text-violet-400" />
@@ -130,33 +129,20 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                                 className="border-b border-gray-50 dark:border-white/[0.04] hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors duration-150"
                             >
                                 {/* Date */}
-                                <td className="px-5 py-4">
+                                <td className="px-4 py-4">
                                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                                         <Calendar className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                                        <span className="font-medium tabular-nums">{formatDate(record.date)}</span>
-                                    </div>
-                                </td>
-
-                                {/* Classroom */}
-                                <td className="px-5 py-4">
-                                    <span className="text-gray-800 dark:text-gray-200 font-medium">{record.classroom_name}</span>
-                                </td>
-
-                                {/* Session */}
-                                <td className="px-5 py-4">
-                                    <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                                        <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                                        <span>{record.session_label}</span>
+                                        <span className="font-medium tabular-nums text-xs sm:text-sm">{formatDate(record.date)}</span>
                                     </div>
                                 </td>
 
                                 {/* Status */}
-                                <td className="px-5 py-4">
+                                <td className="px-4 py-4">
                                     <StatusBadge status={record.status} />
                                 </td>
 
                                 {/* Confidence */}
-                                <td className="px-5 py-4">
+                                <td className="px-4 py-4">
                                     {record.confidence !== undefined
                                         ? <ConfidenceBar value={record.confidence} />
                                         : <span className="text-xs text-gray-400 dark:text-gray-600">—</span>

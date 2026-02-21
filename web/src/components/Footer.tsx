@@ -22,8 +22,7 @@ const Footer = () => {
                             onClick={() => scrollToSection('home')}
                             className="flex items-center gap-3 group"
                         >
-                            <LogoIcon className="w-12 h-12 group-hover:scale-110 transition-transform" />
-                            <div>
+                            <div className="flex flex-col items-center ml-10"><LogoIcon className="w-12 h-12 group-hover:scale-110 transition-transform" />
                                 <h2 className="text-2xl font-bold text-white group-hover:text-violet-400 transition-colors">NexAttend</h2>
                                 <p className="text-sm text-gray-500">AI-Powered Attendance System</p>
                             </div>
@@ -31,7 +30,7 @@ const Footer = () => {
                         <p className="mt-6 text-gray-400 max-w-sm leading-relaxed">
                             Transforming classroom management with AI-powered face recognition and intelligent analytics.
                         </p>
-                        <div className="flex space-x-3 mt-6">
+                        <div className="flex space-x-3 mt-6 justify-center">
                             <a
                                 href="https://www.instagram.com/nexattend"
                                 className="w-11 h-11 glass-card rounded-xl flex items-center justify-center text-gray-400 hover:text-pink-400 hover:border-pink-500/30 transition-all"
@@ -102,7 +101,7 @@ const Footer = () => {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col justify-center items-center gap-4">
                     <p className="text-gray-500 text-sm">
                         © 2026 NexAttend. All rights reserved.
                     </p>

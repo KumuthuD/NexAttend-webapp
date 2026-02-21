@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Clock, MapPin, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, MapPin, Plus, Menu, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Event {
@@ -22,6 +22,7 @@ const CalendarPage: React.FC = () => {
     const navigate = useNavigate();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -93,9 +94,32 @@ const CalendarPage: React.FC = () => {
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
-            <Sidebar />
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <main className="flex-1 ml-64 p-10 relative">
+            {/* Mobile Top Bar */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0f1117] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-between px-4 z-30">
+                <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <button
+                        onClick={handleLogout}
+                        className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                        title="Logout"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+                <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
+
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -113,13 +137,6 @@ const CalendarPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <button
-                            onClick={handleLogout}
-                            className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
-                        >
-                            Logout
-                        </button>
                     </div>
                 </motion.div>
 

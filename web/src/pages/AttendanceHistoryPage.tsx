@@ -1,27 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { History, RefreshCw } from 'lucide-react';
+import { History, RefreshCw, Menu, LogOut } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import { getAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
 const MOCK_RECORDS: AttendanceRecord[] = [
-    { id: '1', date: '2026-02-18', classroom_name: 'Algorithms',          session_label: 'Morning Session', status: 'present', confidence: 0.94 },
-    { id: '2', date: '2026-02-18', classroom_name: 'Advance Client Side', session_label: 'Afternoon Session', status: 'present', confidence: 0.88 },
-    { id: '3', date: '2026-02-17', classroom_name: 'Database',            session_label: 'Morning Session', status: 'absent',  confidence: undefined },
-    { id: '4', date: '2026-02-17', classroom_name: 'Algorithms',          session_label: 'Afternoon Session', status: 'present', confidence: 0.76 },
-    { id: '5', date: '2026-02-14', classroom_name: 'Advance Client Side', session_label: 'Morning Session', status: 'present', confidence: 0.91 },
-    { id: '6', date: '2026-02-14', classroom_name: 'Database',            session_label: 'Afternoon Session', status: 'present', confidence: 0.85 },
-    { id: '7', date: '2026-02-13', classroom_name: 'Algorithms',          session_label: 'Morning Session', status: 'absent',  confidence: undefined },
-    { id: '8', date: '2026-02-12', classroom_name: 'Database',            session_label: 'Morning Session', status: 'present', confidence: 0.97 },
+    { id: '1', date: '2026-02-18', classroom_name: 'Algorithms', status: 'present', confidence: 0.94 },
+    { id: '2', date: '2026-02-18', classroom_name: 'Advance Client Side', status: 'present', confidence: 0.88 },
+    { id: '3', date: '2026-02-17', classroom_name: 'Database', status: 'absent', confidence: undefined },
+    { id: '4', date: '2026-02-17', classroom_name: 'Algorithms', status: 'present', confidence: 0.76 },
+    { id: '5', date: '2026-02-14', classroom_name: 'Advance Client Side', status: 'present', confidence: 0.91 },
+    { id: '6', date: '2026-02-14', classroom_name: 'Database', status: 'present', confidence: 0.85 },
+    { id: '7', date: '2026-02-13', classroom_name: 'Algorithms', status: 'absent', confidence: undefined },
+    { id: '8', date: '2026-02-12', classroom_name: 'Database', status: 'present', confidence: 0.97 },
 ];
 
 const AttendanceHistoryPage: React.FC = () => {
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/get-started');
+    };
 
     const fetchHistory = async () => {
         setIsLoading(true);
@@ -43,17 +53,31 @@ const AttendanceHistoryPage: React.FC = () => {
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
-            {/* Sidebar */}
-            <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-            >
-                <Sidebar />
-            </motion.div>
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            {/* Main Content */}
-            <main className="flex-1 ml-64 p-10">
+            {/* Mobile Top Bar */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0f1117] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-between px-4 z-30">
+                <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <button
+                        onClick={handleLogout}
+                        className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                        title="Logout"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+                <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
                 {/* Page Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -85,7 +109,6 @@ const AttendanceHistoryPage: React.FC = () => {
                             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                             Refresh
                         </button>
-                        <ThemeToggle />
                     </div>
                 </motion.div>
 
@@ -98,7 +121,7 @@ const AttendanceHistoryPage: React.FC = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
-                        className="grid grid-cols-3 gap-4 mb-6"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
                     >
                         {[
                             {
