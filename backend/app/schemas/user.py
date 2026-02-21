@@ -21,6 +21,14 @@ class UserCreate(BaseModel):
         }
     )
 
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 class UserResponse(BaseModel):
     id: PyObjectId = Field(..., alias="_id")
     full_name: str
