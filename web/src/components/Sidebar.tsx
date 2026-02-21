@@ -1,38 +1,35 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import {
   LogoIcon,
   HomeIcon,
   CalendarIcon,
-  EnvelopeIcon,
-  InformationCircleIcon,
   BellIcon,
   Cog6ToothIcon,
   QuestionMarkCircleIcon,
   ChartBarIcon,
-  UserCircleIcon,
-  SparklesIcon
+  UserCircleIcon
 } from './icons';
 
-import profileImg from '../assets/team/kumuthu.jpg';
+
+
+
+
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <HomeIcon className="w-5 h-5" />, path: '/dashboard' },
-    { id: 'features', label: 'Features', icon: <SparklesIcon className="w-5 h-5" />, path: '/features' },
     { id: 'calendar', label: 'Calendar', icon: <CalendarIcon className="w-5 h-5" />, path: '/calendar' },
-    { id: 'contact', label: 'Contact', icon: <EnvelopeIcon className="w-5 h-5" />, path: '/contact' },
-    { id: 'about', label: 'About Us', icon: <InformationCircleIcon className="w-5 h-5" />, path: '/about' },
-  ];
-
-  const secondaryItems = [
     { id: 'notifications', label: 'Notifications', icon: <BellIcon className="w-5 h-5" />, path: '/notifications' },
+    { id: 'analytics', label: 'Analytics', icon: <ChartBarIcon className="w-5 h-5" />, path: '/analytics' },
     { id: 'settings', label: 'Settings', icon: <Cog6ToothIcon className="w-5 h-5" />, path: '/settings' },
     { id: 'support', label: 'Support', icon: <QuestionMarkCircleIcon className="w-5 h-5" />, path: '/support' },
-    { id: 'analytics', label: 'Analitics', icon: <ChartBarIcon className="w-5 h-5" />, path: '/analytics' },
     { id: 'profile', label: 'My Profile', icon: <UserCircleIcon className="w-5 h-5" />, path: '/profile' },
   ];
 
@@ -40,23 +37,26 @@ const Sidebar = () => {
     navigate(path);
   };
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#52C1E5] to-[#7B7FED] text-white flex flex-col font-sans shadow-xl z-50">
-
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-[#0f1117] border-r border-gray-100 dark:border-white/[0.06] text-gray-800 dark:text-white flex flex-col font-sans z-50 transition-colors duration-300">
       <div className="flex-1 flex flex-col overflow-y-auto px-4">
 
         {/* Logo Section */}
-        <div className="flex items-center gap-3 py-6 px-2">
-          <div className="w-12 h-12 bg-[#3B5BA5] rounded-xl flex items-center justify-center shadow-md">
-            <LogoIcon className="w-7 h-7 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">NexAttend</h1>
+        <div className="flex items-center gap-2 py-7 px-2">
+          <LogoIcon className="w-10 h-10" />
+          <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors duration-300">NexAttend</h1>
         </div>
 
-        {/* Primary Menu */}
-        <nav className="space-y-1 mb-6 mt-4">
+        {/* Divider */}
+        <div className="w-full h-1 bg-violet-500 rounded-full dark:bg-white/[0.1] mb-4 transition-colors duration-300" />
+
+        {/* Section label */}
+        <p className="text-[11px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-wider px-3 mb-3 transition-colors duration-300">Menu</p>
+
+        {/* Menu */}
+        <nav className="space-y-0.5 mb-6">
           {menuItems.map((item) => {
             const active = isActive(item.path);
             return (
@@ -64,116 +64,42 @@ const Sidebar = () => {
                 key={item.id}
                 onClick={() => handleNavigation(item.path)}
                 className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-xl 
+                  w-full flex items-center gap-3 px-3 py-2.5 rounded-xl 
                   transition-all duration-200 text-sm font-medium
                   ${active
-                    ? 'bg-white text-[#7B7FED] shadow-md'
-                    : 'text-white/90 hover:bg-white/10'
+                    ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-white'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.03]'
                   }
                 `}
               >
-                <span className={active ? 'text-[#7B7FED]' : 'text-white/90'}>
+                <span className={active ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}>
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
+                {active && (
+                  <div className="ml-auto w-1.5 h-1.5 bg-violet-500 dark:bg-violet-400 rounded-full" />
+                )}
               </button>
             );
           })}
         </nav>
-
-        {/* Divider */}
-        <div className="h-[1px] bg-white/20 mb-6"></div>
-
-        {/* Secondary Menu */}
-        <nav className="space-y-1 mb-auto">
-          {secondaryItems.map((item) => {
-            const active = isActive(item.path);
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavigation(item.path)}
-                className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-xl 
-                  transition-all duration-200 text-sm font-medium
-                  ${active
-                    ? 'bg-white text-[#7B7FED] shadow-md'
-                    : 'text-white/90 hover:bg-white/10'
-                  }
-                `}
-              >
-                <span className={active ? 'text-[#7B7FED]' : 'text-white/90'}>
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Illustration Card - Upgrade */}
-        <div className="mt-6 mb-4 relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#6B6FE8] to-[#8B5FED] p-4">
-          {/* Decorative elements */}
-          <div className="absolute top-2 left-2">
-            <svg className="w-3 h-3 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          </div>
-          <div className="absolute top-6 right-4">
-            <svg className="w-4 h-4 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          </div>
-
-          {/* Illustration - simplified representation */}
-          <div className="relative z-10 flex flex-col items-center py-3">
-            {/* Chart illustration */}
-            <div className="mb-3 relative">
-              <div className="w-24 h-16 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20 flex items-end justify-around p-2 gap-1">
-                <div className="w-3 bg-blue-400 rounded-t" style={{ height: '40%' }}></div>
-                <div className="w-3 bg-purple-400 rounded-t" style={{ height: '70%' }}></div>
-                <div className="w-3 bg-pink-400 rounded-t" style={{ height: '50%' }}></div>
-              </div>
-              {/* Gift boxes */}
-              <div className="absolute -bottom-1 -left-2 w-6 h-6 bg-yellow-400 rounded"></div>
-              <div className="absolute -bottom-1 left-6 w-5 h-5 bg-orange-400 rounded"></div>
-            </div>
-
-            {/* Person illustration - simplified */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-16 h-20 bg-gradient-to-b from-purple-500 to-purple-700 rounded-full relative">
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-6 h-6 bg-pink-400 rounded-full"></div>
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="w-5 h-5 bg-red-400 rounded-full relative">
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full"></span>
-                </div>
-                <div className="w-4 h-4 bg-blue-400 rounded"></div>
-              </div>
-            </div>
-
-            <button className="w-full bg-[#7B5FED] hover:bg-[#6B4FDD] text-white text-sm font-bold py-2.5 rounded-xl transition-colors shadow-lg">
-              Upgrade for Free
-            </button>
-          </div>
-        </div>
 
         {/* User Profile */}
-        <div className="flex items-center gap-3 px-3 py-4 mb-4 border-t border-white/20 cursor-pointer hover:bg-white/5 rounded-xl transition-colors">
+        <div
+          onClick={() => handleNavigation('/profile')}
+          className="mt-auto flex items-center gap-3 px-3 py-3 mb-5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors duration-200 group border border-transparent hover:border-gray-100 dark:hover:border-white/[0.06]"
+        >
           <div className="relative">
             <img
-              src={profileImg}
+              src={user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}&backgroundColor=e5e7eb&textColor=374151`}
               alt="User"
-              className="w-10 h-10 rounded-full object-cover border-2 border-white/30"
+              className="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-gray-800"
             />
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-[#7B7FED] rounded-full"></span>
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-[#0f1117] rounded-full" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-white/80 font-medium">Welcome back 👋</p>
-            <p className="text-sm font-bold text-white truncate">John Doe</p>
+            <p className="text-sm font-semibold text-gray-800 dark:text-white truncate transition-colors duration-300">{user?.name}</p>
           </div>
-          <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
         </div>
 
       </div>

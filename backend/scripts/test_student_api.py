@@ -62,7 +62,7 @@ def test_api_structure():
         print(f"Validation Check (Bad Data): {response.status_code}")
         assert response.status_code == 422
         
-        print("\n✅ API Router Structure Verified (with Mock DB)!")
+        print("\n API Router Structure Verified (with Mock DB)!")
 
 if __name__ == "__main__":
     test_api_structure()

@@ -6,6 +6,7 @@ Optimized for multiple face detection.
 
 Kumuthu Dahanayake - Week 01 Day 4
 Viraj Jayasiri - Week 02 Day 6 (Multi-face optimization)
+Viraj Jayasiri - Week 04 Day 16 (Low-light optimization)
 """
 
 import cv2
@@ -13,6 +14,7 @@ import numpy as np
 from mtcnn import MTCNN
 import logging
 from typing import List, Dict, Tuple, Optional
+from app.services.lighting_optimizer import lighting_optimizer
 
 # configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +26,8 @@ class FaceDetector:
         min_face_size: int = 20,
         scale_factor: float = 0.709,
         steps_threshold: List[float] = None,
-        min_confidence: float = 0.90
+        min_confidence: float = 0.90,
+        enable_lighting_optimization: bool = True
     ):
         """
         Initialize MTCNN Face Detector with optimized settings for multiple faces.
@@ -38,7 +41,8 @@ class FaceDetector:
             )
             self.min_confidence = min_confidence
             self.min_face_size = min_face_size
-            logger.info(f"FaceDetector initialized (min_face_size={min_face_size}, min_confidence={min_confidence})")
+            self.enable_lighting_optimization = enable_lighting_optimization
+            logger.info(f"FaceDetector initialized (min_face_size={min_face_size}, min_confidence={min_confidence}, lighting_opt={enable_lighting_optimization})")
         except Exception as e:
             logger.error(f"Failed to initialize FaceDetector: {e}")
             raise e
@@ -57,8 +61,13 @@ class FaceDetector:
             return []
 
         try:
+            # apply lighting optimization for better detection in low-light
+            processed_image = image
+            if self.enable_lighting_optimization:
+                processed_image = lighting_optimizer.optimize_for_detection(image)
+            
             # convert BGR to RGB (MTCNN expects RGB)
-            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image_rgb = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
 
             # run detection
             results = self.detector.detect_faces(image_rgb)

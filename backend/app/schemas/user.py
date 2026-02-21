@@ -1,5 +1,8 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, BeforeValidator
+from typing import Optional, Annotated
+
+# Helper for Pydantic v2 to handle ObjectId
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 class UserCreate(BaseModel):
     full_name: str
@@ -27,10 +30,42 @@ class Token(BaseModel):
     token_type: str
 
 class UserResponse(BaseModel):
-    id: str = Field(..., alias="_id")
+    id: PyObjectId = Field(..., alias="_id")
     full_name: str
     email: EmailStr
     role: str
     is_active: bool
+    avatar: Optional[str] = None
 
     model_config = ConfigDict(populate_by_name=True)
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    avatar: Optional[str] = None
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "full_name": "Jane Doe",
+                "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=JD"
+            }
+        }
+    )
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "john@example.com",
+                "password": "securepassword123"
+            }
+        }
+    )
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse

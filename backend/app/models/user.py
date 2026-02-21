@@ -12,6 +12,7 @@ class User(BaseModel):
     password_hash: str = Field(...)
     role: str = Field(default="teacher")  # admin, teacher
     is_active: bool = Field(default=True)
+    avatar: Optional[str] = Field(default=None)
 
     model_config = ConfigDict(
         populate_by_name=True,
