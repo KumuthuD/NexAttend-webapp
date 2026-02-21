@@ -5,6 +5,22 @@ import MouseFollower from "../components/MouseFollower";
 import FeatureCard from "../components/FeatureCard";
 import TechMarquee from "../components/TechMarquee";
 import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
+import kumuthuImg from "../assets/team/kumuthu.jpg";
+import thisanduImg from "../assets/team/thisandu.jpeg";
+import thiviruImg from "../assets/team/thiviru.jpeg";
+import yasithaImg from "../assets/team/yasitha.jpeg";
+import virajImg from "../assets/team/viraj.jpg";
+import sudamImg from "../assets/team/sudam.jpg";
+import {
+  CameraIcon,
+  BrainIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+  CodeBracketIcon,
+  ChartBarIcon,
+  ClockIcon,
+  SparklesIcon,
+} from "../components/icons";
 
 // ===== SCROLL REVEAL HOOK =====
 function useScrollReveal() {
@@ -106,23 +122,6 @@ function TypingText({ texts }: { texts: string[] }) {
 
   return <span className="typing-cursor">{displayed}</span>;
 }
-import kumuthuImg from "../assets/team/kumuthu.jpg";
-import thisanduImg from "../assets/team/thisandu.jpeg";
-import thiviruImg from "../assets/team/thiviru.jpeg";
-import yasithaImg from "../assets/team/yasitha.jpeg";
-import virajImg from "../assets/team/viraj.jpg";
-import sudamImg from "../assets/team/sudam.jpg";
-
-import {
-  CameraIcon,
-  BrainIcon,
-  ShieldCheckIcon,
-  UsersIcon,
-  CodeBracketIcon,
-  ChartBarIcon,
-  ClockIcon,
-  SparklesIcon,
-} from "../components/icons";
 
 // Team Member Card Component
 const TeamMemberCard = ({
