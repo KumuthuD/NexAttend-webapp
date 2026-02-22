@@ -13,7 +13,9 @@ import {
     Edit,
     MapPin,
     Link as LinkIcon,
-    Shield
+    Shield,
+    Menu,
+    LogOut
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -21,6 +23,7 @@ const ProfilePage: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
@@ -48,15 +51,38 @@ const ProfilePage: React.FC = () => {
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
-            <Sidebar />
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <main className="flex-1 ml-64 p-10 relative">
+            {/* Mobile Top Bar */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0f1117] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-between px-4 z-30">
+                <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <button
+                        onClick={handleLogout}
+                        className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                        title="Logout"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+                <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
+
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex justify-between items-center mb-8"
+                    className="flex justify-between items-center mb-3"
                 >
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
@@ -68,15 +94,22 @@ const ProfilePage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <button
-                            onClick={handleLogout}
-                            className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
-                        >
-                            Logout
-                        </button>
+                        <div className="hidden lg:flex items-center gap-3">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
+
+                {/* Divider */}
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 <div className="grid grid-cols-12 gap-8">
                     {/* Left Column: User Card & Stats */}
@@ -154,7 +187,7 @@ const ProfilePage: React.FC = () => {
                         transition={{ duration: 0.5, delay: 0.3 }}
                         className="col-span-12 lg:col-span-8 space-y-8"
                     >
-                        
+
 
                         {/* Recent Activity */}
                         <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl p-8 border border-gray-100 dark:border-white/[0.06]">

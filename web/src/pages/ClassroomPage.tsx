@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw } from 'lucide-react';
+import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw, Smile, Activity, Menu, LogOut } from 'lucide-react';
 import CameraCapture from '../components/common/WebcamCapture';
 import AttendanceList from '../components/classroom/AttendanceList';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
@@ -12,11 +12,11 @@ import DatePicker from '../components/common/DatePicker';
 
 // Mock history records for this classroom (replace with API call when ready)
 const MOCK_HISTORY: AttendanceRecord[] = [
-    { id: '1', date: '2026-02-18', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.94 },
-    { id: '2', date: '2026-02-17', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.88 },
-    { id: '3', date: '2026-02-14', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'absent' },
-    { id: '4', date: '2026-02-13', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.91 },
-    { id: '5', date: '2026-02-12', classroom_name: 'Advance Client Side Development', session_label: 'Morning Session', status: 'present', confidence: 0.85 },
+    { id: '1', date: '2026-02-18', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.94 },
+    { id: '2', date: '2026-02-17', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.88 },
+    { id: '3', date: '2026-02-14', classroom_name: 'Advance Client Side Development', status: 'absent' },
+    { id: '4', date: '2026-02-13', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.91 },
+    { id: '5', date: '2026-02-12', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.85 },
 ];
 
 interface Student {
@@ -39,6 +39,7 @@ const ClassroomPage: React.FC = () => {
     const [toastMessage, setToastMessage] = useState('');
     const [showHistory, setShowHistory] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Filter history based on selected date
     const filteredHistory = selectedDate
@@ -91,11 +92,32 @@ const ClassroomPage: React.FC = () => {
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
-            <Sidebar />
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <main className="flex-1 ml-64 p-10 relative">
+            <main className="flex-1 lg:ml-64 p-4 md:p-9 relative">
+                {/* Mobile Header */}
+                <div className="lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-[#0f1117] p-4 -mx-4 -mt-4 border-b border-gray-100 dark:border-white/[0.06] sticky top-0 z-30 transition-colors duration-300">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
+                        <button
+                            onClick={handleLogout}
+                            className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                            title="Logout"
+                        >
+                            <LogOut className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-7">
                     <button
                         onClick={() => navigate('/dashboard')}
                         className="flex items-center gap-2 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors duration-200 text-sm font-medium"
@@ -105,13 +127,17 @@ const ClassroomPage: React.FC = () => {
                     </button>
 
                     <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <button
-                            onClick={handleLogout}
-                            className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
-                        >
-                            Logout
-                        </button>
+                        <div className="hidden lg:flex items-center gap-3">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -123,10 +149,10 @@ const ClassroomPage: React.FC = () => {
                     className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] p-6 mb-8 shadow-sm transition-colors duration-300"
                 >
                     <div className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-80 rounded-full -mt-6 mx-[-24px] mb-5" style={{ width: 'calc(100% + 48px)', marginTop: '-32px', borderRadius: '16px 16px 16px 16px' }} />
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">{classroomName}</h1>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-300">{classroomName}</h1>
+                            <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
                                 <span className="flex items-center gap-1.5">
                                     <Hash size={14} className="text-gray-400 dark:text-gray-500" />
                                     <span className="font-mono text-violet-600 dark:text-violet-400 font-medium">{accessCode}</span>
@@ -142,11 +168,11 @@ const ClassroomPage: React.FC = () => {
                             </div>
                         </div>
                         {user?.role === 'teacher' && (
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                 {/* Attendance History toggle — left of Mark Attendance */}
                                 <button
                                     onClick={() => setShowHistory(prev => !prev)}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border ${showHistory
+                                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border ${showHistory
                                         ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/30'
                                         : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-600 dark:hover:text-violet-400'
                                         }`}
@@ -158,7 +184,7 @@ const ClassroomPage: React.FC = () => {
                                 {/* Mark Attendance */}
                                 <button
                                     onClick={() => setIsCameraOpen(true)}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
+                                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
                                 >
                                     Mark Attendance
                                 </button>
@@ -166,7 +192,7 @@ const ClassroomPage: React.FC = () => {
                         )}
                         {user?.role === 'student' && (
                             <button
-                                className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
+                                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
                             >
                                 View Attendance
                             </button>

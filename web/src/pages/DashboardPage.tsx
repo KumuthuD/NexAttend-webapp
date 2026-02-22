@@ -8,7 +8,7 @@ import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
 import StudentAttendanceOverview from '../components/dashboard/StudentAttendanceOverview';
 import StatsCard from '../components/dashboard/StatsCard';
 import ThemeToggle from '../components/ThemeToggle';
-import { Smile, Database, Code, BookOpen, Cpu, Palette, Users, CheckCircle, Activity } from 'lucide-react';
+import { Smile, Database, Code, BookOpen, Cpu, Palette, Users, CheckCircle, Activity, Menu, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -62,10 +62,10 @@ const INITIAL_CLASSROOMS: Classroom[] = [
 
 // Function to generate random access code
 const generateAccessCode = () => {
-  const array = new Uint8Array(6);
-  crypto.getRandomValues(array);
+    const array = new Uint8Array(6);
+    crypto.getRandomValues(array);
 
-  return Array.from(array, num => num % 10).join('');
+    return Array.from(array, num => num % 10).join('');
 };
 
 const DashboardPage: React.FC = () => {
@@ -76,22 +76,23 @@ const DashboardPage: React.FC = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>(INITIAL_CLASSROOMS);
     const [nextId, setNextId] = useState(4);
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const isTeacher = user?.role === 'teacher';
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        
+
         // Fetch stats if teacher
         const fetchStats = async () => {
-             if (user?.role === 'teacher') {
-                 try {
-                     const data = await getDashboardStats();
-                     setStats(data);
-                 } catch (error) {
-                     console.error("Failed to fetch dashboard stats", error);
-                 }
-             }
+            if (user?.role === 'teacher') {
+                try {
+                    const data = await getDashboardStats();
+                    setStats(data);
+                } catch (error) {
+                    console.error("Failed to fetch dashboard stats", error);
+                }
+            }
         };
 
         fetchStats();
@@ -136,39 +137,57 @@ const DashboardPage: React.FC = () => {
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
             {/* Sidebar */}
-            <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="lg:col-span-1"
-            >
-                <Sidebar />
-            </motion.div>
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Main Content */}
-            <main className="flex-1 ml-64 p-7 relative">
+            <main className="flex-1 lg:ml-64 p-4 md:p-7 relative min-h-screen">
+                {/* Mobile Header */}
+                <div className="lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-[#0f1117] p-4 -mx-4 -mt-4 border-b border-gray-100 dark:border-white/[0.06] sticky top-0 z-30 transition-colors duration-300">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
+                        <button
+                            onClick={handleLogout}
+                            className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                            title="Logout"
+                        >
+                            <LogOut className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex justify-between items-center mb-3"
+                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-3"
                 >
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
                             {greeting}{user?.name ? `, ${user.name.split(' ')[0] + '!'}` : ''}👋
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Here's what's happening with your classes today.</p>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <button
-                            onClick={handleLogout}
-                            className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
-                        >
-                            Logout
-                        </button>
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="hidden lg:flex items-center gap-3">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -177,7 +196,7 @@ const DashboardPage: React.FC = () => {
 
                 {/* Stats Cards Section - Only for Teachers */}
                 {isTeacher && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
                         <StatsCard
                             title="Total Students"
                             value={stats?.total_students || 0}
@@ -217,10 +236,10 @@ const DashboardPage: React.FC = () => {
                 {/* Student Attendance Overview */}
                 {!isTeacher && (
                     <StudentAttendanceOverview
-                        attendancePercentage={85}
-                        totalClasses={40}
-                        presentCount={34}
-                        absentCount={6}
+                        attendancePercentage={stats?.attendance_percentage || 0}
+                        totalClasses={stats?.total_classrooms || 0}
+                        presentCount={stats?.todays_attendance_count || 0}
+                        absentCount={0}
                     />
                 )}
 

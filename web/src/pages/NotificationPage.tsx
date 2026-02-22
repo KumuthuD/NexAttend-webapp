@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Check, Info, AlertTriangle, AlertCircle, Trash2, CheckCircle2 } from 'lucide-react';
+import { Bell, Check, Info, AlertTriangle, AlertCircle, Trash2, CheckCircle2, Menu, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Types for notifications
@@ -21,6 +21,7 @@ interface Notification {
 const NotificationPage: React.FC = () => {
     const { logout, user } = useAuth();
     const navigate = useNavigate();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -85,18 +86,41 @@ const NotificationPage: React.FC = () => {
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
-            <Sidebar />
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <main className="flex-1 ml-64 p-10 relative">
+            {/* Mobile Top Bar */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0f1117] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-between px-4 z-30">
+                <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <button
+                        onClick={handleLogout}
+                        className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                        title="Logout"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+                <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
+
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex justify-between items-center mb-8"
+                    className="flex justify-between items-center mb-4"
                 >
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
                             Notifications
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
@@ -105,45 +129,52 @@ const NotificationPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <ThemeToggle />
-                        <button
-                            onClick={handleLogout}
-                            className="px-5 py-2 text-sm text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-900 rounded-xl transition-all duration-200 font-medium bg-white dark:bg-white/5 dark:text-gray-400 dark:border-white/10 dark:hover:text-white dark:hover:border-white/20"
-                        >
-                            Logout
-                        </button>
+                        <div className="hidden lg:flex items-center gap-3">
+                            <ThemeToggle />
+                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                            <button
+                                onClick={handleLogout}
+                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
+
+                {/* Divider */}
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* Controls */}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="flex justify-between items-center mb-6"
+                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6"
                 >
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 px-3 py-1 rounded-full border border-gray-200 dark:border-white/10">
-                            {notifications.filter(n => !n.read).length} Unread
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/10 shadow-sm transition-colors">
+                            <span className="font-bold text-gray-900 dark:text-white mr-1">{notifications.filter(n => !n.read).length}</span> Unread
                         </span>
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 px-3 py-1 rounded-full border border-gray-200 dark:border-white/10">
-                            {notifications.length} Total
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/10 shadow-sm transition-colors">
+                            <span className="font-bold text-gray-900 dark:text-white mr-1">{notifications.length}</span> Total
                         </span>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex items-center gap-4 sm:gap-6">
                         <button
                             onClick={markAllAsRead}
-                            className="flex items-center gap-2 text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+                            className="flex items-center gap-1.5 text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors py-1 group"
                         >
-                            <Check size={16} />
-                            Mark all as read
+                            <Check size={16} className="group-hover:scale-110 transition-transform" />
+                            <span>Mark all as read</span>
                         </button>
                         <button
                             onClick={clearAll}
-                            className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors py-1 group"
                         >
-                            <Trash2 size={16} />
-                            Clear all
+                            <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
+                            <span>Clear all</span>
                         </button>
                     </div>
                 </motion.div>
