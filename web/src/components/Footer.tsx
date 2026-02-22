@@ -17,17 +17,16 @@ const Footer = () => {
             <div className="container mx-auto py-16 px-4">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
                     {/* Brand Section */}
-                    <div className="md:col-span-5">
+                    <div className="md:col-span-5 flex flex-col items-center">
                         <button
                             onClick={() => scrollToSection('home')}
-                            className="flex items-center gap-3 group"
+                            className="flex flex-col items-center gap-2 group"
                         >
-                            <div className="flex flex-col items-center ml-10"><LogoIcon className="w-12 h-12 group-hover:scale-110 transition-transform" />
-                                <h2 className="text-2xl font-bold text-white group-hover:text-violet-400 transition-colors">NexAttend</h2>
-                                <p className="text-sm text-gray-500">AI-Powered Attendance System</p>
-                            </div>
+                            <LogoIcon className="w-12 h-12 group-hover:scale-110 transition-transform" />
+                            <h2 className="text-2xl font-bold text-white group-hover:text-violet-400 transition-colors">NexAttend</h2>
+                            <p className="text-sm text-gray-500">AI-Powered Attendance System</p>
                         </button>
-                        <p className="mt-6 text-gray-400 max-w-sm leading-relaxed">
+                        <p className="mt-6 text-gray-400 max-w-sm leading-relaxed text-center">
                             Transforming classroom management with AI-powered face recognition and intelligent analytics.
                         </p>
                         <div className="flex space-x-3 mt-6 justify-center">
