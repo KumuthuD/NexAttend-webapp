@@ -551,13 +551,12 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { value: 95, suffix: "%", label: "Detection Accuracy", icon: "🎯" },
-              { value: 50, suffix: "+", label: "Students Tracked", icon: "🎓" },
-              { value: 10, suffix: "+", label: "Active Classrooms", icon: "🏫" },
-              { value: 2000, suffix: "ms", label: "Avg. Detection Time", icon: "⚡" },
+              { value: 95, suffix: "%", label: "Detection Accuracy" },
+              { value: 50, suffix: "+", label: "Students Tracked" },
+              { value: 10, suffix: "+", label: "Active Classrooms" },
+              { value: 2000, suffix: "ms", label: "Avg. Detection Time" },
             ].map((stat, i) => (
               <div key={i} className="reveal text-center group" style={{ transitionDelay: `${i * 0.1}s` }}>
-                <div className="text-3xl mb-2">{stat.icon}</div>
                 <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 mb-1">
                   <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                 </div>
@@ -666,7 +665,7 @@ const LandingPage = () => {
               How It Works
             </span>
             <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">Three Simple Steps</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Get up and running in minutes — no complex setup required.</p>
+            <p className="text-gray-400 max-w-2xl mx-auto">Get up and running in minutes, no complex setup required.</p>
           </div>
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-3 gap-8 relative">
