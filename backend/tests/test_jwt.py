@@ -17,17 +17,17 @@ def test_jwt_flow():
     
     print("Testing JWT Flow...")
     
-    # 1. Create token
+#Create token
     token = create_access_token(subject=user_id)
     assert token is not None
     print("Step 1: Token created successfully.")
     
-    # 2. Verify token
+    #Verify token
     decoded_sub = verify_token(token)
     assert decoded_sub == user_id
     print(f"Step 2: Token verified for subject: {decoded_sub}")
 
-    # 3. Test expired token (short expiry)
+  #Test expired token (short expiry)
     expired_token = create_access_token(subject=user_id, expires_delta=timedelta(seconds=-1))
     assert verify_token(expired_token) is None
     print("Step 3: Expired token correctly rejected.")
