@@ -672,16 +672,15 @@ const LandingPage = () => {
               {/* Connector line - desktop */}
               <div className="hidden md:block absolute top-10 left-[calc(16.66%+2rem)] right-[calc(16.66%+2rem)] h-[2px] bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 step-line" />
               {[
-                { step: "01", title: "Register Students", desc: "Upload a photo once. NexAttend trains a unique face vector for every student automatically.", icon: "👤", color: "from-violet-500 to-purple-600" },
-                { step: "02", title: "Start Class Session", desc: "Press a single button. The AI camera scans the room and identifies every face in under 3 seconds.", icon: "📷", color: "from-purple-500 to-pink-600" },
-                { step: "03", title: "View Analytics", desc: "Attendance is recorded, reports are generated, and insights are ready — instantly on your dashboard.", icon: "📊", color: "from-pink-500 to-violet-600" },
+                { step: 1, title: "Register Students", desc: "Upload a photo once. NexAttend trains a unique face vector for every student automatically.", color: "from-violet-500 to-purple-600" },
+                { step: 2, title: "Start Class Session", desc: "Press a single button. The AI camera scans the room and identifies every face in under 3 seconds.", color: "from-purple-500 to-pink-600" },
+                { step: 3, title: "View Analytics", desc: "Attendance is recorded, reports are generated, and insights are ready — instantly on your dashboard.", color: "from-pink-500 to-violet-600" },
               ].map((item, i) => (
                 <div key={i} className="reveal text-center" style={{ transitionDelay: `${i * 0.15}s` }}>
-                  <div className="relative inline-flex flex-col items-center">
-                    <div className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center text-3xl shadow-lg mb-5 group hover:scale-110 transition-transform duration-300`}>
-                      {item.icon}
+                  <div className="inline-flex flex-col items-center">
+                    <div className={`w-20 h-20 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center shadow-lg mb-5 group hover:scale-110 transition-transform duration-300`}>
+                      <span className="text-3xl font-black text-white">{item.step}</span>
                     </div>
-                    <div className="absolute -top-3 -right-3 w-8 h-8 bg-gray-900 border-2 border-violet-500/50 rounded-full flex items-center justify-center text-xs font-black text-violet-400">{item.step}</div>
                   </div>
                   <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
                   <p className="text-gray-400 leading-relaxed text-sm">{item.desc}</p>
@@ -1092,7 +1091,7 @@ const LandingPage = () => {
               </span>
             </h2>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Have questions about NexAttend? Want a live demo? Drop us a message — we respond fast.
+              Have questions about NexAttend? Want a live demo? Drop us a message, we respond fast.
             </p>
           </div>
 
@@ -1197,7 +1196,7 @@ const LandingPage = () => {
 
                 <div className="relative z-10 p-8 md:p-10">
                   <h3 className="text-2xl font-bold text-white mb-1">Send a Message</h3>
-                  <p className="text-gray-500 text-sm mb-8">Fill in the form — we'll be in touch shortly.</p>
+                  <p className="text-gray-500 text-sm mb-8">Fill in the form, we'll be in touch shortly.</p>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -1257,11 +1256,11 @@ const LandingPage = () => {
                         onBlur={e => { e.currentTarget.style.boxShadow = 'none'; }}
                       >
                         <option value="" disabled style={{ background: '#1a1030', color: '#9ca3af' }}>What's this about?</option>
-                        <option value="demo"        style={{ background: '#1a1030', color: '#e2e8f0' }}>📅  Request a Demo</option>
-                        <option value="pricing"     style={{ background: '#1a1030', color: '#e2e8f0' }}>💳  Pricing &amp; Plans</option>
-                        <option value="support"     style={{ background: '#1a1030', color: '#e2e8f0' }}>🛠️   Technical Support</option>
-                        <option value="partnership" style={{ background: '#1a1030', color: '#e2e8f0' }}>🤝  Partnership Inquiry</option>
-                        <option value="other"       style={{ background: '#1a1030', color: '#e2e8f0' }}>💬  Other</option>
+                        <option value="demo"        style={{ background: '#1a1030', color: '#e2e8f0' }}>Request a Demo</option>
+                        <option value="pricing"     style={{ background: '#1a1030', color: '#e2e8f0' }}>Pricing &amp; Plans</option>
+                        <option value="support"     style={{ background: '#1a1030', color: '#e2e8f0' }}>Technical Support</option>
+                        <option value="partnership" style={{ background: '#1a1030', color: '#e2e8f0' }}>Partnership Inquiry</option>
+                        <option value="other"       style={{ background: '#1a1030', color: '#e2e8f0' }}>Other</option>
                       </select>
                       {/* Chevron */}
                       <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
