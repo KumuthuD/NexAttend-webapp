@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
+from typing import List
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.classroom import ClassroomResponse
 from app.database.mongodb import get_database
 from bson import ObjectId
 
@@ -39,3 +41,24 @@ async def update_user_me(
         return updated_user
         
     return current_user
+
+
+@router.get("/me/classrooms", response_model=List[ClassroomResponse])
+async def get_my_classrooms(
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_database)
+):
+    """
+    Get all classrooms belonging to the currently logged-in teacher.
+    """
+    classrooms = await db["classrooms"].find(
+        {"teacher_id": current_user.id}
+    ).to_list(100)
+
+    response = []
+    for cls in classrooms:
+        response.append(ClassroomResponse(
+            **cls,
+            student_count=len(cls.get("student_ids", []))
+        ))
+    return response
