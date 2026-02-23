@@ -249,46 +249,6 @@ async def get_session_results(
     return session
 
 
-@router.post("/close/{session_id}", response_model=AttendanceSessionResponse)
-async def close_attendance_session(
-    session_id: str,
-    db: Any = Depends(get_database)
-):
-    """
-    Close an active attendance session by marking it as completed.
-    Sets end_time to the current UTC time and updates status to 'completed'.
-    """
-    # 1. Verify session exists and is still active
-    session = await db["attendance_sessions"].find_one({
-        "_id": session_id,
-        "status": "active"
-    })
-
-    if not session:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No active attendance session found with ID {session_id}"
-        )
-
-    end_time = datetime.utcnow()
-
-    # 2. Mark session as completed
-    await db["attendance_sessions"].update_one(
-        {"_id": session_id},
-        {
-            "$set": {
-                "status": "completed",
-                "end_time": end_time,
-                "updated_at": end_time
-            }
-        }
-    )
-
-    # 3. Return the updated session document
-    updated_session = await db["attendance_sessions"].find_one({"_id": session_id})
-    return updated_session
-
-
 @router.get("/classroom/{classroom_id}/history", response_model=PaginatedHistoryResponse)
 async def get_classroom_attendance_history(
     classroom_id: str,
