@@ -51,6 +51,19 @@ export interface Classroom {
     created_at: string;
 }
 
+export interface AttendanceSession {
+    id: string;
+    classroom_id: string;
+    session_date: string;
+    start_time: string;
+    end_time?: string;
+    status: 'active' | 'completed';
+    present_student_ids: string[];
+    records: AttendanceRecord[];
+    created_at: string;
+    updated_at: string;
+}
+
 // Create an Axios instance with a base URL
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
@@ -160,6 +173,23 @@ export const updateProfile = async (data: { full_name?: string; avatar?: string 
 
 export const getClassrooms = async (): Promise<Classroom[]> => {
     const response = await api.get<Classroom[]>('/api/v1/classrooms');
+    return response.data;
+};
+
+export const startAttendanceSession = async (classroomId: string): Promise<AttendanceSession> => {
+    const response = await api.post<AttendanceSession>('/api/v1/attendance/start', {
+        classroom_id: classroomId,
+    });
+    return response.data;
+};
+
+export const closeAttendanceSession = async (sessionId: string): Promise<AttendanceSession> => {
+    const response = await api.post<AttendanceSession>(`/api/v1/attendance/close/${sessionId}`);
+    return response.data;
+};
+
+export const getAttendanceSession = async (sessionId: string): Promise<AttendanceSession> => {
+    const response = await api.get<AttendanceSession>(`/api/v1/attendance/session/${sessionId}`);
     return response.data;
 };
 
