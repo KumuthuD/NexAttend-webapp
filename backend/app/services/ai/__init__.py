@@ -9,7 +9,7 @@ from .camera_service import CameraService
 from .face_recognizer import FaceRecognizer
 from .single_face_recognition_service import (
     SingleFaceRecognitionService,
-    single_face_service
+    get_single_face_service
 )
 from .ai_config import (
     FACE_MODEL_NAME,
@@ -47,7 +47,7 @@ __all__ = [
     'CameraService',
     'FaceRecognizer',
     'SingleFaceRecognitionService',
-    'single_face_service',
+    'get_single_face_service',
     'LightingOptimizer',
     'lighting_optimizer',
     # ai config constants

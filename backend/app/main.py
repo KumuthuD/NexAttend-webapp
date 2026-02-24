@@ -22,10 +22,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Configuration - Allow frontend origins
+# allow origin wildcard (*) with credentials is invalid in CORS spec
+# browsers block it — use explicit origin list from settings instead
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins for development
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
