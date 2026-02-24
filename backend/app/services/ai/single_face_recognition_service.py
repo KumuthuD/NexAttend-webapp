@@ -333,5 +333,13 @@ class SingleFaceRecognitionService:
         return None
 
 
-# global instance for easy import
-single_face_service = SingleFaceRecognitionService()
+# do NOT instantiate at module level — loads MTCNN + DeepFace at import time
+# that was causing server startup timeouts on Render during Week 4 deploy
+# use get_single_face_service() instead for lazy initialization
+_single_face_service = None
+
+def get_single_face_service() -> SingleFaceRecognitionService:
+    global _single_face_service
+    if _single_face_service is None:
+        _single_face_service = SingleFaceRecognitionService()
+    return _single_face_service
