@@ -9,7 +9,13 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # CORS Configuration
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8000"]
+    # add any new deployment URLs here
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8000",
+        "https://nex-attend-webapp.vercel.app",
+    ]
     
     # Database
     MONGODB_URL: str 
