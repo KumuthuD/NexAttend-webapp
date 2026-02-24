@@ -25,7 +25,10 @@ from .ai_config import (
     CAMERA_FPS,
     ATTENDANCE_CAPTURE_FPS,
     FACE_IMAGES_DIR,
-    TEMP_DIR
+    TEMP_DIR,
+    # speed optimization constants (Week 05 Day 22)
+    DETECTION_DOWNSCALE_RATIO,
+    DETECTION_FRAME_SKIP
 )
 from app.services.lighting_optimizer import LightingOptimizer, lighting_optimizer
 from .image_processor import (
@@ -65,6 +68,8 @@ __all__ = [
     'ATTENDANCE_CAPTURE_FPS',
     'FACE_IMAGES_DIR',
     'TEMP_DIR',
+    'DETECTION_DOWNSCALE_RATIO',
+    'DETECTION_FRAME_SKIP',
     # image processor functions
     'resize_image',
     'resize_with_aspect_ratio',
