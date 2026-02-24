@@ -210,8 +210,9 @@ async def recognize_faces(
         logger.error(f"Error reading file: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
 
-    #detect all faces in the image
-    faces = detector.detect_faces(image)
+    # use classroom_detector here — registration detector (95%) is too strict
+    # it was filtering out valid student faces during attendance
+    faces = classroom_detector.detect_faces(image)
 
     if not faces:
         return {"count": 0, "matched_count": 0, "results": [], "message": "No faces detected"}
@@ -469,8 +470,15 @@ async def recognize_multi_faces(
     if session_id and matched_student_ids:
         try:
             # Verify session exists and is active
+            # session_id from form is a plain string — must cast to ObjectId for MongoDB
+            try:
+                session_oid = ObjectId(session_id)
+            except Exception:
+                logger.warning(f"[Multi-Face] Invalid session_id format: {session_id}")
+                session_oid = session_id
+
             session = await db.db["attendance_sessions"].find_one({
-                "_id": session_id,
+                "_id": session_oid,
                 "status": "active"
             })
 
@@ -503,7 +511,7 @@ async def recognize_multi_faces(
                 # Single atomic DB update for all new students
                 if new_records:
                     await db.db["attendance_sessions"].update_one(
-                        {"_id": session_id},
+                        {"_id": session_oid},
                         {
                             "$push": {"records": {"$each": new_records}},
                             "$addToSet": {"present_student_ids": {"$each": new_student_ids}}
