@@ -15,6 +15,7 @@ import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import SupportPage from './pages/SupportPage';
 import AttendanceHistoryPage from './pages/AttendanceHistoryPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import SplashScreen from './components/common/SplashScreen';
 
@@ -124,6 +125,16 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <AttendanceHistoryPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+
+                                {/* Analytics Route */}
+                                <Route
+                                    path="/analytics"
+                                    element={
+                                        <ProtectedRoute>
+                                            <AnalyticsPage />
                                         </ProtectedRoute>
                                     }
                                 />
