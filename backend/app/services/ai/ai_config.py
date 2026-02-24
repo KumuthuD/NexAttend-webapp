@@ -1,4 +1,5 @@
-"""Viraj Jayasiri - Week 04 Day 18"""
+"""Viraj Jayasiri - Week 04 Day 18
+Updated: Week 05 Day 22 - added speed optimization constants"""
 
 # AI Configuration
 
@@ -85,3 +86,20 @@ FACE_IMAGES_DIR: str = os.getenv("UPLOAD_DIR", "./data/face_images")
 
 # Temp directory for intermediate processing files
 TEMP_DIR: str = os.getenv("TEMP_DIR", "./data/temp")
+
+
+# ------------------------------------------------------------------
+# Speed Optimization  (Week 05 Day 22)
+# ------------------------------------------------------------------
+
+# Shrink the frame by this ratio before running MTCNN detection
+# 0.5 = half resolution -> ~4x faster detection, slight accuracy drop
+# 1.0 = no downscale (original behaviour)
+DETECTION_DOWNSCALE_RATIO: float = float(
+    os.getenv("DETECTION_DOWNSCALE_RATIO", "0.5")
+)
+
+# Process only 1 out of every N frames during attendance mode
+# 3 means: detect on frame 0, skip 1 & 2, detect on frame 3, ...
+# keeps last result for skipped frames -> saves CPU without visible lag
+DETECTION_FRAME_SKIP: int = int(os.getenv("DETECTION_FRAME_SKIP", "3"))
