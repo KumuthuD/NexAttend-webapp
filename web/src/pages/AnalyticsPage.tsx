@@ -6,6 +6,7 @@ import { getDashboardStats, DashboardStats } from '../services/api';
 import Sidebar from '../components/Sidebar';
 import StatsCard from '../components/dashboard/StatsCard';
 import AttendanceBarChart from '../components/charts/AttendanceBarChart';
+import AttendanceTrendChart from '../components/charts/AttendanceTrendChart';
 import AnalyticsSummaryCard from '../components/analytics/AnalyticsSummaryCard';
 import ThemeToggle from '../components/ThemeToggle';
 import {
@@ -15,7 +16,6 @@ import {
     TrendingDown,
     Activity,
     CalendarDays,
-    BarChart2,
     Menu,
     LogOut,
 } from 'lucide-react';
@@ -191,34 +191,20 @@ const AnalyticsPage: React.FC = () => {
                 {/* Chart Grid */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
-                    {/* Weekly Attendance Bar Chart */}
+                    {/* Attendance Bar Chart — controlled by page filter bar */}
                     <AnalyticsSummaryCard
-                        title="Weekly Attendance Overview"
-                        subtitle={`${selectedClassroom} · This ${activeFilter}`}
+                        title="Attendance Overview"
                         delay={0.35}
                     >
-                        <AttendanceBarChart />
+                        <AttendanceBarChart period={activeFilter} classroom={selectedClassroom} />
                     </AnalyticsSummaryCard>
 
-                    {/* Placeholder — Trend Line Chart (Day 23) */}
+                    {/* Attendance Trend Line Chart — Daily / Weekly toggle */}
                     <AnalyticsSummaryCard
                         title="Attendance Over Time"
-                        subtitle="Line chart — coming in Day 23"
                         delay={0.4}
                     >
-                        <div className="flex flex-col items-center justify-center h-[220px] gap-3">
-                            <div className="p-4 rounded-2xl bg-violet-50 dark:bg-violet-500/10">
-                                <BarChart2 className="w-8 h-8 text-violet-500 dark:text-violet-400" />
-                            </div>
-                            <div className="text-center">
-                                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                    More charts coming soon
-                                </p>
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                    Trend, pie &amp; ranking charts arrive in Day 22–23
-                                </p>
-                            </div>
-                        </div>
+                        <AttendanceTrendChart classroom={selectedClassroom} />
                     </AnalyticsSummaryCard>
 
                     {/* Placeholder — Classroom Comparison (Day 22) */}
