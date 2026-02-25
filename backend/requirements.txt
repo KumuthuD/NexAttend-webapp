@@ -21,3 +21,6 @@ python-dotenv>=1.0.0
 pydantic>=2.5.2
 pydantic-settings>=2.1.0
 certifi>=2024.2.2
+
+# Email
+sendgrid>=6.11.0

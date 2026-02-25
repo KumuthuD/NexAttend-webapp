@@ -60,8 +60,6 @@ async def register_user(
     if role == "student" and files and len(files) > 0:
         try:
             # We use the first valid image for the embedding
-            # In a real app, we might use all 3 to improve accuracy (mean embedding),
-            # but for now, let's pick the best one.
             
             valid_face_found = False
             

@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # Storage
     UPLOAD_DIR: str = "./data/face_images"
     
+    # Email (SendGrid)
+    SENDGRID_API_KEY: str = ""
+    FROM_EMAIL: str = "noreply@nexattend.com"
+    
     class Config:
         case_sensitive = True
         env_file = ".env"
