@@ -7,6 +7,7 @@ Optimized for multiple face detection.
 Kumuthu Dahanayake - Week 01 Day 4
 Viraj Jayasiri - Week 02 Day 6 (Multi-face optimization)
 Viraj Jayasiri - Week 04 Day 16 (Low-light optimization)
+Viraj Jayasiri - Week 05 Day 22 (Speed optimization - downscale + frame skip)
 """
 
 import cv2
@@ -15,6 +16,7 @@ from mtcnn import MTCNN
 import logging
 from typing import List, Dict, Tuple, Optional
 from app.services.lighting_optimizer import lighting_optimizer
+from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO, DETECTION_FRAME_SKIP
 
 # configure logging
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +44,11 @@ class FaceDetector:
             self.min_confidence = min_confidence
             self.min_face_size = min_face_size
             self.enable_lighting_optimization = enable_lighting_optimization
+
+            # for frame-skip optimisation (Day 22)
+            self._frame_counter = 0
+            self._last_result: List[Dict] = []
+
             logger.info(f"FaceDetector initialized (min_face_size={min_face_size}, min_confidence={min_confidence}, lighting_opt={enable_lighting_optimization})")
         except Exception as e:
             logger.error(f"Failed to initialize FaceDetector: {e}")
@@ -100,6 +107,112 @@ class FaceDetector:
         except Exception as e:
             logger.error(f"Error during face detection: {e}")
             return []
+
+    def detect_faces_fast(
+        self,
+        image: np.ndarray,
+        downscale_ratio: float = DETECTION_DOWNSCALE_RATIO,
+        filter_confidence: bool = True,
+        sort_by_size: bool = True
+    ) -> List[Dict]:
+        """
+        Detect faces faster by shrinking the frame before MTCNN runs.
+        Bounding box coordinates are scaled back to original size.
+
+        downscale_ratio=0.5 halves each dimension -> image is 1/4 the pixels
+        -> MTCNN processes ~4x fewer pixels -> roughly 3-4x faster.
+        """
+        if image is None or image.size == 0:
+            logger.warning("Empty image passed to detect_faces_fast")
+            return []
+
+        if downscale_ratio <= 0 or downscale_ratio > 1.0:
+            # fallback to normal detection if ratio is invalid
+            return self.detect_faces(image, filter_confidence, sort_by_size)
+
+        if downscale_ratio == 1.0:
+            # no downscale needed, skip the resize step
+            return self.detect_faces(image, filter_confidence, sort_by_size)
+
+        try:
+            orig_h, orig_w = image.shape[:2]
+            small_w = int(orig_w * downscale_ratio)
+            small_h = int(orig_h * downscale_ratio)
+
+            # shrink frame for faster MTCNN pass
+            small_frame = cv2.resize(image, (small_w, small_h), interpolation=cv2.INTER_LINEAR)
+
+            # run standard detection on the small frame
+            faces_small = self.detect_faces(small_frame, filter_confidence, sort_by_size)
+
+            if not faces_small:
+                return []
+
+            # scale bounding boxes back to original resolution
+            scale_x = orig_w / small_w
+            scale_y = orig_h / small_h
+
+            scaled_faces = []
+            for face in faces_small:
+                x, y, w, h = face["box"]
+                scaled_face = dict(face)  # copy so we don't mutate the original
+                scaled_face["box"] = [
+                    int(x * scale_x),
+                    int(y * scale_y),
+                    int(w * scale_x),
+                    int(h * scale_y)
+                ]
+                # keypoints also need scaling
+                if "keypoints" in face and face["keypoints"]:
+                    scaled_kp = {}
+                    for kp_name, kp_point in face["keypoints"].items():
+                        scaled_kp[kp_name] = (
+                            int(kp_point[0] * scale_x),
+                            int(kp_point[1] * scale_y)
+                        )
+                    scaled_face["keypoints"] = scaled_kp
+                scaled_faces.append(scaled_face)
+
+            logger.info(f"detect_faces_fast: {len(scaled_faces)} faces (downscale={downscale_ratio})")
+            return scaled_faces
+
+        except Exception as e:
+            logger.error(f"Error in detect_faces_fast: {e}")
+            return []
+
+    def detect_faces_with_skip(
+        self,
+        image: np.ndarray,
+        frame_skip: int = DETECTION_FRAME_SKIP,
+        use_fast: bool = True,
+        downscale_ratio: float = DETECTION_DOWNSCALE_RATIO
+    ) -> List[Dict]:
+        """
+        Skip detection on most frames and reuse the last result.
+        Runs actual detection only every frame_skip-th frame.
+
+        Combines well with detect_faces_fast:
+        - frame_skip=3 means detect on 1 of every 3 frames
+        - downscale_ratio=0.5 makes that detection 3-4x faster
+        Together: roughly 10-12x less CPU than the original path.
+        """
+        self._frame_counter += 1
+
+        # run detection every frame_skip frames
+        if self._frame_counter % frame_skip != 0:
+            # return cached result from last real detection
+            logger.debug(f"Frame {self._frame_counter}: skipped, returning cached result")
+            return self._last_result
+
+        # actual detection frame
+        if use_fast:
+            result = self.detect_faces_fast(image, downscale_ratio=downscale_ratio)
+        else:
+            result = self.detect_faces(image)
+
+        self._last_result = result
+        logger.info(f"Frame {self._frame_counter}: detected {len(result)} faces")
+        return result
 
     def detect_faces_batch(
         self,
