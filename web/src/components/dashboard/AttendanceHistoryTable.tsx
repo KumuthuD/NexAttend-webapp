@@ -6,8 +6,8 @@ export interface AttendanceRecord {
     id: string;
     date: string;           // ISO date string e.g. "2026-02-18"
     classroom_name: string;
-    status: 'present' | 'absent';
-    confidence?: number;    // 0–1 float, optional
+    presentCount: number;
+    totalCount: number;
 }
 
 interface AttendanceHistoryTableProps {
@@ -32,36 +32,16 @@ const SkeletonRow = ({ index }: { index: number }) => (
     </motion.tr>
 );
 
-// ── Status badge ──────────────────────────────────────────────────────────────
-const StatusBadge = ({ status }: { status: 'present' | 'absent' }) => {
-    const isPresent = status === 'present';
-    return (
-        <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
-                ${isPresent
-                    ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                    : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400'
-                }`}
-        >
-            {isPresent
-                ? <CheckCircle className="w-3 h-3" />
-                : <XCircle className="w-3 h-3" />
-            }
-            {isPresent ? 'Present' : 'Absent'}
-        </span>
-    );
-};
-
-// ── Confidence bar ────────────────────────────────────────────────────────────
-const ConfidenceBar = ({ value }: { value: number }) => {
-    const pct = Math.round(value * 100);
-    const color = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+// ── Percentage bar ────────────────────────────────────────────────────────────
+const PercentageBar = ({ present, total }: { present: number, total: number }) => {
+    const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+    const color = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-yellow-500' : 'bg-orange-500';
     return (
         <div className="flex items-center gap-2">
             <div className="w-20 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                 <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{pct}%</span>
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 tabular-nums">{pct}%</span>
         </div>
     );
 };
@@ -78,12 +58,12 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     isLoading = false,
     className = '',
 }) => {
-    const COLUMNS = ['Date', 'Status', 'Confidence'];
+    const COLUMNS = ['Date', 'Present Students', 'Percentage'];
 
     return (
-        <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`}>
+        <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`} >
             {/* Table header */}
-            <div className="overflow-x-auto">
+            < div className="overflow-x-auto" >
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-gray-100 dark:border-white/[0.06] bg-gray-50/60 dark:bg-white/[0.02]">
@@ -136,33 +116,36 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                                     </div>
                                 </td>
 
-                                {/* Status */}
+                                {/* Marked Students */}
                                 <td className="px-4 py-4">
-                                    <StatusBadge status={record.status} />
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="font-semibold text-gray-900 dark:text-white">
+                                            {record.presentCount} Students
+                                        </span>
+                                    </div>
                                 </td>
 
-                                {/* Confidence */}
+                                {/* Percentage */}
                                 <td className="px-4 py-4">
-                                    {record.confidence !== undefined
-                                        ? <ConfidenceBar value={record.confidence} />
-                                        : <span className="text-xs text-gray-400 dark:text-gray-600">—</span>
-                                    }
+                                    <PercentageBar present={record.presentCount} total={record.totalCount} />
                                 </td>
                             </motion.tr>
                         ))}
                     </tbody>
                 </table>
-            </div>
+            </div >
 
             {/* Footer row count */}
-            {!isLoading && records.length > 0 && (
-                <div className="px-5 py-3 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/40 dark:bg-white/[0.01]">
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
-                        Showing <span className="font-semibold text-gray-600 dark:text-gray-300">{records.length}</span> record{records.length !== 1 ? 's' : ''}
-                    </p>
-                </div>
-            )}
-        </div>
+            {
+                !isLoading && records.length > 0 && (
+                    <div className="px-5 py-3 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/40 dark:bg-white/[0.01]">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                            Showing <span className="font-semibold text-gray-600 dark:text-gray-300">{records.length}</span> record{records.length !== 1 ? 's' : ''}
+                        </p>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
