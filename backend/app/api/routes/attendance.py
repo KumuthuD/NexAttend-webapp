@@ -14,7 +14,8 @@ from app.schemas.all_attendance import (
 )
 from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
-from typing import Any, List, Dict
+from app.schemas.email_log import EmailLogResponse
+from typing import Any, List, Optional
 from datetime import datetime
 
 async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[str], session_time: datetime):
@@ -386,3 +387,22 @@ async def get_classroom_attendance_history(
         "size": limit,
         "pages": pages
     }
+
+
+@router.get("/email-logs", response_model=List[EmailLogResponse])
+async def get_email_logs(
+    recipient: Optional[str] = None,
+    limit: int = 100,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve system email logs for auditing and troubleshooting.
+    Can be filtered by recipient email.
+    """
+    query = {}
+    if recipient:
+        query["recipient_email"] = recipient
+
+    logs_cursor = db["email_logs"].find(query).sort("timestamp", -1).limit(limit)
+    logs = await logs_cursor.to_list(length=limit)
+    return logs
