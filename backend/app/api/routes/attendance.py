@@ -14,8 +14,29 @@ from app.schemas.all_attendance import (
 )
 from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
-from typing import Any, List
+from typing import Any, List, Dict
 from datetime import datetime
+
+async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[str], session_time: datetime):
+    """
+    Background task to fetch student/classroom details and send confirmation emails.
+    """
+    # 1. Get classroom name
+    classroom = await db["classrooms"].find_one({"_id": classroom_id})
+    class_name = classroom.get("name", "Unknown Class") if classroom else "Unknown Class"
+    
+    # 2. Format date
+    date_str = session_time.strftime("%B %d, %Y at %I:%M %p")
+    
+    # 3. Fetch students and send emails
+    students_cursor = db["students"].find({"_id": {"$in": student_ids}})
+    async for student in students_cursor:
+        EmailService.send_attendance_confirmation(
+            student_name=student.get("name", "Student"),
+            student_email=student.get("email"),
+            class_name=class_name,
+            date_time=date_str
+        )
 
 router = APIRouter()
 
@@ -287,6 +308,7 @@ async def get_session_results(
 @router.post("/close/{session_id}", response_model=AttendanceSessionResponse)
 async def close_attendance_session(
     session_id: str,
+    background_tasks: BackgroundTasks,
     db: Any = Depends(get_database)
 ):
     """
@@ -318,8 +340,18 @@ async def close_attendance_session(
             }
         }
     )
+    
+    # 3. Trigger confirmation emails in background
+    if session.get("present_student_ids"):
+        background_tasks.add_task(
+            send_attendance_emails, 
+            db, 
+            session["classroom_id"], 
+            session["present_student_ids"],
+            session.get("session_date", datetime.utcnow())
+        )
 
-    # 3. Return the updated session document
+    # 4. Return the updated session document
     updated_session = await db["attendance_sessions"].find_one({"_id": session_id})
     return updated_session
 
