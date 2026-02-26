@@ -8,6 +8,7 @@ Kumuthu Dahanayake - Week 01 Day 4
 Viraj Jayasiri - Week 02 Day 6 (Multi-face optimization)
 Viraj Jayasiri - Week 04 Day 16 (Low-light optimization)
 Viraj Jayasiri - Week 05 Day 22 (Speed optimization - downscale + frame skip)
+Viraj Jayasiri - Week 05 Day 23 (Face quality check - blur, brightness)
 """
 
 import cv2
@@ -300,33 +301,94 @@ class FaceDetector:
 
     def validate_face_quality(self, face_image: np.ndarray) -> Tuple[bool, str]:
         """
-        Check if face image has good quality for recognition.
-        Checks: blur detection, brightness, minimum resolution.
+        Check if a cropped face image is good enough for recognition.
+        Checks minimum resolution, blur, and brightness.
+        Returns (passed, reason_string).
         """
+        # import here so ai_config is only loaded when this method is called
+        from app.services.ai.ai_config import (
+            QUALITY_BLUR_THRESHOLD,
+            QUALITY_BRIGHTNESS_MIN,
+            QUALITY_BRIGHTNESS_MAX,
+            QUALITY_MIN_FACE_SIZE,
+        )
+
         if face_image is None or face_image.size == 0:
-            return False, "Empty image"
+            return False, "empty image"
 
         h, w = face_image.shape[:2]
-        
-        # check minimum resolution
-        if w < 80 or h < 80:
-            return False, f"Face too small ({w}x{h}, min 80x80)"
 
-        # check blur using Laplacian variance
+        # face must be large enough to hold useful detail
+        if w < QUALITY_MIN_FACE_SIZE or h < QUALITY_MIN_FACE_SIZE:
+            return False, f"face too small ({w}x{h}, min {QUALITY_MIN_FACE_SIZE}x{QUALITY_MIN_FACE_SIZE})"
+
+        # convert to grayscale once - used for both blur and brightness
         gray = cv2.cvtColor(face_image, cv2.COLOR_BGR2GRAY)
-        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-        
-        if laplacian_var < 100:
-            return False, f"Image too blurry (variance: {laplacian_var:.1f})"
 
-        # check brightness
-        brightness = np.mean(gray)
-        if brightness < 40:
-            return False, f"Image too dark (brightness: {brightness:.1f})"
-        if brightness > 220:
-            return False, f"Image too bright (brightness: {brightness:.1f})"
+        # blur check: Laplacian variance - low variance means flat/blurry
+        blur_score = cv2.Laplacian(gray, cv2.CV_64F).var()
+        if blur_score < QUALITY_BLUR_THRESHOLD:
+            return False, f"too blurry (score {blur_score:.1f}, min {QUALITY_BLUR_THRESHOLD})"
 
-        return True, "Valid face quality"
+        # brightness check: mean pixel value in grayscale
+        brightness = float(np.mean(gray))
+        if brightness < QUALITY_BRIGHTNESS_MIN:
+            return False, f"too dark (brightness {brightness:.1f}, min {QUALITY_BRIGHTNESS_MIN})"
+        if brightness > QUALITY_BRIGHTNESS_MAX:
+            return False, f"too bright (brightness {brightness:.1f}, max {QUALITY_BRIGHTNESS_MAX})"
+
+        return True, "ok"
+
+    def detect_faces_with_quality(
+        self,
+        image: np.ndarray,
+        padding: float = 0.2
+    ) -> List[Dict]:
+        """
+        Detect faces then keep only those that pass the quality check.
+        Each returned dict has the normal face keys plus:
+          'quality_passed' : bool
+          'quality_reason' : str  (why it was kept or would be rejected)
+
+        Faces that fail quality are dropped and logged.
+        """
+        if image is None or image.size == 0:
+            logger.warning("empty image passed to detect_faces_with_quality")
+            return []
+
+        faces = self.detect_faces(image)
+        if not faces:
+            return []
+
+        # crop each face and run the quality check
+        good_faces = []
+        for face in faces:
+            x, y, w, h = face["box"]
+
+            # add padding so the crop matches what the recogniser will see
+            pad_w = int(w * padding)
+            pad_h = int(h * padding)
+            x1 = max(0, x - pad_w)
+            y1 = max(0, y - pad_h)
+            x2 = min(image.shape[1], x + w + pad_w)
+            y2 = min(image.shape[0], y + h + pad_h)
+
+            crop = image[y1:y2, x1:x2]
+            passed, reason = self.validate_face_quality(crop)
+
+            face_out = dict(face)
+            face_out["quality_passed"] = passed
+            face_out["quality_reason"] = reason
+
+            if passed:
+                good_faces.append(face_out)
+            else:
+                logger.info(f"face at {face['box']} rejected: {reason}")
+
+        logger.info(
+            f"detect_faces_with_quality: {len(good_faces)}/{len(faces)} faces passed"
+        )
+        return good_faces
 
 
     def draw_faces(self, image: np.ndarray, faces: List[Dict]) -> np.ndarray:
