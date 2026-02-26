@@ -6,6 +6,8 @@ from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
 import logging
 from app.core.config import settings
+from app.models.email_log import EmailLog
+from app.database.mongodb import db as database
 import traceback
 
 logger = logging.getLogger(__name__)
@@ -65,5 +67,16 @@ class EmailService:
             logger.error(f"Failed to send email to {email}: {e}")
             logger.debug(traceback.format_exc())
             return False
+
+    async def _save_log(self, log_data: EmailLog):
+        """
+        Internal helper to save an email log to MongoDB.
+        """
+        try:
+            if database.db is not None:
+                await database.db["email_logs"].insert_one(log_data.model_dump(by_alias=True))
+                logger.debug(f"Email log saved for {log_data.recipient_email}")
+        except Exception as e:
+            logger.error(f"Failed to save email log: {e}")
 
 email_service = EmailService()
