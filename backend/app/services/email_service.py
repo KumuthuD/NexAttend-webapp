@@ -21,17 +21,22 @@ class EmailService:
             logger.error(f"Failed to initialize EmailService: {e}")
             self.env = None
 
-    def send_attendance_confirmation(self, email: str, student_name: str, class_name: str, date_time: datetime):
+    async def send_attendance_confirmation(self, email: str, student_name: str, class_name: str, date_time: datetime):
         if not email:
             logger.warning("No email provided. Cannot send attendance confirmation.")
             return False
 
+        status = "failed"
+        error_message = None
+
         if not settings.SMTP_HOST or not settings.SMTP_USER:
-            logger.warning("SMTP configuration is missing. Cannot send email.")
+            error_message = "SMTP configuration is missing"
+            logger.warning(f"{error_message}. Cannot send email.")
             return False
             
         if not self.env:
-            logger.error("Jinja2 Environment not initialized. Cannot send email.")
+            error_message = "Jinja2 Environment not initialized"
+            logger.error(f"{error_message}. Cannot send email.")
             return False
             
         try:
@@ -54,19 +59,38 @@ class EmailService:
             
             msg.attach(MIMEText(html_content, "html"))
             
-            # Send email
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                server.starttls()
-                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.send_message(msg)
+            # Send email (running in thread to avoid blocking event loop)
+            def _send():
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    server.starttls()
+                    server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+            
+            import asyncio
+            await asyncio.to_thread(_send)
                 
             logger.info(f"Attendance confirmation email sent to {email}")
+            status = "sent"
             return True
             
         except Exception as e:
+            error_message = str(e)
             logger.error(f"Failed to send email to {email}: {e}")
             logger.debug(traceback.format_exc())
             return False
+        finally:
+            # Always log the attempt
+            try:
+                log_entry = EmailLog(
+                    recipient_email=email,
+                    subject="Attendance Confirmed - NexAttend",
+                    template_used="attendance_confirmation",
+                    status=status,
+                    error_message=error_message
+                )
+                await self._save_log(log_entry)
+            except Exception as log_err:
+                logger.error(f"Failed to create email log entry: {log_err}")
 
     async def _save_log(self, log_data: EmailLog):
         """
