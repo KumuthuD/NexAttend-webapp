@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, status, Body, Depends
+from fastapi import APIRouter, HTTPException, status, Body, Depends, BackgroundTasks
 from app.database.mongodb import get_database
+from app.services.email_service import email_service
 from app.models.attendance import AttendanceSession, AttendanceRecord
 from app.schemas.all_attendance import (
     AttendanceStartRequest, 
@@ -54,6 +55,7 @@ async def start_attendance(
 
 @router.post("/mark", response_model=AttendanceMarkResponse)
 async def mark_attendance(
+    background_tasks: BackgroundTasks,
     request: AttendanceMarkRequest = Body(...),
     db: Any = Depends(get_database)
 ):
@@ -110,6 +112,20 @@ async def mark_attendance(
             "status": "present",
             "timestamp": datetime.utcnow()
         }
+        
+    try:
+        if student.get("email"):
+            classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
+            classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+            background_tasks.add_task(
+                email_service.send_attendance_confirmation,
+                student["email"],
+                student.get("full_name", student.get("name", "Student")),
+                classroom_name,
+                datetime.utcnow()
+            )
+    except Exception as e:
+        pass
     
     return {
         "message": "Attendance marked successfully",
@@ -120,6 +136,7 @@ async def mark_attendance(
 
 @router.post("/batch-mark", response_model=AttendanceBatchMarkResponse)
 async def batch_mark_attendance(
+    background_tasks: BackgroundTasks,
     request: AttendanceBatchMarkRequest,
     db: Any = Depends(get_database)
 ):
@@ -193,6 +210,24 @@ async def batch_mark_attendance(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error updating batch records: {str(e)}"
             )
+            
+        try:
+            if new_student_ids:
+                students_cursor = db["students"].find({"_id": {"$in": new_student_ids}})
+                students = await students_cursor.to_list(length=len(new_student_ids))
+                classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
+                classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+                for student in students:
+                    if student.get("email"):
+                        background_tasks.add_task(
+                            email_service.send_attendance_confirmation,
+                            student["email"],
+                            student.get("full_name", student.get("name", "Student")),
+                            classroom_name,
+                            datetime.utcnow()
+                        )
+        except Exception as e:
+            pass
         
     return {
         "message": f"Batch process complete. Marked {marked_count}, Skipped {skipped_count}",

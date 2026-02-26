@@ -9,12 +9,13 @@ Week 03 Day 14 — Multi-Face Recognition with Batch Attendance
 Viraj Jayasiri - Week 04 Day 16 (Low-light optimization)
 """
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status, BackgroundTasks
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.services.face_detector import FaceDetector
 from app.services.embedding_service import embedding_service
 from app.services.lighting_optimizer import lighting_optimizer
+from app.services.email_service import email_service
 from app.database.mongodb import db
 import numpy as np
 import cv2
@@ -309,6 +310,7 @@ async def recognize_faces(
 
 @router.post("/recognize-multi", status_code=status.HTTP_200_OK)
 async def recognize_multi_faces(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     classroom_id: Optional[str] = Form(None),
     session_id: Optional[str] = Form(None)
@@ -483,6 +485,18 @@ async def recognize_multi_faces(
             })
 
             if session:
+                # Fetch classroom name for the email
+                classroom_name = "Your Classroom"
+                if session.get("classroom_id"):
+                    try:
+                        cid = session["classroom_id"]
+                        cid_obj = ObjectId(cid) if isinstance(cid, str) and len(cid) == 24 else cid
+                        classroom = await db.db["classrooms"].find_one({"_id": cid_obj})
+                        if classroom:
+                            classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom"))
+                    except Exception as e:
+                        logger.warning(f"[Multi-Face] Could not fetch classroom: {e}")
+
                 # Get already-present students to avoid duplicates
                 already_present = set(session.get("present_student_ids", []))
 
@@ -507,6 +521,16 @@ async def recognize_multi_faces(
                             })
                             new_student_ids.append(sid)
                             result["attendance"] = "marked"
+                            
+                            # Queue email
+                            if result.get("student") and result["student"].get("email"):
+                                background_tasks.add_task(
+                                    email_service.send_attendance_confirmation,
+                                    result["student"]["email"],
+                                    result["student"].get("full_name", "Student"),
+                                    classroom_name,
+                                    datetime.utcnow()
+                                )
 
                 # Single atomic DB update for all new students
                 if new_records:
