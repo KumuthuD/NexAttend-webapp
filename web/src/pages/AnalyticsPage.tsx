@@ -9,6 +9,7 @@ import AttendanceBarChart from '../components/charts/AttendanceBarChart';
 import AttendanceTrendChart from '../components/charts/AttendanceTrendChart';
 import AnalyticsSummaryCard from '../components/analytics/AnalyticsSummaryCard';
 import PresentAbsentPieChart from '../components/dashboard/PresentAbsentPieChart';
+import StudentRankingList from '../components/analytics/StudentRankingList';
 import ThemeToggle from '../components/ThemeToggle';
 import {
     Users,
@@ -218,26 +219,10 @@ const AnalyticsPage: React.FC = () => {
                         className="h-full border border-gray-100 dark:border-white/[0.06] !bg-white dark:!bg-[#1a1d2e] shadow-sm transition-colors duration-300"
                     />
 
-                    {/* Placeholder — Student Rankings (Day 23) */}
-                    <AnalyticsSummaryCard
-                        title="Student Rankings"
-                        subtitle="Top performers — coming in Day 23"
-                        delay={0.5}
-                    >
-                        <div className="flex flex-col items-center justify-center h-[220px] gap-3">
-                            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10">
-                                <Users className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
-                            </div>
-                            <div className="text-center">
-                                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                    Student Attendance Rankings
-                                </p>
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                    Ranking list will render here (Day 23)
-                                </p>
-                            </div>
-                        </div>
-                    </AnalyticsSummaryCard>
+                    {/* Student Rankings (Day 23) */}
+                    <div className="h-full">
+                        <StudentRankingList className="h-full" />
+                    </div>
 
                 </div>
             </main>

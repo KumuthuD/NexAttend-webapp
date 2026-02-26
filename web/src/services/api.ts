@@ -36,8 +36,8 @@ export interface AttendanceRecord {
     date: string;
     classroom_name: string;
     session_label: string;
-    status: 'present' | 'absent';
-    confidence?: number;
+    presentCount: number;
+    totalCount: number;
 }
 
 export interface Classroom {

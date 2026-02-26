@@ -12,11 +12,11 @@ import DatePicker from '../components/common/DatePicker';
 
 // Mock history records for this classroom (replace with API call when ready)
 const MOCK_HISTORY: AttendanceRecord[] = [
-    { id: '1', date: '2026-02-18', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.94 },
-    { id: '2', date: '2026-02-17', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.88 },
-    { id: '3', date: '2026-02-14', classroom_name: 'Advance Client Side Development', status: 'absent' },
-    { id: '4', date: '2026-02-13', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.91 },
-    { id: '5', date: '2026-02-12', classroom_name: 'Advance Client Side Development', status: 'present', confidence: 0.85 },
+    { id: '1', date: '2026-02-18', classroom_name: 'Advance Client Side Development', presentCount: 42, totalCount: 45 },
+    { id: '2', date: '2026-02-17', classroom_name: 'Advance Client Side Development', presentCount: 38, totalCount: 45 },
+    { id: '3', date: '2026-02-14', classroom_name: 'Advance Client Side Development', presentCount: 40, totalCount: 45 },
+    { id: '4', date: '2026-02-13', classroom_name: 'Advance Client Side Development', presentCount: 41, totalCount: 45 },
+    { id: '5', date: '2026-02-12', classroom_name: 'Advance Client Side Development', presentCount: 44, totalCount: 45 },
 ];
 
 interface Student {

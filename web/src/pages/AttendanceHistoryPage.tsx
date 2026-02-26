@@ -10,14 +10,14 @@ import { getAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
 const MOCK_RECORDS: AttendanceRecord[] = [
-    { id: '1', date: '2026-02-18', classroom_name: 'Algorithms', status: 'present', confidence: 0.94 },
-    { id: '2', date: '2026-02-18', classroom_name: 'Advance Client Side', status: 'present', confidence: 0.88 },
-    { id: '3', date: '2026-02-17', classroom_name: 'Database', status: 'absent', confidence: undefined },
-    { id: '4', date: '2026-02-17', classroom_name: 'Algorithms', status: 'present', confidence: 0.76 },
-    { id: '5', date: '2026-02-14', classroom_name: 'Advance Client Side', status: 'present', confidence: 0.91 },
-    { id: '6', date: '2026-02-14', classroom_name: 'Database', status: 'present', confidence: 0.85 },
-    { id: '7', date: '2026-02-13', classroom_name: 'Algorithms', status: 'absent', confidence: undefined },
-    { id: '8', date: '2026-02-12', classroom_name: 'Database', status: 'present', confidence: 0.97 },
+    { id: '1', date: '2026-02-18', classroom_name: 'Algorithms', presentCount: 42, totalCount: 50 },
+    { id: '2', date: '2026-02-18', classroom_name: 'Advance Client Side', presentCount: 38, totalCount: 45 },
+    { id: '3', date: '2026-02-17', classroom_name: 'Database', presentCount: 48, totalCount: 55 },
+    { id: '4', date: '2026-02-17', classroom_name: 'Algorithms', presentCount: 40, totalCount: 50 },
+    { id: '5', date: '2026-02-14', classroom_name: 'Advance Client Side', presentCount: 41, totalCount: 45 },
+    { id: '6', date: '2026-02-14', classroom_name: 'Database', presentCount: 52, totalCount: 55 },
+    { id: '7', date: '2026-02-13', classroom_name: 'Algorithms', presentCount: 45, totalCount: 50 },
+    { id: '8', date: '2026-02-12', classroom_name: 'Database', presentCount: 50, totalCount: 55 },
 ];
 
 const AttendanceHistoryPage: React.FC = () => {
@@ -144,13 +144,13 @@ const AttendanceHistoryPage: React.FC = () => {
                             },
                             {
                                 label: 'Present',
-                                value: records.filter(r => r.status === 'present').length,
+                                value: records.reduce((acc, r) => acc + r.presentCount, 0),
                                 color: 'text-emerald-600 dark:text-emerald-400',
                                 bg: 'bg-emerald-50 dark:bg-emerald-500/10',
                             },
                             {
                                 label: 'Absent',
-                                value: records.filter(r => r.status === 'absent').length,
+                                value: records.reduce((acc, r) => acc + (r.totalCount - r.presentCount), 0),
                                 color: 'text-red-600 dark:text-red-400',
                                 bg: 'bg-red-50 dark:bg-red-500/10',
                             },

@@ -81,7 +81,7 @@ const PresentAbsentPieChart: React.FC<PresentAbsentPieChartProps> = ({
                                     color: '#1f2937'
                                 }}
                                 itemStyle={{ color: '#1f2937', fontWeight: 600 }}
-                                formatter={(value: number) => [`${value} Students`, '']}
+                                formatter={(value: number) => `${value} Students`}
                             />
                             <Legend
                                 verticalAlign="bottom"
