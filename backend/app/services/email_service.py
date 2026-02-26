@@ -1,4 +1,5 @@
 import os
+import asyncio
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -66,7 +67,6 @@ class EmailService:
                     server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                     server.send_message(msg)
             
-            import asyncio
             await asyncio.to_thread(_send)
                 
             logger.info(f"Attendance confirmation email sent to {email}")
