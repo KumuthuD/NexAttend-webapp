@@ -16,7 +16,7 @@ from mtcnn import MTCNN
 import logging
 from typing import List, Dict, Tuple, Optional
 from app.services.lighting_optimizer import lighting_optimizer
-from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO, DETECTION_FRAME_SKIP
+# Removed app.services.ai.ai_config import to prevent circular dependency
 
 # configure logging
 logging.basicConfig(level=logging.INFO)
@@ -111,10 +111,13 @@ class FaceDetector:
     def detect_faces_fast(
         self,
         image: np.ndarray,
-        downscale_ratio: float = DETECTION_DOWNSCALE_RATIO,
+        downscale_ratio: float = None,
         filter_confidence: bool = True,
         sort_by_size: bool = True
     ) -> List[Dict]:
+        if downscale_ratio is None:
+            from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO
+            downscale_ratio = DETECTION_DOWNSCALE_RATIO
         """
         Detect faces faster by shrinking the frame before MTCNN runs.
         Bounding box coordinates are scaled back to original size.
@@ -183,10 +186,17 @@ class FaceDetector:
     def detect_faces_with_skip(
         self,
         image: np.ndarray,
-        frame_skip: int = DETECTION_FRAME_SKIP,
+        frame_skip: int = None,
         use_fast: bool = True,
-        downscale_ratio: float = DETECTION_DOWNSCALE_RATIO
+        downscale_ratio: float = None
     ) -> List[Dict]:
+        if frame_skip is None:
+            from app.services.ai.ai_config import DETECTION_FRAME_SKIP
+            frame_skip = DETECTION_FRAME_SKIP
+            
+        if downscale_ratio is None:
+            from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO
+            downscale_ratio = DETECTION_DOWNSCALE_RATIO
         """
         Skip detection on most frames and reuse the last result.
         Runs actual detection only every frame_skip-th frame.

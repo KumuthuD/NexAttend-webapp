@@ -8,6 +8,7 @@ import StatsCard from '../components/dashboard/StatsCard';
 import AttendanceBarChart from '../components/charts/AttendanceBarChart';
 import AttendanceTrendChart from '../components/charts/AttendanceTrendChart';
 import AnalyticsSummaryCard from '../components/analytics/AnalyticsSummaryCard';
+import PresentAbsentPieChart from '../components/dashboard/PresentAbsentPieChart';
 import ThemeToggle from '../components/ThemeToggle';
 import {
     Users,
@@ -90,7 +91,7 @@ const AnalyticsPage: React.FC = () => {
                 >
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
-                            Analytics 
+                            Analytics
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             Track attendance trends and class performance.
@@ -138,11 +139,10 @@ const AnalyticsPage: React.FC = () => {
                             <button
                                 key={filter}
                                 onClick={() => setActiveFilter(filter)}
-                                className={`text-sm font-medium px-4 py-1.5 rounded-lg transition-all duration-200 ${
-                                    activeFilter === filter
-                                        ? 'bg-violet-600 text-white shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-                                }`}
+                                className={`text-sm font-medium px-4 py-1.5 rounded-lg transition-all duration-200 ${activeFilter === filter
+                                    ? 'bg-violet-600 text-white shadow-sm'
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                                    }`}
                             >
                                 {filter}
                             </button>
@@ -207,26 +207,16 @@ const AnalyticsPage: React.FC = () => {
                         <AttendanceTrendChart classroom={selectedClassroom} />
                     </AnalyticsSummaryCard>
 
-                    {/* Placeholder — Classroom Comparison (Day 22) */}
-                    <AnalyticsSummaryCard
-                        title="Classroom Comparison"
-                        subtitle="Pie chart — coming in Day 22"
-                        delay={0.45}
-                    >
-                        <div className="flex flex-col items-center justify-center h-[220px] gap-3">
-                            <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10">
-                                <BookOpen className="w-8 h-8 text-blue-500 dark:text-blue-400" />
-                            </div>
-                            <div className="text-center">
-                                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                    Present vs Absent
-                                </p>
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                    Pie chart will render here (Day 22)
-                                </p>
-                            </div>
-                        </div>
-                    </AnalyticsSummaryCard>
+                    {/* Attendance Breakdown (Pie Chart) */}
+                    <PresentAbsentPieChart
+                        presentCount={stats?.todays_attendance_count || 42}
+                        absentCount={
+                            stats?.total_students
+                                ? Math.max(0, stats.total_students - (stats.todays_attendance_count || 0))
+                                : 8
+                        }
+                        className="h-full border border-gray-100 dark:border-white/[0.06] !bg-white dark:!bg-[#1a1d2e] shadow-sm transition-colors duration-300"
+                    />
 
                     {/* Placeholder — Student Rankings (Day 23) */}
                     <AnalyticsSummaryCard

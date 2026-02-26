@@ -1,52 +1,69 @@
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-from app.core.config import settings
-from jinja2 import Environment, FileSystemLoader
 import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from jinja2 import Environment, FileSystemLoader
+from datetime import datetime
 import logging
+from app.core.config import settings
+import traceback
 
 logger = logging.getLogger(__name__)
 
 class EmailService:
-    @staticmethod
-    def _get_template_env():
-        # Get the absolute path to the backend/app directory
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        app_dir = os.path.dirname(os.path.dirname(current_dir))
-        template_dir = os.path.join(app_dir, "app", "templates", "email")
-        return Environment(loader=FileSystemLoader(template_dir))
-
-    @staticmethod
-    def send_attendance_confirmation(student_name: str, student_email: str, class_name: str, date_time: str):
-        """
-        Sends an attendance confirmation email to a student using SendGrid.
-        """
-        if not settings.SENDGRID_API_KEY or settings.SENDGRID_API_KEY == "SG.placeholder_key":
-            logger.warning("SendGrid API Key not set. Skipping email.")
-            return
-
+    def __init__(self):
         try:
-            env = EmailService._get_template_env()
-            template = env.get_template("attendance_confirmation.html")
+            self.template_dir = os.path.join(os.path.dirname(__file__), "..", "templates", "email")
+            self.env = Environment(loader=FileSystemLoader(self.template_dir))
+        except Exception as e:
+            logger.error(f"Failed to initialize EmailService: {e}")
+            self.env = None
+
+    def send_attendance_confirmation(self, email: str, student_name: str, class_name: str, date_time: datetime):
+        if not email:
+            logger.warning("No email provided. Cannot send attendance confirmation.")
+            return False
+
+        if not settings.SMTP_HOST or not settings.SMTP_USER:
+            logger.warning("SMTP configuration is missing. Cannot send email.")
+            return False
+            
+        if not self.env:
+            logger.error("Jinja2 Environment not initialized. Cannot send email.")
+            return False
+            
+        try:
+            template = self.env.get_template("attendance_confirmation.html")
+            
+            # Format datetime
+            formatted_date_time = date_time.strftime("%B %d, %Y at %I:%M %p")
             
             html_content = template.render(
                 student_name=student_name,
                 class_name=class_name,
-                date_time=date_time,
-                dashboard_link="https://nex-attend-webapp.vercel.app/dashboard"
+                date_time=formatted_date_time,
+                dashboard_link="https://nexattend.com/dashboard"
             )
-
-            message = Mail(
-                from_email=settings.FROM_EMAIL,
-                to_emails=student_email,
-                subject=f"Attendance Confirmed: {class_name}",
-                html_content=html_content
-            )
-
-            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            response = sg.send(message)
-            logger.info(f"Email sent to {student_email}. Status Code: {response.status_code}")
+            
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = "Attendance Confirmed - NexAttend"
+            msg["From"] = settings.FROM_EMAIL
+            msg["To"] = email
+            
+            msg.attach(MIMEText(html_content, "html"))
+            
+            # Send email
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
+                
+            logger.info(f"Attendance confirmation email sent to {email}")
             return True
+            
         except Exception as e:
-            logger.error(f"Failed to send email to {student_email}: {str(e)}")
+            logger.error(f"Failed to send email to {email}: {e}")
+            logger.debug(traceback.format_exc())
             return False
+
+email_service = EmailService()
