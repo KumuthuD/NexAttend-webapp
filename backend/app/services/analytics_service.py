@@ -5,70 +5,76 @@ from app.schemas.analytics import AnalyticsOverview, DailyAttendanceStats, Analy
 class AnalyticsService:
     @staticmethod
     async def get_dashboard_overview(db: Any) -> AnalyticsOverview:
-        # 1. Basic Stats
-        total_students = await db["students"].count_documents({})
-        total_active_sessions = await db["attendance_sessions"].count_documents({"status": "active"})
-        
-        # 2. Average Confidence Score
-        confidence_pipeline = [
-            {"$unwind": "$records"},
-            {
-                "$group": {
-                    "_id": None,
-                    "avg_confidence": {"$avg": "$records.confidence"}
-                }
-            }
-        ]
-        confidence_result = await db["attendance_sessions"].aggregate(confidence_pipeline).to_list(length=1)
-        avg_confidence = confidence_result[0]["avg_confidence"] if confidence_result and "avg_confidence" in confidence_result[0] else 0.0
-        
-        # 3. Weekly Trend (Last 7 Days)
+        # 1. Pipeline for Summary Stats and Weekly Trend
         today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         seven_days_ago = today - timedelta(days=7)
         
-        trend_pipeline = [
+        # Aggregate sessions with their classroom student counts
+        pipeline = [
             {
                 "$match": {
                     "session_date": {"$gte": seven_days_ago}
                 }
             },
             {
+                "$lookup": {
+                    "from": "classrooms",
+                    "localField": "classroom_id",
+                    "foreignField": "_id",
+                    "as": "classroom_info"
+                }
+            },
+            {
+                "$unwind": "$classroom_info"
+            },
+            {
                 "$project": {
-                    "date": {
-                        "$dateToString": {"format": "%Y-%m-%d", "date": "$session_date"}
-                    },
-                    "present_count": {"$size": {"$ifNull": ["$present_student_ids", []]}}
+                    "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$session_date"}},
+                    "present_count": {"$size": {"$ifNull": ["$present_student_ids", []]}},
+                    "student_count": {"$size": {"$ifNull": ["$classroom_info.student_ids", []]}}
                 }
             },
             {
                 "$group": {
                     "_id": "$date",
                     "total_sessions": {"$sum": 1},
-                    "total_present": {"$sum": "$present_count"}
+                    "total_present": {"$sum": "$present_count"},
+                    "total_possible": {"$sum": "$student_count"}
                 }
             },
             {"$sort": {"_id": 1}}
         ]
         
-        trend_results = await db["attendance_sessions"].aggregate(trend_pipeline).to_list(length=7)
+        trend_results = await db["attendance_sessions"].aggregate(pipeline).to_list(length=7)
         
-        weekly_trend = []
-        total_attendance_rate = 0.0
+        # 2. General Stats (Independent of 7-day filter where needed)
+        total_students = await db["students"].count_documents({})
+        total_active_sessions = await db["attendance_sessions"].count_documents({"status": "active"})
         
-        for result in trend_results:
-            possible_presence = result["total_sessions"] * total_students if total_students > 0 else 1
-            percentage = (result["total_present"] / possible_presence) * 100
-            
-            daily_stat = DailyAttendanceStats(
-                date=date.fromisoformat(result["_id"]),
-                total_sessions=result["total_sessions"],
-                total_present=result["total_present"],
-                attendance_percentage=round(percentage, 2)
-            )
-            weekly_trend.append(daily_stat)
-            total_attendance_rate += percentage
+        # Average Confidence (All time or could be filtered)
+        confidence_pipeline = [{"$unwind": "$records"}, {"$group": {"_id": None, "avg": {"$avg": "$records.confidence"}}}]
+        conf_res = await db["attendance_sessions"].aggregate(confidence_pipeline).to_list(1)
+        avg_confidence = conf_res[0]["avg"] if conf_res else 0.0
 
-        avg_attendance_rate = total_attendance_rate / len(weekly_trend) if weekly_trend else 0.0
+        # 3. Process Trend and Overall Rate
+        weekly_trend = []
+        overall_present = 0
+        overall_possible = 0
+        
+        for res in trend_results:
+            possible = res["total_possible"] if res["total_possible"] > 0 else 1
+            percentage = (res["total_present"] / possible) * 100
+            
+            weekly_trend.append(DailyAttendanceStats(
+                date=date.fromisoformat(res["_id"]),
+                total_sessions=res["total_sessions"],
+                total_present=res["total_present"],
+                attendance_percentage=round(percentage, 2)
+            ))
+            overall_present += res["total_present"]
+            overall_possible += res["total_possible"]
+
+        avg_attendance_rate = (overall_present / overall_possible * 100) if overall_possible > 0 else 0.0
 
         return AnalyticsOverview(
             total_students=total_students,
