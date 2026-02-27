@@ -56,12 +56,14 @@ const VIEWS: TrendView[] = ['Daily', 'Weekly'];
 interface AttendanceTrendChartProps {
     /** Optional: classroom name shown in the subtitle */
     classroom?: string;
+    /** When provided, overrides the built-in mock data */
+    data?: { label: string; attendance: number }[];
 }
 
-const AttendanceTrendChart: React.FC<AttendanceTrendChartProps> = ({ classroom }) => {
+const AttendanceTrendChart: React.FC<AttendanceTrendChartProps> = ({ classroom, data: externalData }) => {
     const [view, setView] = useState<TrendView>('Daily');
 
-    const data = view === 'Daily' ? DAILY_DATA : WEEKLY_DATA;
+    const data = externalData || (view === 'Daily' ? DAILY_DATA : WEEKLY_DATA);
 
     return (
         <div className="w-full">
