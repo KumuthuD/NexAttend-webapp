@@ -3,6 +3,8 @@ AI Services Module
 ==================
 Exports camera service, image processing utilities, face recognition services,
 and the AI configuration constants.
+
+Updated: Week 05 Day 24 - export quality check constants from Day 23
 """
 
 from .camera_service import CameraService
@@ -28,7 +30,12 @@ from .ai_config import (
     TEMP_DIR,
     # speed optimization constants (Week 05 Day 22)
     DETECTION_DOWNSCALE_RATIO,
-    DETECTION_FRAME_SKIP
+    DETECTION_FRAME_SKIP,
+    # face quality check constants (Week 05 Day 23)
+    QUALITY_BLUR_THRESHOLD,
+    QUALITY_BRIGHTNESS_MIN,
+    QUALITY_BRIGHTNESS_MAX,
+    QUALITY_MIN_FACE_SIZE,
 )
 from app.services.lighting_optimizer import LightingOptimizer, lighting_optimizer
 from .image_processor import (
@@ -70,6 +77,11 @@ __all__ = [
     'TEMP_DIR',
     'DETECTION_DOWNSCALE_RATIO',
     'DETECTION_FRAME_SKIP',
+    # quality check constants
+    'QUALITY_BLUR_THRESHOLD',
+    'QUALITY_BRIGHTNESS_MIN',
+    'QUALITY_BRIGHTNESS_MAX',
+    'QUALITY_MIN_FACE_SIZE',
     # image processor functions
     'resize_image',
     'resize_with_aspect_ratio',
