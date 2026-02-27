@@ -10,6 +10,18 @@ The Analytics API provides endpoints for retrieving attendance statistics, stude
 
 ---
 
+## Table of Contents
+- [Overview](#overview)
+- [Base URL](#base-url)
+- [Endpoints](#endpoints)
+  - [1. Dashboard Analytics](#1-dashboard-analytics)
+  - [2. Analytics Summary](#2-analytics-summary)
+  - [3. Email Logs (Audit Trail)](#3-email-logs-audit-trail)
+- [Data Models & Schemas](#data-models--schemas)
+- [Error Responses & Status Codes](#error-responses--status-codes)
+
+---
+
 ## Endpoints
 
 ### 1. Dashboard Analytics
@@ -129,6 +141,8 @@ Record of a system-generated email.
 - `status` (string): "sent" or "failed".
 - `error_message` (string|null): Details if status is "failed".
 - `timestamp` (datetime): When the email was processed.
+
+---
 
 ---
 
