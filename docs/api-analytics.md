@@ -64,10 +64,31 @@ The Analytics API provides endpoints for retrieving attendance statistics, stude
 
 ---
 
-## Data Models
+## Data Models & Schemas
 
-### DailyAttendanceStats
-- `date`: Date of the record.
-- `total_sessions`: Number of sessions held on this date.
-- `total_present`: Unique students marked as present.
-- `attendance_percentage`: Ratio of presence vs. enrollment.
+### 1. DailyAttendanceStats
+Represents a single day's attendance aggregation.
+- `date` (string): ISO format date (YYYY-MM-DD).
+- `total_sessions` (int): Number of sessions held.
+- `total_present` (int): Count of unique present students.
+- `attendance_percentage` (float): Percentage of enrollment present (0-100).
+
+### 2. AnalyticsOverview
+Primary schema for the main dashboard and weekly trends.
+- `total_students` (int): Total enrolled students.
+- `total_active_sessions` (int): Currently running sessions.
+- `average_attendance_rate` (float): Global attendance rate.
+- `average_confidence_score` (float): Mean AI recognition confidence (0.0 - 1.0).
+- `weekly_trend` (List[DailyAttendanceStats]): Array of the last 7 days of data for trend visualization.
+
+### 3. AnalyticsSummaryResponse
+Schema for the detailed summary report.
+- `total_students` (int): Student count in filtered scope.
+- `total_classrooms` (int): Classroom count in filtered scope.
+- `total_sessions_completed` (int): Count of finished sessions.
+- `overall_attendance_rate` (float): Aggregated attendance percentage.
+- `average_confidence` (float): Mean AI confidence in report period.
+- `total_flagged_records` (int): Count of suspicious or low-confidence detections.
+- `report_period` (string): Descriptive range (e.g., "Since 2024-01-01").
+- `most_attended_class` (string\|null): Name of class with highest rate.
+- `lowest_attendance_class` (string\|null): Name of class with lowest rate.
