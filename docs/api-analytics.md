@@ -92,3 +92,12 @@ Schema for the detailed summary report.
 - `report_period` (string): Descriptive range (e.g., "Since 2024-01-01").
 - `most_attended_class` (string\|null): Name of class with highest rate.
 - `lowest_attendance_class` (string\|null): Name of class with lowest rate.
+### 4. EmailLogResponse
+Record of a system-generated email.
+- `_id` (string): Unique log identifier.
+- `recipient_email` (string): Destination address.
+- `subject` (string): Email subject line.
+- `template_used` (string): Name of the Jinja2 template.
+- `status` (string): "sent" or "failed".
+- `error_message` (string|null): Details if status is "failed".
+- `timestamp` (datetime): When the email was processed.
