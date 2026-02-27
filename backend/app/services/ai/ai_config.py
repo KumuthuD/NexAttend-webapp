@@ -1,5 +1,6 @@
 """Viraj Jayasiri - Week 04 Day 18
-Updated: Week 05 Day 22 - added speed optimization constants"""
+Updated: Week 05 Day 22 - added speed optimization constants
+Updated: Week 05 Day 23 - added face quality check constants"""
 
 # AI Configuration
 
@@ -103,3 +104,30 @@ DETECTION_DOWNSCALE_RATIO: float = float(
 # 3 means: detect on frame 0, skip 1 & 2, detect on frame 3, ...
 # keeps last result for skipped frames -> saves CPU without visible lag
 DETECTION_FRAME_SKIP: int = int(os.getenv("DETECTION_FRAME_SKIP", "3"))
+
+
+# ------------------------------------------------------------------
+# Face Quality Check  (Week 05 Day 23)
+# ------------------------------------------------------------------
+
+# Laplacian variance - below this the face is too blurry to recognise
+# 100 works well in practice; raise if you get false "blurry" rejections
+QUALITY_BLUR_THRESHOLD: float = float(
+    os.getenv("QUALITY_BLUR_THRESHOLD", "100.0")
+)
+
+# Minimum average pixel brightness (0-255, grayscale)
+# Below this the frame is too dark
+QUALITY_BRIGHTNESS_MIN: float = float(
+    os.getenv("QUALITY_BRIGHTNESS_MIN", "40.0")
+)
+
+# Maximum average pixel brightness (0-255, grayscale)
+# Above this the frame is overexposed
+QUALITY_BRIGHTNESS_MAX: float = float(
+    os.getenv("QUALITY_BRIGHTNESS_MAX", "220.0")
+)
+
+# Minimum width AND height of a cropped face to be accepted (pixels)
+# Faces smaller than this can't produce reliable embeddings
+QUALITY_MIN_FACE_SIZE: int = int(os.getenv("QUALITY_MIN_FACE_SIZE", "80"))
