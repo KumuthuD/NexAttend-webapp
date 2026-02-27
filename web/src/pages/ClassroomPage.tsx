@@ -9,6 +9,7 @@ import AttendanceList from '../components/classroom/AttendanceList';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import { AnimatePresence, motion } from 'framer-motion';
 import DatePicker from '../components/common/DatePicker';
+import MotivationScoreDisplay from '../components/dashboard/MotivationScoreDisplay';
 
 // Mock history records for this classroom (replace with API call when ready)
 const MOCK_HISTORY: AttendanceRecord[] = [
@@ -255,6 +256,14 @@ const ClassroomPage: React.FC = () => {
                     )}
 
                     <div className={`${user?.role === 'teacher' ? 'lg:col-span-2' : 'lg:col-span-1'} space-y-6`}>
+                        {/* Motivation Score Panel - Only for students */}
+                        {user?.role === 'student' && (
+                            <MotivationScoreDisplay
+                                score={4.5}
+                                unlockedBadges={['Starter', 'Bronze']}
+                            />
+                        )}
+
                         {/* Announcements Section */}
                         <motion.section
                             initial={{ opacity: 0, x: 20 }}
