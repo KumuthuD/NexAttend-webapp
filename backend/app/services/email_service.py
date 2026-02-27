@@ -22,7 +22,7 @@ class EmailService:
             logger.error(f"Failed to initialize EmailService: {e}")
             self.env = None
 
-    async def send_attendance_confirmation(self, email: str, student_name: str, class_name: str, date_time: datetime):
+    async def send_attendance_confirmation(self, email: str, student_name: str, class_name: str, date_time):
         if not email:
             logger.warning("No email provided. Cannot send attendance confirmation.")
             return False
@@ -43,8 +43,11 @@ class EmailService:
         try:
             template = self.env.get_template("attendance_confirmation.html")
             
-            # Format datetime
-            formatted_date_time = date_time.strftime("%B %d, %Y at %I:%M %p")
+            # Format datetime safely
+            if isinstance(date_time, datetime):
+                formatted_date_time = date_time.strftime("%B %d, %Y at %I:%M %p")
+            else:
+                formatted_date_time = str(date_time)
             
             html_content = template.render(
                 student_name=student_name,
@@ -63,8 +66,10 @@ class EmailService:
             # Send email (running in thread to avoid blocking event loop)
             def _send():
                 with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                    server.starttls()
-                    server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    # Skip TLS and Login for simple local testing (e.g. Mailtrap or localhost:1025)
+                    if settings.SMTP_HOST != "localhost" and settings.SMTP_PORT != 1025:
+                        server.starttls()
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                     server.send_message(msg)
             
             await asyncio.to_thread(_send)
