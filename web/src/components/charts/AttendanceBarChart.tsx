@@ -56,11 +56,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export interface AttendanceBarChartProps {
     period?: 'Week' | 'Month' | 'Semester';
     classroom?: string;
+    /** When provided, overrides the built-in mock data */
+    data?: { name: string; attendance: number }[];
 }
 
 const AttendanceBarChart: React.FC<AttendanceBarChartProps> = ({
     period = 'Week',
     classroom,
+    data: externalData,
 }) => {
     const dataMap = {
         Week: WEEK_DATA,
@@ -73,7 +76,7 @@ const AttendanceBarChart: React.FC<AttendanceBarChartProps> = ({
         Semester: 'Semester Attendance Overview',
     };
 
-    const data = dataMap[period];
+    const data = externalData || dataMap[period];
     const title = titleMap[period];
 
     return (

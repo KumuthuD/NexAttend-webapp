@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getDashboardStats, DashboardStats } from '../services/api';
+import {
+    getDashboardAnalytics,
+    getAnalyticsSummary,
+    AnalyticsOverview,
+    AnalyticsSummaryResponse,
+} from '../services/api';
 import Sidebar from '../components/Sidebar';
 import StatsCard from '../components/dashboard/StatsCard';
 import AttendanceBarChart from '../components/charts/AttendanceBarChart';
@@ -31,23 +36,51 @@ const AnalyticsPage: React.FC = () => {
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState<DateFilter>('Week');
-    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [analyticsData, setAnalyticsData] = useState<AnalyticsOverview | null>(null);
+    const [summaryData, setSummaryData] = useState<AnalyticsSummaryResponse | null>(null);
 
     // Mock classroom options for the selector
     const classroomOptions = ['All Classrooms', 'Algorithms', 'Advance Client Side', 'Database'];
     const [selectedClassroom, setSelectedClassroom] = useState('All Classrooms');
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchData = async () => {
             try {
-                const data = await getDashboardStats();
-                setStats(data);
+                const [overview, summary] = await Promise.all([
+                    getDashboardAnalytics(),
+                    getAnalyticsSummary(
+                        selectedClassroom !== 'All Classrooms'
+                            ? { classroom_id: selectedClassroom }
+                            : undefined
+                    ),
+                ]);
+                setAnalyticsData(overview);
+                setSummaryData(summary);
             } catch (error) {
-                console.error('Failed to fetch analytics stats', error);
+                console.error('Failed to fetch analytics data', error);
             }
         };
-        fetchStats();
-    }, []);
+        fetchData();
+    }, [selectedClassroom]);
+
+    // Transform weekly_trend into chart-friendly shapes
+    const barChartData = (analyticsData?.weekly_trend || []).map((day) => {
+        const d = new Date(day.date);
+        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+        return { name: dayName, attendance: Math.round(day.attendance_percentage) };
+    });
+
+    const trendChartData = (analyticsData?.weekly_trend || []).map((day) => {
+        const d = new Date(day.date);
+        const label = d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+        return { label, attendance: Math.round(day.attendance_percentage) };
+    });
+
+    // Derive present/absent for pie chart from summary
+    const totalStudents = summaryData?.total_students || 0;
+    const attendanceRate = summaryData?.overall_attendance_rate || 0;
+    const estimatedPresent = Math.round((attendanceRate / 100) * totalStudents);
+    const estimatedAbsent = Math.max(0, totalStudents - estimatedPresent);
 
     const handleLogout = () => {
         logout();
@@ -155,7 +188,7 @@ const AnalyticsPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
                     <StatsCard
                         title="Overall Attendance Rate"
-                        value={`${stats?.attendance_percentage ?? 87}%`}
+                        value={`${summaryData?.overall_attendance_rate ?? 0}%`}
                         icon={<Activity className="w-5 h-5" />}
                         trend={{ value: 3.2, label: `vs last ${activeFilter.toLowerCase()}` }}
                         color="text-violet-600 dark:text-violet-400"
@@ -164,7 +197,7 @@ const AnalyticsPage: React.FC = () => {
                     />
                     <StatsCard
                         title="Total Sessions"
-                        value={stats?.total_sessions ?? 24}
+                        value={summaryData?.total_sessions_completed ?? 0}
                         icon={<CalendarDays className="w-5 h-5" />}
                         trend={{ value: 8, label: `vs last ${activeFilter.toLowerCase()}` }}
                         color="text-blue-600 dark:text-blue-400"
@@ -173,7 +206,7 @@ const AnalyticsPage: React.FC = () => {
                     />
                     <StatsCard
                         title="Most Attended Class"
-                        value="Algorithms"
+                        value={summaryData?.most_attended_class ?? '—'}
                         icon={<TrendingUp className="w-5 h-5" />}
                         color="text-emerald-600 dark:text-emerald-400"
                         bg="bg-emerald-50 dark:bg-emerald-500/10"
@@ -181,7 +214,7 @@ const AnalyticsPage: React.FC = () => {
                     />
                     <StatsCard
                         title="Lowest Attendance"
-                        value="Database"
+                        value={summaryData?.lowest_attendance_class ?? '—'}
                         icon={<TrendingDown className="w-5 h-5" />}
                         color="text-orange-600 dark:text-orange-400"
                         bg="bg-orange-50 dark:bg-orange-500/10"
@@ -197,7 +230,11 @@ const AnalyticsPage: React.FC = () => {
                         title="Attendance Overview"
                         delay={0.35}
                     >
-                        <AttendanceBarChart period={activeFilter} classroom={selectedClassroom} />
+                        <AttendanceBarChart
+                            period={activeFilter}
+                            classroom={selectedClassroom}
+                            data={barChartData.length > 0 ? barChartData : undefined}
+                        />
                     </AnalyticsSummaryCard>
 
                     {/* Attendance Trend Line Chart — Daily / Weekly toggle */}
@@ -205,17 +242,16 @@ const AnalyticsPage: React.FC = () => {
                         title="Attendance Over Time"
                         delay={0.4}
                     >
-                        <AttendanceTrendChart classroom={selectedClassroom} />
+                        <AttendanceTrendChart
+                            classroom={selectedClassroom}
+                            data={trendChartData.length > 0 ? trendChartData : undefined}
+                        />
                     </AnalyticsSummaryCard>
 
                     {/* Attendance Breakdown (Pie Chart) */}
                     <PresentAbsentPieChart
-                        presentCount={stats?.todays_attendance_count || 42}
-                        absentCount={
-                            stats?.total_students
-                                ? Math.max(0, stats.total_students - (stats.todays_attendance_count || 0))
-                                : 8
-                        }
+                        presentCount={estimatedPresent}
+                        absentCount={estimatedAbsent}
                         className="h-full border border-gray-100 dark:border-white/[0.06] !bg-white dark:!bg-[#1a1d2e] shadow-sm transition-colors duration-300"
                     />
 
