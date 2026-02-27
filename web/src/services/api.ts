@@ -193,4 +193,47 @@ export const getAttendanceSession = async (sessionId: string): Promise<Attendanc
     return response.data;
 };
 
+export interface DailyAttendanceStats {
+    date: string;
+    total_sessions: number;
+    total_present: number;
+    attendance_percentage: number;
+}
+
+export interface AnalyticsOverview {
+    total_students: number;
+    total_active_sessions: number;
+    average_attendance_rate: number;
+    average_confidence_score: number;
+    weekly_trend: DailyAttendanceStats[];
+}
+
+export interface AnalyticsSummaryResponse {
+    total_students: number;
+    total_classrooms: number;
+    total_sessions_completed: number;
+    overall_attendance_rate: number;
+    average_confidence: number;
+    total_flagged_records: number;
+    report_period: string;
+    most_attended_class?: string;
+    lowest_attendance_class?: string;
+}
+
+// ... existing code ...
+
+export const getDashboardAnalytics = async (): Promise<AnalyticsOverview> => {
+    const response = await api.get<AnalyticsOverview>('/api/v1/analytics/dashboard');
+    return response.data;
+};
+
+export const getAnalyticsSummary = async (params?: {
+    classroom_id?: string;
+    start_date?: string;
+    end_date?: string;
+}): Promise<AnalyticsSummaryResponse> => {
+    const response = await api.get<AnalyticsSummaryResponse>('/api/v1/analytics/summary', { params });
+    return response.data;
+};
+
 export default api;
