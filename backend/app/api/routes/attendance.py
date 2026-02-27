@@ -14,7 +14,7 @@ from app.schemas.all_attendance import (
 )
 from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
-from typing import Any, List, Dict
+from typing import Any, List, Optional
 from datetime import datetime
 
 async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[str], session_time: datetime):
@@ -31,12 +31,13 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
     # 3. Fetch students and send emails
     students_cursor = db["students"].find({"_id": {"$in": student_ids}})
     async for student in students_cursor:
-        EmailService.send_attendance_confirmation(
-            student_name=student.get("name", "Student"),
-            student_email=student.get("email"),
-            class_name=class_name,
-            date_time=date_str
-        )
+        if student.get("email"):
+            await email_service.send_attendance_confirmation(
+                email=student["email"],
+                student_name=student.get("full_name", student.get("name", "Student")),
+                class_name=class_name,
+                date_time=session_time
+            )
 
 router = APIRouter()
 

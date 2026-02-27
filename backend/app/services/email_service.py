@@ -1,4 +1,5 @@
 import os
+import asyncio
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -6,6 +7,8 @@ from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
 import logging
 from app.core.config import settings
+from app.models.email_log import EmailLog
+from app.database.mongodb import db as database
 import traceback
 
 logger = logging.getLogger(__name__)
@@ -19,17 +22,22 @@ class EmailService:
             logger.error(f"Failed to initialize EmailService: {e}")
             self.env = None
 
-    def send_attendance_confirmation(self, email: str, student_name: str, class_name: str, date_time: datetime):
+    async def send_attendance_confirmation(self, email: str, student_name: str, class_name: str, date_time: datetime):
         if not email:
             logger.warning("No email provided. Cannot send attendance confirmation.")
             return False
 
+        status = "failed"
+        error_message = None
+
         if not settings.SMTP_HOST or not settings.SMTP_USER:
-            logger.warning("SMTP configuration is missing. Cannot send email.")
+            error_message = "SMTP configuration is missing"
+            logger.warning(f"{error_message}. Cannot send email.")
             return False
             
         if not self.env:
-            logger.error("Jinja2 Environment not initialized. Cannot send email.")
+            error_message = "Jinja2 Environment not initialized"
+            logger.error(f"{error_message}. Cannot send email.")
             return False
             
         try:
@@ -52,18 +60,47 @@ class EmailService:
             
             msg.attach(MIMEText(html_content, "html"))
             
-            # Send email
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                server.starttls()
-                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.send_message(msg)
+            # Send email (running in thread to avoid blocking event loop)
+            def _send():
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    server.starttls()
+                    server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+            
+            await asyncio.to_thread(_send)
                 
             logger.info(f"Attendance confirmation email sent to {email}")
+            status = "sent"
             return True
             
         except Exception as e:
+            error_message = str(e)
             logger.error(f"Failed to send email to {email}: {e}")
             logger.debug(traceback.format_exc())
             return False
+        finally:
+            # Always log the attempt
+            try:
+                log_entry = EmailLog(
+                    recipient_email=email,
+                    subject="Attendance Confirmed - NexAttend",
+                    template_used="attendance_confirmation",
+                    status=status,
+                    error_message=error_message
+                )
+                await self._save_log(log_entry)
+            except Exception as log_err:
+                logger.error(f"Failed to create email log entry: {log_err}")
+
+    async def _save_log(self, log_data: EmailLog):
+        """
+        Internal helper to save an email log to MongoDB.
+        """
+        try:
+            if database.db is not None:
+                await database.db["email_logs"].insert_one(log_data.model_dump(by_alias=True))
+                logger.debug(f"Email log saved for {log_data.recipient_email}")
+        except Exception as e:
+            logger.error(f"Failed to save email log: {e}")
 
 email_service = EmailService()
