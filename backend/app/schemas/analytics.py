@@ -23,3 +23,5 @@ class AnalyticsSummaryResponse(BaseModel):
     average_confidence: float
     total_flagged_records: int
     report_period: str # e.g. "All Time", "Last 30 Days", "Custom Range"
+    most_attended_class: Optional[str] = None
+    lowest_attendance_class: Optional[str] = None
