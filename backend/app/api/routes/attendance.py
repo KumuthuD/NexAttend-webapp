@@ -23,7 +23,7 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
     """
     # 1. Get classroom name
     classroom = await db["classrooms"].find_one({"_id": classroom_id})
-    class_name = classroom.get("name", "Unknown Class") if classroom else "Unknown Class"
+    class_name = classroom.get("course_name", classroom.get("name", "Unknown Class")) if classroom else "Unknown Class"
     
     # 2. Format date
     date_str = session_time.strftime("%B %d, %Y at %I:%M %p")
@@ -36,8 +36,69 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
                 email=student["email"],
                 student_name=student.get("full_name", student.get("name", "Student")),
                 class_name=class_name,
-                date_time=session_time
+                date_time=date_str
             )
+
+async def update_motivation_scores(db: Any, classroom_id: str, student_ids: List[str]):
+    """
+    Background task to update motivation scores and check for newly unlocked badges.
+    """
+    if not student_ids:
+        return
+        
+    score_key = f"classroom_progress.{classroom_id}.motivation_score"
+    badges_key = f"classroom_progress.{classroom_id}.unlocked_badges"
+    
+    # Milestone thresholds
+    milestones = [
+        (7.0, "Perfect"),
+        (5.5, "Gold"),
+        (4.0, "Silver"),
+        (2.5, "Bronze"),
+        (0.5, "Starter")
+    ]
+    
+    try:
+        # 1. Atomic bulk increment (+0.5 per student) 
+        await db["students"].update_many(
+            {"_id": {"$in": student_ids}},
+            {"$inc": {score_key: 0.5}}
+        )
+        
+        # 2. Fetch updated scores to check for new badges
+        updated_students_cursor = db["students"].find(
+            {"_id": {"$in": student_ids}},
+            {"_id": 1, "classroom_progress": 1}
+        )
+        
+        # We need individual bulk writes for badge updates as they depend on the student's specific new score
+        from pymongo import UpdateOne
+        bulk_operations = []
+        
+        async for student in updated_students_cursor:
+            progress = student.get("classroom_progress", {}).get(classroom_id, {})
+            current_score = progress.get("motivation_score", 0.0)
+            existing_badges = set(progress.get("unlocked_badges", []))
+            
+            new_badges_to_award = []
+            for threshold, badge_name in milestones:
+                if current_score >= threshold and badge_name not in existing_badges:
+                    new_badges_to_award.append(badge_name)
+                    
+            if new_badges_to_award:
+                bulk_operations.append(
+                    UpdateOne(
+                        {"_id": student["_id"]},
+                        {"$addToSet": {badges_key: {"$each": new_badges_to_award}}}
+                    )
+                )
+                
+        if bulk_operations:
+            await db["students"].bulk_write(bulk_operations)
+            
+    except Exception as e:
+        import logging
+        logging.error(f"Error updating motivation scores: {str(e)}")
 
 router = APIRouter()
 
@@ -148,6 +209,17 @@ async def mark_attendance(
             )
     except Exception as e:
         pass
+        
+    try:
+        # Also trigger motivation score update for manual/single overrides
+        background_tasks.add_task(
+            update_motivation_scores,
+            db,
+            session["classroom_id"],
+            [request.student_id]
+        )
+    except Exception as e:
+        pass
     
     return {
         "message": "Attendance marked successfully",
@@ -250,6 +322,18 @@ async def batch_mark_attendance(
                         )
         except Exception as e:
             pass
+            
+        try:
+            # Trigger motivation score update for batch overrides
+            if new_student_ids:
+                background_tasks.add_task(
+                    update_motivation_scores,
+                    db,
+                    session["classroom_id"],
+                    new_student_ids
+                )
+        except Exception as e:
+            pass
         
     return {
         "message": f"Batch process complete. Marked {marked_count}, Skipped {skipped_count}",
@@ -342,7 +426,7 @@ async def close_attendance_session(
         }
     )
     
-    # 3. Trigger confirmation emails in background
+    # 3. Trigger confirmation emails and motivation score updates in background
     if session.get("present_student_ids"):
         background_tasks.add_task(
             send_attendance_emails, 
@@ -350,6 +434,12 @@ async def close_attendance_session(
             session["classroom_id"], 
             session["present_student_ids"],
             session.get("session_date", datetime.utcnow())
+        )
+        background_tasks.add_task(
+            update_motivation_scores,
+            db,
+            session["classroom_id"],
+            session["present_student_ids"]
         )
 
     # 4. Return the updated session document
