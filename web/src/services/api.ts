@@ -236,4 +236,29 @@ export const getAnalyticsSummary = async (params?: {
     return response.data;
 };
 
+// --- Motivation Scoring (Day 24 - Thiviru) ---
+
+export interface ClassroomProgress {
+    motivation_score: number;
+    unlocked_badges: string[];
+}
+
+export interface StudentMotivationResponse {
+    classroom_progress: Record<string, ClassroomProgress>;
+}
+
+/**
+ * Fetches a student's classroom_progress from the backend.
+ * Returns a dictionary keyed by classroom_id, each containing
+ * { motivation_score, unlocked_badges }.
+ */
+export const getStudentMotivationData = async (
+    studentId: string
+): Promise<Record<string, ClassroomProgress>> => {
+    const response = await api.get<StudentMotivationResponse>(
+        `/api/v1/students/${studentId}`
+    );
+    return response.data.classroom_progress || {};
+};
+
 export default api;

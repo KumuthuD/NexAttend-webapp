@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
@@ -10,6 +10,7 @@ import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboar
 import { AnimatePresence, motion } from 'framer-motion';
 import DatePicker from '../components/common/DatePicker';
 import MotivationScoreDisplay from '../components/dashboard/MotivationScoreDisplay';
+import { getStudentMotivationData } from '../services/api';
 
 // Mock history records for this classroom (replace with API call when ready)
 const MOCK_HISTORY: AttendanceRecord[] = [
@@ -41,6 +42,30 @@ const ClassroomPage: React.FC = () => {
     const [showHistory, setShowHistory] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Motivation score state — fetched from backend per-classroom
+    const [motivationScore, setMotivationScore] = useState(0);
+    const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
+
+    // Fetch motivation data for student users
+    useEffect(() => {
+        const fetchMotivation = async () => {
+            if (user?.role === 'student' && user?.id && id) {
+                try {
+                    const progress = await getStudentMotivationData(user.id);
+                    const classroomData = progress[id] || { motivation_score: 0, unlocked_badges: [] };
+                    setMotivationScore(classroomData.motivation_score);
+                    setUnlockedBadges(classroomData.unlocked_badges);
+                } catch (error) {
+                    console.error('Failed to fetch motivation data:', error);
+                    // Fallback to defaults
+                    setMotivationScore(0);
+                    setUnlockedBadges([]);
+                }
+            }
+        };
+        fetchMotivation();
+    }, [user?.role, user?.id, id]);
 
     // Filter history based on selected date
     const filteredHistory = selectedDate
@@ -259,8 +284,8 @@ const ClassroomPage: React.FC = () => {
                         {/* Motivation Score Panel - Only for students */}
                         {user?.role === 'student' && (
                             <MotivationScoreDisplay
-                                score={4.5}
-                                unlockedBadges={['Starter', 'Bronze']}
+                                score={motivationScore}
+                                unlockedBadges={unlockedBadges}
                             />
                         )}
 
