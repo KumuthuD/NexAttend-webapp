@@ -64,6 +64,34 @@ The Analytics API provides endpoints for retrieving attendance statistics, stude
 
 ---
 
+### 3. Email Logs (Audit Trail)
+**Endpoint:** `GET /email-logs`
+**Base URL:** `/api/email-logs`
+**Purpose:** Retrieves system email logs for auditing and troubleshooting sent notifications.
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `recipient` | string | No | Filter logs by recipient email address. |
+| `limit` | int | No | Maximum number of logs to return (default: 100, max: 500). |
+
+**Response:** `List[EmailLogResponse]` (200 OK)
+```json
+[
+  {
+    "_id": "65e0f8b1c2e4...",
+    "recipient_email": "student@example.com",
+    "subject": "Attendance Confirmed - NexAttend",
+    "template_used": "attendance_confirmation",
+    "status": "sent",
+    "error_message": null,
+    "timestamp": "2024-03-01T10:00:00Z"
+  }
+]
+```
+
+---
+
 ## Data Models & Schemas
 
 ### 1. DailyAttendanceStats
@@ -101,3 +129,31 @@ Record of a system-generated email.
 - `status` (string): "sent" or "failed".
 - `error_message` (string|null): Details if status is "failed".
 - `timestamp` (datetime): When the email was processed.
+
+---
+
+## Error Responses & Status Codes
+
+The API uses standard HTTP status codes to indicate the success or failure of an inquiry.
+
+| Status Code | Description | Typical Scenario |
+| :--- | :--- | :--- |
+| `200 OK` | Success | The request was successful and data is returned. |
+| `400 Bad Request` | Validation Error | Invalid query parameters (e.g. malformed date). |
+| `401 Unauthorized` | Authentication Failed | Missing or invalid JWT token. |
+| `403 Forbidden` | Access Denied | User does not have permission to view these logs. |
+| `404 Not Found` | Resource Missing | The requested analytics scope or classroom does not exist. |
+| `500 Internal Server Error` | Server Error | An unexpected error occurred on the server. |
+
+### Example Error Response (400 Bad Request)
+```json
+{
+  "detail": [
+    {
+      "loc": ["query", "start_date"],
+      "msg": "invalid date format",
+      "type": "value_error.date"
+    }
+  ]
+}
+```
