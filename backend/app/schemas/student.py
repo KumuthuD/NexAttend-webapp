@@ -1,6 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
+
+class ClassroomProgress(BaseModel):
+    motivation_score: float = 0.0
+    unlocked_badges: List[str] = []
 
 # Shared properties
 class StudentBase(BaseModel):
@@ -28,6 +32,7 @@ class StudentResponse(StudentBase):
     id: Optional[str] = Field(None, alias="_id")
     has_registered_face: bool = False
     is_active: bool = True
+    classroom_progress: Dict[str, ClassroomProgress] = {}
     created_at: Optional[datetime] = None
     
     class Config:
