@@ -114,7 +114,7 @@ const ClassroomPage: React.FC = () => {
     const classroomName = "Advance Client Side Development";
     const accessCode = "ACS-2025";
 
-    const chatMessages = [];
+    const chatMessages: { id: string; date?: string; color: string; initial: string; author: string; time: string; content: string }[] = [];
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
