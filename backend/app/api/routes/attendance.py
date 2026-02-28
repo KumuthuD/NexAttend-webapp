@@ -487,10 +487,12 @@ async def update_attendance(
 ):
     """
     Manual attendance status update (Day 26 - Thisandu).
-    Initial validation for session and student existence.
+    
+    Allows teachers to manually override a student's attendance status in an active or completed session.
+    - If status is 'present', it increments motivation scores.
+    - Updates are atomic and handle both existing and new records.
     """
     # 1. Verify Session exists
-    # Note: session_id can be a string or ObjectId depending on how it was created
     session = await db["attendance_sessions"].find_one({"_id": request.session_id})
     if not session:
         raise HTTPException(
@@ -507,55 +509,64 @@ async def update_attendance(
         )
 
     # 3. Perform atomic update
-    now = datetime.utcnow()
-    
-    # Helper for present_student_ids list
-    if request.new_status == "present":
-        array_op = {"$addToSet": {"present_student_ids": request.student_id}}
-    else:
-        array_op = {"$pull": {"present_student_ids": request.student_id}}
+    try:
+        now = datetime.utcnow()
+        
+        # Helper for present_student_ids list
+        if request.new_status == "present":
+            array_op = {"$addToSet": {"present_student_ids": request.student_id}}
+        else:
+            array_op = {"$pull": {"present_student_ids": request.student_id}}
 
-    # Step 1: Try to update an existing record in the array
-    result = await db["attendance_sessions"].update_one(
-        {"_id": request.session_id, "records.student_id": request.student_id},
-        {
-            "$set": {
-                "records.$.status": request.new_status,
-                "records.$.timestamp": now,
-                "updated_at": now
-            },
-            **array_op
-        }
-    )
-
-    # Step 2: If no existing record was found, push a new one
-    if result.matched_count == 0:
-        new_record = {
-            "student_id": request.student_id,
-            "status": request.new_status,
-            "timestamp": now
-        }
-        await db["attendance_sessions"].update_one(
-            {"_id": request.session_id},
+        # Step 1: Try to update an existing record in the array
+        result = await db["attendance_sessions"].update_one(
+            {"_id": request.session_id, "records.student_id": request.student_id},
             {
-                "$push": {"records": new_record},
-                "$set": {"updated_at": now},
+                "$set": {
+                    "records.$.status": request.new_status,
+                    "records.$.timestamp": now,
+                    "updated_at": now
+                },
                 **array_op
             }
         )
 
-    # Trigger motivation score update if marked present
-    if request.new_status == "present":
-        background_tasks.add_task(
-            update_motivation_scores,
-            db,
-            session["classroom_id"],
-            [request.student_id]
-        )
+        # Step 2: If no existing record was found, push a new one
+        if result.matched_count == 0:
+            new_record = {
+                "student_id": request.student_id,
+                "status": request.new_status,
+                "timestamp": now,
+                "method": "manual"
+            }
+            await db["attendance_sessions"].update_one(
+                {"_id": request.session_id},
+                {
+                    "$push": {"records": new_record},
+                    "$set": {"updated_at": now},
+                    **array_op
+                }
+            )
 
-    # 4. Return the updated session
-    updated_session = await db["attendance_sessions"].find_one({"_id": request.session_id})
-    return {
-        "message": f"Attendance updated to {request.new_status}",
-        "session": updated_session
-    }
+        # Trigger motivation score update if marked present
+        if request.new_status == "present":
+            background_tasks.add_task(
+                update_motivation_scores,
+                db,
+                session["classroom_id"],
+                [request.student_id]
+            )
+
+        # 4. Return the updated session
+        updated_session = await db["attendance_sessions"].find_one({"_id": request.session_id})
+        return {
+            "message": f"Attendance successfully updated to {request.new_status}",
+            "student": student.get("full_name", "Student"),
+            "session": updated_session
+        }
+    except Exception as e:
+        logger.error(f"Manual update failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update attendance record"
+        )
