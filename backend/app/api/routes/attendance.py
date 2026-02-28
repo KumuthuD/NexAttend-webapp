@@ -481,6 +481,7 @@ async def get_classroom_attendance_history(
 
 @router.post("/update")
 async def update_attendance(
+    background_tasks: BackgroundTasks,
     request: AttendanceUpdateRequest = Body(...),
     db: Any = Depends(get_database)
 ):
@@ -541,6 +542,15 @@ async def update_attendance(
                 "$set": {"updated_at": now},
                 **array_op
             }
+        )
+
+    # Trigger motivation score update if marked present
+    if request.new_status == "present":
+        background_tasks.add_task(
+            update_motivation_scores,
+            db,
+            session["classroom_id"],
+            [request.student_id]
         )
 
     # 4. Return the updated session
