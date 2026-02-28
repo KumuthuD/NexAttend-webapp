@@ -505,10 +505,47 @@ async def update_attendance(
             detail=f"Student {request.student_id} not found"
         )
 
-    # Skeleton for now - database logic comes in Commit 3
+    # 3. Perform atomic update
+    now = datetime.utcnow()
+    
+    # Helper for present_student_ids list
+    if request.new_status == "present":
+        array_op = {"$addToSet": {"present_student_ids": request.student_id}}
+    else:
+        array_op = {"$pull": {"present_student_ids": request.student_id}}
+
+    # Step 1: Try to update an existing record in the array
+    result = await db["attendance_sessions"].update_one(
+        {"_id": request.session_id, "records.student_id": request.student_id},
+        {
+            "$set": {
+                "records.$.status": request.new_status,
+                "records.$.timestamp": now,
+                "updated_at": now
+            },
+            **array_op
+        }
+    )
+
+    # Step 2: If no existing record was found, push a new one
+    if result.matched_count == 0:
+        new_record = {
+            "student_id": request.student_id,
+            "status": request.new_status,
+            "timestamp": now
+        }
+        await db["attendance_sessions"].update_one(
+            {"_id": request.session_id},
+            {
+                "$push": {"records": new_record},
+                "$set": {"updated_at": now},
+                **array_op
+            }
+        )
+
+    # 4. Return the updated session
+    updated_session = await db["attendance_sessions"].find_one({"_id": request.session_id})
     return {
-        "message": "Update request validated", 
-        "session_id": request.session_id, 
-        "student_id": request.student_id,
-        "new_status": request.new_status
+        "message": f"Attendance updated to {request.new_status}",
+        "session": updated_session
     }
