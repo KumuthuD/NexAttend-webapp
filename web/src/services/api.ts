@@ -46,9 +46,24 @@ export interface Classroom {
     course_code: string;
     description?: string;
     teacher_id: string;
+    access_code: string;
     student_count: number;
+    student_ids: string[];
     schedule?: string;
     created_at: string;
+}
+
+export interface ClassroomCreateData {
+    name: string;
+    course_code: string;
+    description?: string;
+    schedule?: string;
+}
+
+export interface JoinClassroomResponse {
+    message: string;
+    classroom_id: string;
+    classroom_name: string;
 }
 
 export interface AttendanceSession {
@@ -64,13 +79,34 @@ export interface AttendanceSession {
     updated_at: string;
 }
 
-// Create an Axios instance with a base URL
+// Backend port auto-detection
+// Tries VITE_API_URL (default :8000) first, falls back to :8001
+const PRIMARY_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const FALLBACK_URL = 'http://127.0.0.1:8001';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
+    baseURL: PRIMARY_URL,
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+// Auto-detect backend port on startup (runs once)
+(async () => {
+    try {
+        await axios.get(`${PRIMARY_URL}/`, { timeout: 2000 });
+        // Primary URL works, keep it
+    } catch {
+        try {
+            await axios.get(`${FALLBACK_URL}/`, { timeout: 2000 });
+            api.defaults.baseURL = FALLBACK_URL;
+            console.log(`[NexAttend] Backend detected on fallback port: ${FALLBACK_URL}`);
+        } catch {
+            // Neither works — keep primary, errors will surface naturally
+            console.warn('[NexAttend] No backend detected on 8000 or 8001');
+        }
+    }
+})();
 
 // Add request interceptor to attach JWT token
 api.interceptors.request.use(
@@ -173,6 +209,23 @@ export const updateProfile = async (data: { full_name?: string; avatar?: string 
 
 export const getClassrooms = async (): Promise<Classroom[]> => {
     const response = await api.get<Classroom[]>('/api/v1/classrooms');
+    return response.data;
+};
+
+export const getClassroom = async (classroomId: string): Promise<Classroom> => {
+    const response = await api.get<Classroom>(`/api/v1/classrooms/${classroomId}`);
+    return response.data;
+};
+
+export const createClassroom = async (data: ClassroomCreateData): Promise<Classroom> => {
+    const response = await api.post<Classroom>('/api/v1/classrooms/', data);
+    return response.data;
+};
+
+export const joinClassroom = async (accessCode: string): Promise<JoinClassroomResponse> => {
+    const response = await api.post<JoinClassroomResponse>('/api/v1/classrooms/join', {
+        access_code: accessCode,
+    });
     return response.data;
 };
 

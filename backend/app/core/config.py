@@ -12,8 +12,10 @@ class Settings(BaseSettings):
     # add any new deployment URLs here
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
+        "http://localhost:3001",
         "http://localhost:5173",
         "http://localhost:8000",
+        "http://localhost:8001",
         "https://nex-attend-webapp.vercel.app",
     ]
     
