@@ -14,6 +14,7 @@ from app.schemas.all_attendance import (
 )
 from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
+from app.schemas.attendance import AttendanceUpdateRequest
 from typing import Any, List, Optional
 from datetime import datetime
 
@@ -476,4 +477,38 @@ async def get_classroom_attendance_history(
         "page": page,
         "size": limit,
         "pages": pages
+    }
+
+@router.post("/update")
+async def update_attendance(
+    request: AttendanceUpdateRequest = Body(...),
+    db: Any = Depends(get_database)
+):
+    """
+    Manual attendance status update (Day 26 - Thisandu).
+    Initial validation for session and student existence.
+    """
+    # 1. Verify Session exists
+    # Note: session_id can be a string or ObjectId depending on how it was created
+    session = await db["attendance_sessions"].find_one({"_id": request.session_id})
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance session {request.session_id} not found"
+        )
+    
+    # 2. Verify Student exists
+    student = await db["students"].find_one({"_id": request.student_id})
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Student {request.student_id} not found"
+        )
+
+    # Skeleton for now - database logic comes in Commit 3
+    return {
+        "message": "Update request validated", 
+        "session_id": request.session_id, 
+        "student_id": request.student_id,
+        "new_status": request.new_status
     }
