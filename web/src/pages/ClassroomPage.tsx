@@ -117,10 +117,10 @@ const ClassroomPage: React.FC = () => {
     const chatMessages = [];
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
+        <div className="flex min-h-screen bg-white dark:bg-[#0f1117] transition-colors duration-300">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <main className="flex-1 lg:ml-64 p-4 md:p-9 relative">
+            <main className="flex-1 lg:ml-64 p-4 md:p-9 relative overflow-hidden">
                 {/* Mobile Header */}
                 <div className="lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-[#0f1117] p-4 -mx-4 -mt-4 border-b border-gray-100 dark:border-white/[0.06] sticky top-0 z-30 transition-colors duration-300">
                     <button
