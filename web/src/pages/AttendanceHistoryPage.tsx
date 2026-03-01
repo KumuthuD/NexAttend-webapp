@@ -76,7 +76,10 @@ const AttendanceHistoryPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+                {/* Ambient Backgrounds */}
+                <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent dark:from-violet-500/20 dark:via-purple-500/10 dark:to-transparent pointer-events-none rounded-t-3xl blur-3xl opacity-70 z-0" />
+                <div className="absolute top-40 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/10 via-indigo-500/5 to-transparent dark:from-blue-500/20 dark:via-indigo-500/5 dark:to-transparent pointer-events-none blur-3xl opacity-60 z-0" />
                 <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
                 {/* Page Header */}
                 <motion.div

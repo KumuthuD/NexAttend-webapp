@@ -1,6 +1,5 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { motion } from 'framer-motion';
 
 interface PresentAbsentPieChartProps {
     presentCount: number;
@@ -9,8 +8,8 @@ interface PresentAbsentPieChartProps {
 }
 
 const PresentAbsentPieChart: React.FC<PresentAbsentPieChartProps> = ({
-    presentCount,
-    absentCount,
+    presentCount = 40,
+    absentCount = 20,
     className = ""
 }) => {
     const data = [
@@ -40,16 +39,9 @@ const PresentAbsentPieChart: React.FC<PresentAbsentPieChartProps> = ({
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className={`bg-white dark:bg-[#1e2028] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 ${className}`}
+        <div
+            className={`w-full ${className}`}
         >
-            <div className="flex flex-col items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white w-full text-left">Attendance Breakdown</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 w-full text-left mt-1">Based on today's classes</p>
-            </div>
 
             <div className="h-64 w-full">
                 {total > 0 ? (
@@ -97,7 +89,7 @@ const PresentAbsentPieChart: React.FC<PresentAbsentPieChartProps> = ({
                     </div>
                 )}
             </div>
-        </motion.div>
+        </div>
     );
 };
 

@@ -17,8 +17,6 @@ import PresentAbsentPieChart from '../components/dashboard/PresentAbsentPieChart
 import StudentRankingList from '../components/analytics/StudentRankingList';
 import ThemeToggle from '../components/ThemeToggle';
 import {
-    Users,
-    BookOpen,
     TrendingUp,
     TrendingDown,
     Activity,
@@ -32,7 +30,7 @@ const DATE_FILTERS = ['Week', 'Month', 'Semester'] as const;
 type DateFilter = (typeof DATE_FILTERS)[number];
 
 const AnalyticsPage: React.FC = () => {
-    const { user, logout } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState<DateFilter>('Week');
@@ -88,15 +86,14 @@ const AnalyticsPage: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
+        <div className="flex min-h-screen bg-white dark:bg-[#0f1117] transition-colors duration-300">
             {/* Sidebar */}
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Main Content */}
-            <main className="flex-1 lg:ml-64 p-4 md:p-7 relative min-h-screen">
-
+            <main className="flex-1 lg:ml-64 p-4 md:p-7 relative min-h-screen overflow-hidden">
                 {/* Mobile Header */}
-                <div className="lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-[#0f1117] p-4 -mx-4 -mt-4 border-b border-gray-100 dark:border-white/[0.06] sticky top-0 z-30 transition-colors duration-300">
+                <div className="relative z-20 lg:hidden flex items-center justify-between mb-6 bg-white dark:bg-[#0f1117]/70 backdrop-blur-xl p-4 -mx-4 -mt-4 border-b border-gray-100 dark:border-white/[0.06] sticky top-0 transition-colors duration-300">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
                         className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
@@ -121,13 +118,13 @@ const AnalyticsPage: React.FC = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-3"
+                    className="relative z-10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-3"
                 >
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
                             Analytics
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
                             Track attendance trends and class performance.
                         </p>
                     </div>
@@ -154,30 +151,43 @@ const AnalyticsPage: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.1 }}
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8"
+                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-8 relative z-10"
                 >
                     {/* Classroom selector */}
-                    <select
-                        value={selectedClassroom}
-                        onChange={(e) => setSelectedClassroom(e.target.value)}
-                        className="text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-[#1a1d2e] border border-gray-200 dark:border-white/[0.08] rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-colors duration-200 cursor-pointer"
-                    >
-                        {classroomOptions.map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                    </select>
+                    <div className="relative group">
+                        <select
+                            value={selectedClassroom}
+                            onChange={(e) => setSelectedClassroom(e.target.value)}
+                            className="text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] shadow-[0_2px_10px_rgba(0,0,0,0.02)] rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all duration-300 cursor-pointer appearance-none pr-10 group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"
+                        >
+                            {classroomOptions.map((opt) => (
+                                <option key={opt} value={opt} className="bg-white dark:bg-[#1a1d2e] text-gray-900 dark:text-white font-medium">{opt}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-violet-500 transition-colors">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </div>
 
                     {/* Date range pills */}
-                    <div className="flex items-center gap-1.5 bg-white dark:bg-[#1a1d2e] border border-gray-100 dark:border-white/[0.06] rounded-xl p-1">
+                    <div className="flex items-center gap-1.5 bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] shadow-[0_2px_10px_rgba(0,0,0,0.02)] rounded-xl p-1 relative">
                         {DATE_FILTERS.map((filter) => (
                             <button
                                 key={filter}
                                 onClick={() => setActiveFilter(filter)}
-                                className={`text-sm font-medium px-4 py-1.5 rounded-lg transition-all duration-200 ${activeFilter === filter
-                                    ? 'bg-violet-600 text-white shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                                className={`text-sm font-bold px-4 py-1.5 rounded-lg transition-all duration-300 relative z-10 ${activeFilter === filter
+                                    ? 'text-white shadow-sm'
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
                                     }`}
                             >
+                                {activeFilter === filter && (
+                                    <motion.div
+                                        layoutId="activeFilterBgAnalytics"
+                                        className="absolute inset-0 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-lg -z-10 shadow-[0_2px_8px_rgba(139,92,246,0.3)]"
+                                        initial={false}
+                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    />
+                                )}
                                 {filter}
                             </button>
                         ))}
@@ -249,13 +259,20 @@ const AnalyticsPage: React.FC = () => {
                     </AnalyticsSummaryCard>
 
                     {/* Attendance Breakdown (Pie Chart) */}
-                    <PresentAbsentPieChart
-                        presentCount={estimatedPresent}
-                        absentCount={estimatedAbsent}
-                        className="h-full border border-gray-100 dark:border-white/[0.06] !bg-white dark:!bg-[#1a1d2e] shadow-sm transition-colors duration-300"
-                    />
+                    <AnalyticsSummaryCard
+                        title="Attendance Breakdown"
+                        subtitle="Based on today's classes"
+                        delay={0.45}
+                        className="h-full"
+                    >
+                        <PresentAbsentPieChart
+                            presentCount={totalStudents > 0 ? estimatedPresent : undefined}
+                            absentCount={totalStudents > 0 ? estimatedAbsent : undefined}
+                            className="h-full transition-colors duration-300"
+                        />
+                    </AnalyticsSummaryCard>
 
-                    {/* Student Rankings (Day 23) */}
+                    {/* Student Rankings */}
                     <div className="h-full">
                         <StudentRankingList className="h-full" />
                     </div>
