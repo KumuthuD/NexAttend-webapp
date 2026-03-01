@@ -16,6 +16,34 @@ from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
 from typing import Any, List, Optional
 from datetime import datetime
+from bson import ObjectId
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+async def _find_user_or_student(db: Any, user_id: str):
+    """
+    Look up a user by ID — tries 'users' collection first (where face-registered
+    students live), falls back to 'students' for backwards compatibility.
+    Handles both string and ObjectId _id formats.
+    """
+    # Try users collection with ObjectId
+    try:
+        user = await db["users"].find_one({"_id": ObjectId(user_id)})
+        if user:
+            return user
+    except Exception:
+        pass
+
+    # Try users collection with string _id
+    user = await db["users"].find_one({"_id": user_id})
+    if user:
+        return user
+
+    # Fallback to students collection
+    student = await db["students"].find_one({"_id": user_id})
+    return student
 
 async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[str], session_time: datetime):
     """
@@ -28,13 +56,14 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
     # 2. Format date
     date_str = session_time.strftime("%B %d, %Y at %I:%M %p")
     
-    # 3. Fetch students and send emails
-    students_cursor = db["students"].find({"_id": {"$in": student_ids}})
-    async for student in students_cursor:
-        if student.get("email"):
+    # 3. Fetch users and send emails
+    # Try users collection first (ObjectId), then students as fallback
+    for sid in student_ids:
+        user = await _find_user_or_student(db, sid)
+        if user and user.get("email"):
             await email_service.send_attendance_confirmation(
-                email=student["email"],
-                student_name=student.get("full_name", student.get("name", "Student")),
+                email=user["email"],
+                student_name=user.get("full_name", user.get("name", "Student")),
                 class_name=class_name,
                 date_time=date_str
             )
@@ -157,8 +186,8 @@ async def mark_attendance(
             detail="Active attendance session not found"
         )
 
-    # 2. Verify Student exists
-    student = await db["students"].find_one({"_id": request.student_id})
+    # 2. Verify Student/User exists (check users collection first, then students)
+    student = await _find_user_or_student(db, request.student_id)
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -307,8 +336,12 @@ async def batch_mark_attendance(
             
         try:
             if new_student_ids:
-                students_cursor = db["students"].find({"_id": {"$in": new_student_ids}})
-                students = await students_cursor.to_list(length=len(new_student_ids))
+                # Look up users from 'users' collection (where face-registered students live)
+                students = []
+                for sid in new_student_ids:
+                    u = await _find_user_or_student(db, sid)
+                    if u:
+                        students.append(u)
                 classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
                 classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
                 for student in students:

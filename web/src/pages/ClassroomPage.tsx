@@ -10,7 +10,7 @@ import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboar
 import { AnimatePresence, motion } from 'framer-motion';
 import DatePicker from '../components/common/DatePicker';
 import MotivationScoreDisplay from '../components/dashboard/MotivationScoreDisplay';
-import { getStudentMotivationData } from '../services/api';
+import { getStudentMotivationData, getClassroom, Classroom } from '../services/api';
 
 // Mock history records for this classroom (replace with API call when ready)
 const MOCK_HISTORY: AttendanceRecord[] = [
@@ -46,6 +46,27 @@ const ClassroomPage: React.FC = () => {
     // Motivation score state — fetched from backend per-classroom
     const [motivationScore, setMotivationScore] = useState(0);
     const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
+
+    const [classroomDetails, setClassroomDetails] = useState<Classroom | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch classroom details
+    useEffect(() => {
+        const fetchClassroomDetails = async () => {
+            if (!id) return;
+            try {
+                const data = await getClassroom(id);
+                setClassroomDetails(data);
+            } catch (error) {
+                console.error('Failed to fetch classroom:', error);
+                setToastMessage('Failed to load classroom details');
+                setShowToast(true);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchClassroomDetails();
+    }, [id]);
 
     // Fetch motivation data for student users
     useEffect(() => {
@@ -110,9 +131,13 @@ const ClassroomPage: React.FC = () => {
         alert("Attendance marked successfully!");
     };
 
-    // Mock Data
-    const classroomName = "Advance Client Side Development";
-    const accessCode = "ACS-2025";
+    // Real Data Fallbacks
+    const classroomName = classroomDetails?.name || "Loading Classroom...";
+    const accessCode = classroomDetails?.access_code || "---";
+
+    if (isLoading && !classroomDetails) {
+        return <div className="min-h-screen flex items-center justify-center bg-[#f8f9fc] dark:bg-[#0f1117] text-gray-900 dark:text-white">Loading Classroom...</div>;
+    }
 
     const chatMessages: { id: string; date?: string; color: string; initial: string; author: string; time: string; content: string }[] = [];
 
@@ -185,7 +210,7 @@ const ClassroomPage: React.FC = () => {
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Users size={14} className="text-gray-400 dark:text-gray-500" />
-                                    0 students
+                                    {classroomDetails?.student_count || 0} students
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Clock size={14} className="text-gray-400 dark:text-gray-500" />
