@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { getDashboardStats, DashboardStats } from '../services/api';
+import {
+    getDashboardStats,
+    DashboardStats,
+    getClassrooms,
+    createClassroom,
+    joinClassroom,
+    Classroom,
+    ClassroomCreateData,
+} from '../services/api';
 import Sidebar from '../components/Sidebar';
 import ClassroomCard from '../components/dashboard/ClassroomCard';
 import AddClassroomCard from '../components/dashboard/AddClassroomCard';
@@ -8,21 +16,14 @@ import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
 import StudentAttendanceOverview from '../components/dashboard/StudentAttendanceOverview';
 import StatsCard from '../components/dashboard/StatsCard';
 import ThemeToggle from '../components/ThemeToggle';
-import { Smile, Database, Code, BookOpen, Cpu, Palette, Users, CheckCircle, Activity, Menu, LogOut } from 'lucide-react';
+import {
+    Smile, Database, Code, BookOpen, Cpu, Palette,
+    Users, CheckCircle, Activity, Menu, LogOut, AlertCircle,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
-// Interface for classroom data
-interface Classroom {
-    id: number;
-    title: string;
-    studentCount: number;
-    accessCode: string;
-    icon: React.ReactNode;
-    iconBg: string;
-}
-
-// Icon and color options for new classrooms
+// Icon options for classroom display (cycled by index)
 const ICON_OPTIONS = [
     { icon: (color: string) => <Smile className={`${color} w-6 h-6`} />, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
     { icon: (color: string) => <Database className={`${color} w-6 h-6`} />, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
@@ -32,40 +33,9 @@ const ICON_OPTIONS = [
     { icon: (color: string) => <Palette className={`${color} w-6 h-6`} />, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
 ];
 
-// Initial mock data for classrooms
-const INITIAL_CLASSROOMS: Classroom[] = [
-    {
-        id: 1,
-        title: 'Algorithms',
-        studentCount: 0,
-        accessCode: '234458',
-        icon: <BookOpen className="text-violet-600 dark:text-violet-400 w-6 h-6" />,
-        iconBg: 'bg-violet-50 dark:bg-violet-500/10',
-    },
-    {
-        id: 2,
-        title: 'Advance Client Side',
-        studentCount: 0,
-        accessCode: '283292',
-        icon: <Code className="text-blue-600 dark:text-blue-400 w-6 h-6" />,
-        iconBg: 'bg-blue-50 dark:bg-blue-500/10',
-    },
-    {
-        id: 3,
-        title: 'Database',
-        studentCount: 0,
-        accessCode: '314758',
-        icon: <Database className="text-emerald-600 dark:text-emerald-400 w-6 h-6" />,
-        iconBg: 'bg-emerald-50 dark:bg-emerald-500/10',
-    }
-];
-
-// Function to generate random access code
-const generateAccessCode = () => {
-    const array = new Uint8Array(6);
-    crypto.getRandomValues(array);
-
-    return Array.from(array, num => num % 10).join('');
+const getIconForIndex = (index: number) => {
+    const option = ICON_OPTIONS[index % ICON_OPTIONS.length];
+    return { icon: option.icon(option.color), iconBg: option.bg };
 };
 
 const DashboardPage: React.FC = () => {
@@ -73,64 +43,82 @@ const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [classrooms, setClassrooms] = useState<Classroom[]>(INITIAL_CLASSROOMS);
-    const [nextId, setNextId] = useState(4);
+
+    // Real classrooms from the API
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+    const [classroomsLoading, setClassroomsLoading] = useState(true);
+    const [classroomsError, setClassroomsError] = useState('');
+
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    // Toast notification
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
     const isTeacher = user?.role === 'teacher';
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
+
+    //   Load classrooms from API 
+    const fetchClassrooms = useCallback(async () => {
+        setClassroomsLoading(true);
+        setClassroomsError('');
+        try {
+            const data = await getClassrooms();
+            setClassrooms(data);
+        } catch (err: any) {
+            console.error('Failed to fetch classrooms', err);
+            setClassroomsError('Failed to load classrooms. Please refresh.');
+        } finally {
+            setClassroomsLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
-        // Fetch stats if teacher
+        // Fetch dashboard stats for teachers
         const fetchStats = async () => {
             if (user?.role === 'teacher') {
                 try {
                     const data = await getDashboardStats();
                     setStats(data);
                 } catch (error) {
-                    console.error("Failed to fetch dashboard stats", error);
+                    console.error('Failed to fetch dashboard stats', error);
                 }
             }
         };
 
+        fetchClassrooms();
         fetchStats();
-
         return () => clearInterval(timer);
-    }, [user?.role]);
+    }, [user?.role, fetchClassrooms]);
 
     const handleLogout = () => {
-        logout(); // Assuming logout function exists in context, otherwise navigate to login
+        logout();
         navigate('/get-started');
     };
 
-    const handleCreateClassroom = (inputValue: string) => {
-        if (isTeacher) {
-            // Create Logic
-            const randomIconOption = ICON_OPTIONS[Math.floor(Math.random() * ICON_OPTIONS.length)];
-
-            const newClassroom: Classroom = {
-                id: nextId,
-                title: inputValue,
-                studentCount: 0,
-                accessCode: generateAccessCode(),
-                icon: randomIconOption.icon(randomIconOption.color),
-                iconBg: randomIconOption.bg,
-            };
-
-            setClassrooms([...classrooms, newClassroom]);
-            setNextId(nextId + 1);
-        } else {
-            // Join Logic (Mock)
-            console.log("Joining classroom with code:", inputValue);
-            // In a real app, this would verify the code and add the student to the class
-            alert(`Joined classroom with code: ${inputValue}`);
-        }
-        setIsCreateModalOpen(false);
+    // ── Teacher: Create classroom ──────────────────────
+    const handleCreateClassroom = async (data: ClassroomCreateData) => {
+        const created = await createClassroom(data);
+        // Prepend newly created classroom so it appears first
+        setClassrooms(prev => [created, ...prev]);
+        showToast(` "${created.name}" created! Access code: ${created.access_code}`);
     };
 
-    // Format greeting based on time of day
+    // ── Student: Join classroom ──────────────────────
+    const handleJoinClassroom = async (accessCode: string) => {
+        const result = await joinClassroom(accessCode);
+        // Re-fetch to get the full classroom data
+        await fetchClassrooms();
+        showToast(`  ${result.message}`);
+    };
+
+    // Format greeting based on time
     const hour = currentTime.getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
@@ -149,7 +137,6 @@ const DashboardPage: React.FC = () => {
                     >
                         <Menu className="w-6 h-6" />
                     </button>
-
                     <div className="flex items-center gap-2">
                         <ThemeToggle />
                         <button
@@ -162,7 +149,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Header */}
+                {/* Page Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -171,30 +158,29 @@ const DashboardPage: React.FC = () => {
                 >
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
-                            {greeting}{user?.name ? `, ${user.name.split(' ')[0] + '!'}` : ''}👋
+                            {greeting}{user?.name ? `, ${user.name.split(' ')[0]}!` : '!'} 👋
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Here's what's happening with your classes today.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Here's what's happening with your classes today.
+                        </p>
                     </div>
-
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="hidden lg:flex items-center gap-3">
-                            <ThemeToggle />
-                            <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
-                            <button
-                                onClick={handleLogout}
-                                className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
-                                title="Logout"
-                            >
-                                <LogOut className="w-5 h-5" />
-                            </button>
-                        </div>
+                    <div className="hidden lg:flex items-center gap-3">
+                        <ThemeToggle />
+                        <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
+                        <button
+                            onClick={handleLogout}
+                            className="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                            title="Logout"
+                        >
+                            <LogOut className="w-5 h-5" />
+                        </button>
                     </div>
                 </motion.div>
 
                 {/* Divider */}
                 <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
-                {/* Stats Cards Section - Only for Teachers */}
+                {/* Stats — Teachers only */}
                 {isTeacher && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
                         <StatsCard
@@ -207,7 +193,7 @@ const DashboardPage: React.FC = () => {
                         />
                         <StatsCard
                             title="Total Classrooms"
-                            value={stats?.total_classrooms || 0}
+                            value={classrooms.length}
                             icon={<BookOpen className="w-5 h-5 text-violet-600 dark:text-violet-400" />}
                             color="text-violet-600"
                             bg="bg-violet-50 dark:bg-violet-500/10"
@@ -217,7 +203,6 @@ const DashboardPage: React.FC = () => {
                             title="Today's Attendance"
                             value={stats?.todays_attendance_count || 0}
                             icon={<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
-                            trend={{ value: 12, label: "vs yesterday" }}
                             color="text-green-600"
                             bg="bg-green-50 dark:bg-green-500/10"
                             delay={0.3}
@@ -237,7 +222,7 @@ const DashboardPage: React.FC = () => {
                 {!isTeacher && (
                     <StudentAttendanceOverview
                         attendancePercentage={stats?.attendance_percentage || 0}
-                        totalClasses={stats?.total_classrooms || 0}
+                        totalClasses={classrooms.length}
                         presentCount={stats?.todays_attendance_count || 0}
                         absentCount={0}
                     />
@@ -245,9 +230,21 @@ const DashboardPage: React.FC = () => {
 
                 {/* Section header */}
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">Your Classrooms</h2>
-                    <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">{classrooms.length} classrooms</span>
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">
+                        Your Classrooms
+                    </h2>
+                    <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">
+                        {classrooms.length} classrooms
+                    </span>
                 </div>
+
+                {/* Error state */}
+                {classroomsError && (
+                    <div className="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl px-4 py-3 mb-6 text-sm">
+                        <AlertCircle size={16} />
+                        {classroomsError}
+                    </div>
+                )}
 
                 {/* Classroom Grid */}
                 <motion.div
@@ -256,34 +253,68 @@ const DashboardPage: React.FC = () => {
                     transition={{ duration: 0.5 }}
                     className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-6xl"
                 >
-                    {classrooms.map((classroom) => (
-                        <ClassroomCard
-                            key={classroom.id}
-                            title={classroom.title}
-                            studentCount={classroom.studentCount}
-                            accessCode={classroom.accessCode}
-                            icon={classroom.icon}
-                            iconBgClass={classroom.iconBg}
-                            actionButtonText="View Classroom"
-                            onAction={() => navigate(`/dashboard/classroom/${classroom.id}`)}
-                        />
-                    ))}
+                    {classroomsLoading ? (
+                        // Skeleton loaders
+                        Array.from({ length: 3 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] h-[240px] animate-pulse"
+                            />
+                        ))
+                    ) : (
+                        <>
+                            {classrooms.map((classroom, index) => {
+                                const { icon, iconBg } = getIconForIndex(index);
+                                return (
+                                    <ClassroomCard
+                                        key={classroom.id}
+                                        title={classroom.name}
+                                        studentCount={classroom.student_count}
+                                        accessCode={classroom.access_code}
+                                        icon={icon}
+                                        iconBgClass={iconBg}
+                                        actionButtonText="View Classroom"
+                                        onAction={() => navigate(`/dashboard/classroom/${classroom.id || (classroom as any)._id}`)}
+                                    />
+                                );
+                            })}
 
-                    {/* Add/Join Card */}
-                    <AddClassroomCard
-                        type={isTeacher ? 'create' : 'join'}
-                        onClick={() => setIsCreateModalOpen(true)}
-                    />
+                            {/* Add / Join Card */}
+                            <AddClassroomCard
+                                type={isTeacher ? 'create' : 'join'}
+                                onClick={() => setIsCreateModalOpen(true)}
+                            />
+                        </>
+                    )}
                 </motion.div>
             </main>
 
-            {/* Create Classroom Modal */}
+            {/* Create / Join Classroom Modal */}
             <CreateClassroomModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
-                onSubmit={handleCreateClassroom}
                 mode={isTeacher ? 'create' : 'join'}
+                onCreateSubmit={handleCreateClassroom}
+                onJoinSubmit={handleJoinClassroom}
             />
+
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg flex items-center gap-3 z-50 text-sm font-medium
+                            ${toast.type === 'success'
+                                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                                : 'bg-red-600 text-white'
+                            }`}
+                    >
+                        {toast.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
