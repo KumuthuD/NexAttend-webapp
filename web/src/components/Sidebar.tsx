@@ -92,8 +92,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   key={item.id}
                   onClick={() => handleNavigation(item.path)}
                   className={`
-                    w-full flex items-center gap-3 px-3 py-2.5 rounded-xl 
-                    transition-all duration-200 text-sm font-medium
+                    w-full flex items-center gap-3 px-3 py-4 rounded-xl 
+                    transition-all duration-200 text-sm font-medium mb-1
                     ${active
                       ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-white'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/[0.03]'

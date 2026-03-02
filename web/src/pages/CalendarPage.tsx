@@ -166,18 +166,12 @@ const CalendarPage: React.FC = () => {
                             <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">
                                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                             </h2>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center">
                                 <button
                                     onClick={prevMonth}
                                     className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-600 dark:text-gray-400 transition-colors"
                                 >
                                     <ChevronLeft size={20} />
-                                </button>
-                                <button
-                                    onClick={() => setCurrentDate(new Date())}
-                                    className="px-3 py-1.5 text-sm font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-lg transition-colors border border-transparent hover:border-violet-100 dark:hover:border-violet-500/20"
-                                >
-                                    Today
                                 </button>
                                 <button
                                     onClick={nextMonth}
