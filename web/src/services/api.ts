@@ -8,6 +8,9 @@ export interface UserData {
     role: string;
     is_active: boolean;
     avatar?: string;
+    date_of_birth?: string;
+    gender?: string;
+    created_at?: string;
 }
 
 export interface LoginResponse {
@@ -211,7 +214,7 @@ export const registerStudent = async (studentData: FormData) => {
     }
 };
 
-export const updateProfile = async (data: { full_name?: string; avatar?: string }): Promise<UserData> => {
+export const updateProfile = async (data: { full_name?: string; avatar?: string; date_of_birth?: string; gender?: string; }): Promise<UserData> => {
     const response = await api.put<UserData>('/api/v1/users/me', data);
     return response.data;
 };

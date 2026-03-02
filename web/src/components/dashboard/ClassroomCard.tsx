@@ -5,26 +5,22 @@ interface ClassroomCardProps {
     title: string;
     studentCount: number;
     accessCode: string;
-    icon?: React.ReactNode;
     actionButtonText: string;
     onAction: () => void;
     onDelete?: () => void;
     onLeave?: () => void;
     colorClass?: string;
-    iconBgClass?: string;
 }
 
 const ClassroomCard: React.FC<ClassroomCardProps> = ({
     title,
     studentCount,
     accessCode,
-    icon,
     actionButtonText,
     onAction,
     onDelete,
     onLeave,
-    colorClass = 'text-gray-800',
-    iconBgClass = 'bg-violet-50'
+    colorClass = 'text-gray-800'
 }) => {
     const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
@@ -40,9 +36,6 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
                 {/* Header row */}
                 <div className="flex items-start justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/10 flex items-center justify-center group-hover:bg-violet-100 dark:group-hover:bg-violet-500/15 transition-colors duration-300">
-                            {icon || <Users size={22} className="text-violet-500 dark:text-violet-400" />}
-                        </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-800 dark:text-white leading-tight transition-colors duration-300">{title}</h3>
                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 transition-colors duration-300">Classroom</p>
