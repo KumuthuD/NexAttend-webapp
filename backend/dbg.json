@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "content": "hi",
+      "_id": "69a5dde1e761fecfcda361c1",
+      "classroom_id": "906c390e-3df0-4ac9-bab4-88ffbd45a053",
+      "teacher_id": "698d7a25d66c8f1047e4e20e",
+      "created_at": "2026-03-02T18:58:41.391000",
+      "teacher_name": "yasitha peiris"
+    }
+  ]
+}

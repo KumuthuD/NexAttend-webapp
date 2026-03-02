@@ -43,3 +43,22 @@ class JoinClassroomResponse(BaseModel):
     message: str
     classroom_id: str
     classroom_name: str
+
+
+class AnnouncementBase(BaseModel):
+    content: str
+
+
+class AnnouncementCreate(AnnouncementBase):
+    pass
+
+
+class AnnouncementResponse(AnnouncementBase):
+    id: str = Field(..., alias="_id")
+    classroom_id: str
+    teacher_id: str
+    created_at: datetime
+    teacher_name: Optional[str] = None
+
+    class Config:
+        populate_by_name = True

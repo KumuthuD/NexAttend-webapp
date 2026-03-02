@@ -66,6 +66,15 @@ export interface JoinClassroomResponse {
     classroom_name: string;
 }
 
+export interface Announcement {
+    id: string;
+    classroom_id: string;
+    teacher_id: string;
+    teacher_name?: string;
+    content: string;
+    created_at: string;
+}
+
 export interface AttendanceSession {
     id: string;
     classroom_id: string;
@@ -236,6 +245,21 @@ export const joinClassroom = async (accessCode: string): Promise<JoinClassroomRe
 
 export const leaveClassroom = async (classroomId: string): Promise<{ message: string }> => {
     const response = await api.post<{ message: string }>(`/api/v1/classrooms/${classroomId}/leave`);
+    return response.data;
+};
+
+export const getClassroomAnnouncements = async (classroomId: string): Promise<Announcement[]> => {
+    const response = await api.get<any[]>(`/api/v1/classrooms/${classroomId}/announcements`);
+    return response.data.map(ann => ({ ...ann, id: ann._id || ann.id }));
+};
+
+export const createAnnouncement = async (classroomId: string, content: string): Promise<Announcement> => {
+    const response = await api.post<any>(`/api/v1/classrooms/${classroomId}/announcements`, { content });
+    return { ...response.data, id: response.data._id || response.data.id };
+};
+
+export const deleteAnnouncement = async (classroomId: string, announcementId: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/classrooms/${classroomId}/announcements/${announcementId}`);
     return response.data;
 };
 

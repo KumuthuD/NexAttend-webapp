@@ -3,14 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw, Smile, Activity, Menu, LogOut } from 'lucide-react';
+import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw, Smile, Activity, Menu, LogOut, Trash2, AlertTriangle } from 'lucide-react';
 import CameraCapture from '../components/common/WebcamCapture';
 import AttendanceList from '../components/classroom/AttendanceList';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import { AnimatePresence, motion } from 'framer-motion';
 import DatePicker from '../components/common/DatePicker';
 import MotivationScoreDisplay from '../components/dashboard/MotivationScoreDisplay';
-import { getStudentMotivationData, getClassroom, Classroom } from '../services/api';
+import { getStudentMotivationData, getClassroom, Classroom, getClassroomAnnouncements, createAnnouncement, deleteAnnouncement, Announcement } from '../services/api';
 
 // Mock history records for this classroom (replace with API call when ready)
 const MOCK_HISTORY: AttendanceRecord[] = [
@@ -43,6 +43,12 @@ const ClassroomPage: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    // Announcements state
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [isPostingAnnouncement, setIsPostingAnnouncement] = useState(false);
+    const [announcementToDelete, setAnnouncementToDelete] = useState<string | null>(null);
+    const [isDeletingAnnouncement, setIsDeletingAnnouncement] = useState(false);
+
     // Motivation score state — fetched from backend per-classroom
     const [motivationScore, setMotivationScore] = useState(0);
     const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
@@ -66,6 +72,21 @@ const ClassroomPage: React.FC = () => {
             }
         };
         fetchClassroomDetails();
+    }, [id]);
+
+    // Fetch announcements
+    const fetchAnnouncements = async () => {
+        if (!id) return;
+        try {
+            const data = await getClassroomAnnouncements(id);
+            setAnnouncements(data);
+        } catch (error) {
+            console.error('Failed to fetch announcements:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAnnouncements();
     }, [id]);
 
     // Fetch motivation data for student users
@@ -129,6 +150,48 @@ const ClassroomPage: React.FC = () => {
         console.log("Captured file:", file);
         setIsCameraOpen(false);
         alert("Attendance marked successfully!");
+    };
+
+    const handlePostAnnouncement = async () => {
+        if (!id || !announcementText.trim()) return;
+
+        setIsPostingAnnouncement(true);
+        try {
+            await createAnnouncement(id, announcementText.trim());
+            setAnnouncementText('');
+            setToastMessage('Announcement posted!');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+            fetchAnnouncements(); // Refresh the list
+        } catch (error) {
+            console.error('Failed to post announcement:', error);
+            setToastMessage('Failed to post announcement');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        } finally {
+            setIsPostingAnnouncement(false);
+        }
+    };
+
+    const confirmDeleteAnnouncement = async () => {
+        if (!id || !announcementToDelete) return;
+
+        setIsDeletingAnnouncement(true);
+        try {
+            await deleteAnnouncement(id, announcementToDelete);
+            setToastMessage('Announcement deleted!');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+            fetchAnnouncements(); // Refresh the list
+        } catch (error) {
+            console.error('Failed to delete announcement:', error);
+            setToastMessage('Failed to delete announcement');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        } finally {
+            setIsDeletingAnnouncement(false);
+            setAnnouncementToDelete(null);
+        }
     };
 
     // Real Data Fallbacks
@@ -325,15 +388,42 @@ const ClassroomPage: React.FC = () => {
                                 <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider transition-colors duration-300">Announcements</h2>
                             </div>
 
-                            <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden h-[260px] flex flex-col  shadow-sm transition-colors duration-300 mb-10">
-                                {/* Empty state */}
-                                <div className="flex-1 flex items-center justify-center">
-                                    <div className="text-center">
-                                        <div className="w-16 h-16 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors duration-300">
-                                            <Megaphone size={28} className="text-gray-300 dark:text-gray-600" />
+                            <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden flex flex-col shadow-sm transition-colors duration-300 mb-10 h-[260px]">
+                                {/* List of announcements */}
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                    {announcements.length === 0 ? (
+                                        <div className="h-full flex items-center justify-center">
+                                            <div className="text-center">
+                                                <div className="w-16 h-16 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors duration-300">
+                                                    <Megaphone size={28} className="text-gray-300 dark:text-gray-600" />
+                                                </div>
+                                                <p className="text-gray-400 dark:text-gray-500 text-sm font-medium transition-colors duration-300">No announcements yet</p>
+                                            </div>
                                         </div>
-                                        <p className="text-gray-400 dark:text-gray-500 text-sm font-medium transition-colors duration-300">No announcements yet</p>
-                                    </div>
+                                    ) : (
+                                        announcements.map((ann) => (
+                                            <div key={ann.id} className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-100 dark:border-white/5 group relative">
+                                                <div className="flex justify-between items-start mb-2 pr-8">
+                                                    <span className="font-semibold text-sm text-gray-800 dark:text-white capitalize">{ann.teacher_name || 'Teacher'}</span>
+                                                    <span className="text-[11px] text-gray-400 font-medium whitespace-nowrap mt-0.5">
+                                                        {new Date(ann.created_at + 'Z').toLocaleDateString()} - {new Date(ann.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{ann.content}</p>
+
+                                                {/* Delete button (teacher only) */}
+                                                {user?.role === 'teacher' && (
+                                                    <button
+                                                        onClick={() => setAnnouncementToDelete(ann.id)}
+                                                        className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
+                                                        title="Delete announcement"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
 
                                 {/* Input Area - Only for teachers */}
@@ -344,11 +434,19 @@ const ClassroomPage: React.FC = () => {
                                                 type="text"
                                                 value={announcementText}
                                                 onChange={(e) => setAnnouncementText(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') handlePostAnnouncement();
+                                                }}
                                                 placeholder="Post an announcement..."
-                                                className="w-full pl-4 pr-11 py-3 bg-white dark:bg-white/[0.05] rounded-xl text-gray-800 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 border border-gray-200 dark:border-white/[0.1] focus:outline-none focus:border-violet-400 dark:focus:border-violet-500/40 focus:ring-2 focus:ring-violet-50 dark:focus:ring-violet-500/10 transition-all duration-200"
+                                                disabled={isPostingAnnouncement}
+                                                className="w-full pl-4 pr-11 py-3 bg-white dark:bg-white/[0.05] rounded-xl text-gray-800 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 border border-gray-200 dark:border-white/[0.1] focus:outline-none focus:border-violet-400 dark:focus:border-violet-500/40 focus:ring-2 focus:ring-violet-50 dark:focus:ring-violet-500/10 transition-all duration-200 disabled:opacity-50"
                                             />
-                                            <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-violet-50 dark:hover:bg-white/10 transition-colors text-gray-400 dark:text-gray-500 hover:text-violet-600 dark:hover:text-violet-400">
-                                                <Send size={15} />
+                                            <button
+                                                onClick={handlePostAnnouncement}
+                                                disabled={!announcementText.trim() || isPostingAnnouncement}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-violet-50 dark:hover:bg-white/10 transition-colors text-gray-400 dark:text-gray-500 hover:text-violet-600 dark:hover:text-violet-400 disabled:opacity-50"
+                                            >
+                                                <Send size={15} className={isPostingAnnouncement ? 'animate-pulse' : ''} />
                                             </button>
                                         </div>
                                     </div>
@@ -370,6 +468,7 @@ const ClassroomPage: React.FC = () => {
                             <div className="bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] overflow-hidden flex flex-col h-[460px] shadow-sm transition-colors duration-300">
                                 {/* Messages */}
                                 <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                                    <p className="text-center mt-40 text-gray-500 dark:text-gray-400">Coming Soon...</p>
                                     {chatMessages.map((msg) => (
                                         <div key={msg.id}>
                                             {msg.date && (
@@ -427,6 +526,51 @@ const ClassroomPage: React.FC = () => {
                     onFaceRecognized={handleFaceRecognized}
                 />
             )}
+
+            {/* Announcement Delete Confirmation Modal */}
+            <AnimatePresence>
+                {announcementToDelete && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white dark:bg-[#1a1d2e] rounded-2xl p-6 w-full max-w-sm shadow-xl border border-gray-100 dark:border-white/10"
+                        >
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-12 h-12 bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Announcement?</h3>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+                                    Are you sure you want to delete this announcement? This action cannot be undone.
+                                </p>
+                                <div className="flex gap-3 w-full">
+                                    <button
+                                        onClick={() => setAnnouncementToDelete(null)}
+                                        disabled={isDeletingAnnouncement}
+                                        className="flex-1 py-2.5 px-4 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDeleteAnnouncement}
+                                        disabled={isDeletingAnnouncement}
+                                        className="flex-1 py-2.5 px-4 rounded-xl font-medium text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50 flex justify-center items-center"
+                                    >
+                                        {isDeletingAnnouncement ? (
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            'Delete'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Toast Notification */}
             <AnimatePresence>

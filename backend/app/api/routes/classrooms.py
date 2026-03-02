@@ -7,6 +7,8 @@ from app.schemas.classroom import (
     ClassroomResponse,
     JoinClassroomRequest,
     JoinClassroomResponse,
+    AnnouncementCreate,
+    AnnouncementResponse,
 )
 from app.schemas.face import ClassEmbeddingResponse
 from app.api.deps import get_current_user
@@ -333,3 +335,164 @@ async def leave_classroom(
     logger.info(f"Student {user_id} left classroom '{classroom.get('name')}' (id={class_id})")
 
     return {"message": f"Successfully left '{classroom.get('name')}'"}
+
+
+#  POST /classrooms/{class_id}/announcements    Create an announcement
+
+@router.post("/{class_id}/announcements", response_model=AnnouncementResponse, status_code=status.HTTP_201_CREATED)
+async def create_announcement(
+    class_id: str,
+    announcement_in: AnnouncementCreate,
+    db=Depends(get_database),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Teacher creates a new announcement for their classroom.
+    """
+    if current_user.role != "teacher":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only teachers can create announcements",
+        )
+
+    # 1. Verify classroom exists and belongs to teacher
+    classroom = await db["classrooms"].find_one({"_id": class_id})
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom {class_id} not found",
+        )
+
+    if str(classroom.get("teacher_id")) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only create announcements for your own classrooms",
+        )
+
+    # 2. Create the announcement document
+    from datetime import datetime
+    announcement_data = {
+        "classroom_id": class_id,
+        "teacher_id": str(current_user.id),
+        "teacher_name": current_user.full_name or "Teacher",
+        "content": announcement_in.content,
+        "created_at": datetime.utcnow()
+    }
+
+    result = await db["announcements"].insert_one(announcement_data)
+    
+    created_announcement = await db["announcements"].find_one({"_id": result.inserted_id})
+    if not created_announcement:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create announcement",
+        )
+
+    logger.info(f"Teacher {current_user.id} created announcement in classroom {class_id}")
+    
+    # Cast _id locally for the response model
+    created_announcement["_id"] = str(created_announcement["_id"])
+    return AnnouncementResponse(**created_announcement)
+
+
+#  GET /classrooms/{class_id}/announcements     List announcements
+
+@router.get("/{class_id}/announcements", response_model=List[AnnouncementResponse])
+async def list_announcements(
+    class_id: str,
+    db=Depends(get_database),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Get all announcements for a classroom. 
+    Teachers must own it; students must be enrolled.
+    """
+    # 1. Verify classroom access
+    classroom = await db["classrooms"].find_one({"_id": class_id})
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom {class_id} not found",
+        )
+
+    user_id = str(current_user.id)
+    if current_user.role == "teacher":
+        if str(classroom.get("teacher_id")) != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this classroom",
+            )
+    else:
+        # Check student enrollment
+        if user_id not in classroom.get("student_ids", []):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You must join the classroom to view announcements",
+            )
+
+    # 2. Fetch announcements, newest first
+    cursor = db["announcements"].find({"classroom_id": class_id}).sort("created_at", -1)
+    announcements = await cursor.to_list(length=100)
+    
+    # 3. Format response
+    response = []
+    for ann in announcements:
+        ann["_id"] = str(ann["_id"])
+        response.append(AnnouncementResponse(**ann))
+        
+    return response
+
+
+#  DELETE /classrooms/{class_id}/announcements/{announcement_id}     Delete an announcement
+
+@router.delete("/{class_id}/announcements/{announcement_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_announcement(
+    class_id: str,
+    announcement_id: str,
+    db=Depends(get_database),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Delete an announcement.
+    Only the teacher who created the classroom can delete announcements within it.
+    """
+    if current_user.role != "teacher":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only teachers can delete announcements",
+        )
+
+    # 1. Verify classroom access
+    classroom = await db["classrooms"].find_one({"_id": class_id})
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom {class_id} not found",
+        )
+
+    if str(classroom.get("teacher_id")) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete announcements for your own classrooms",
+        )
+
+    from bson import ObjectId
+    try:
+        obj_id = ObjectId(announcement_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid announcement ID format"
+        )
+
+    # 2. Check and delete
+    result = await db["announcements"].delete_one({"_id": obj_id, "classroom_id": class_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Announcement not found in this classroom",
+        )
+
+    logger.info(f"Teacher {current_user.id} deleted announcement {announcement_id} in classroom {class_id}")
+    return {"message": "Announcement deleted successfully"}

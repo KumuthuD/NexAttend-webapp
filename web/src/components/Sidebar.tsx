@@ -127,7 +127,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-[#0f1117] rounded-full" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate transition-colors duration-300">{user?.name}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate transition-colors duration-300 capitalize">{user?.name}</p>
               </div>
             </div>
 
