@@ -505,6 +505,10 @@ async def get_classroom_attendance_history(
     
     pages = math.ceil(total / limit) if limit > 0 else 0
     
+    return {
+        "items": sessions,
+        "total": total,
+        "page": page,
         "size": limit,
         "pages": pages
     }
