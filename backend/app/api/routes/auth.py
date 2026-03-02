@@ -47,13 +47,15 @@ async def register_user(
     hashed_password = get_password_hash(password)
     
     # Prepare user data
+    from datetime import datetime, timezone
     user_data = {
         "full_name": full_name,
         "email": email,
         "password_hash": hashed_password,
         "role": role,
         "is_active": True,
-        "has_registered_face": False
+        "has_registered_face": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
 
     # Process Face (if student and files provided)

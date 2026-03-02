@@ -13,6 +13,9 @@ class User(BaseModel):
     role: str = Field(default="teacher")  # admin, teacher
     is_active: bool = Field(default=True)
     avatar: Optional[str] = Field(default=None)
+    date_of_birth: Optional[str] = Field(default=None)
+    gender: Optional[str] = Field(default=None)
+    created_at: Optional[str] = Field(default=None)
 
     model_config = ConfigDict(
         populate_by_name=True,
