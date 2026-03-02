@@ -29,3 +29,31 @@ class RecognitionLog(BaseModel):
                 "metadata": {"camera_id": "cam_01"}
             }
         }
+
+class AuditLog(BaseModel):
+    """
+    Log of a manual change/override in the system.
+    Primarily for attendance manual fixes.
+    """
+    id: str = Field(default_factory=lambda: str(uuid4()), alias="_id")
+    target_type: str = Field(..., description="Type of target (e.g., 'attendance')")
+    target_id: str = Field(..., description="ID of the resource being changed")
+    changed_by: str = Field(..., description="User ID of the person making the change")
+    old_value: Dict[str, Any] = Field(default_factory=dict)
+    new_value: Dict[str, Any] = Field(default_factory=dict)
+    reason: Optional[str] = Field(None)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        populate_by_name = True
+        json_schema_extra = {
+            "example": {
+                "target_type": "attendance",
+                "target_id": "session_123_student_456",
+                "changed_by": "teacher_789",
+                "old_value": {"status": "absent"},
+                "new_value": {"status": "present"},
+                "reason": "Student verified manually",
+                "timestamp": "2024-02-09T10:05:00Z"
+            }
+        }
