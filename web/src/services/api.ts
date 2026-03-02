@@ -222,10 +222,20 @@ export const createClassroom = async (data: ClassroomCreateData): Promise<Classr
     return response.data;
 };
 
+export const deleteClassroom = async (classroomId: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/classrooms/${classroomId}`);
+    return response.data;
+};
+
 export const joinClassroom = async (accessCode: string): Promise<JoinClassroomResponse> => {
     const response = await api.post<JoinClassroomResponse>('/api/v1/classrooms/join', {
         access_code: accessCode,
     });
+    return response.data;
+};
+
+export const leaveClassroom = async (classroomId: string): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>(`/api/v1/classrooms/${classroomId}/leave`);
     return response.data;
 };
 

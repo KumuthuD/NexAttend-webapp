@@ -237,3 +237,99 @@ async def get_class_embeddings(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error retrieving class embeddings",
         )
+
+
+
+#  DELETE /classrooms/{class_id}    Delete a classroom
+
+@router.delete("/{class_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_classroom(
+    class_id: str,
+    db=Depends(get_database),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Delete a classroom by ID.
+    Only the teacher who created the classroom can delete it.
+    """
+    if current_user.role != "teacher":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only teachers can delete classrooms",
+        )
+
+    classroom = await db["classrooms"].find_one({"_id": class_id})
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom {class_id} not found",
+        )
+
+    if str(classroom.get("teacher_id")) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete your own classrooms",
+        )
+
+    result = await db["classrooms"].delete_one({"_id": class_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete classroom",
+        )
+
+    logger.info(f"Classroom {class_id} deleted by teacher {current_user.id}")
+    return {"message": "Classroom deleted successfully"}
+
+
+
+#  POST /classrooms/{class_id}/leave    Student leaves a classroom
+
+@router.post("/{class_id}/leave", status_code=status.HTTP_200_OK)
+async def leave_classroom(
+    class_id: str,
+    db=Depends(get_database),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Student leaves a classroom they have joined.
+    """
+    if current_user.role != "student":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only students can leave classrooms",
+        )
+
+    user_id = str(current_user.id)
+
+    # Find the classroom
+    classroom = await db["classrooms"].find_one({"_id": class_id})
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom {class_id} not found",
+        )
+
+    # Check if student is actually enrolled
+    if user_id not in classroom.get("student_ids", []):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are not enrolled in this classroom",
+        )
+
+    # Remove student from the classroom's student_ids array
+    result = await db["classrooms"].update_one(
+        {"_id": class_id},
+        {"$pull": {"student_ids": user_id}}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to leave classroom. Please try again.",
+        )
+
+    logger.info(f"Student {user_id} left classroom '{classroom.get('name')}' (id={class_id})")
+
+    return {"message": f"Successfully left '{classroom.get('name')}'"}

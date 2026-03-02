@@ -5,6 +5,8 @@ import {
     DashboardStats,
     getClassrooms,
     createClassroom,
+    deleteClassroom,
+    leaveClassroom,
     joinClassroom,
     Classroom,
     ClassroomCreateData,
@@ -13,6 +15,8 @@ import Sidebar from '../components/Sidebar';
 import ClassroomCard from '../components/dashboard/ClassroomCard';
 import AddClassroomCard from '../components/dashboard/AddClassroomCard';
 import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
+import DeleteClassroomModal from '../components/dashboard/DeleteClassroomModal';
+import LeaveClassroomModal from '../components/dashboard/LeaveClassroomModal';
 import StudentAttendanceOverview from '../components/dashboard/StudentAttendanceOverview';
 import StatsCard from '../components/dashboard/StatsCard';
 import ThemeToggle from '../components/ThemeToggle';
@@ -43,6 +47,10 @@ const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [classroomToDelete, setClassroomToDelete] = useState<{ id: string; name: string } | null>(null);
+    const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+    const [classroomToLeave, setClassroomToLeave] = useState<{ id: string; name: string } | null>(null);
 
     // Real classrooms from the API
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -116,6 +124,52 @@ const DashboardPage: React.FC = () => {
         // Re-fetch to get the full classroom data
         await fetchClassrooms();
         showToast(`  ${result.message}`);
+    };
+
+    // ── Student: Leave classroom ──────────────────────
+    const handleLeaveClick = (classroomId: string, classroomName: string) => {
+        setClassroomToLeave({ id: classroomId, name: classroomName });
+        setIsLeaveModalOpen(true);
+    };
+
+    const handleConfirmLeave = async () => {
+        if (!classroomToLeave) return;
+
+        try {
+            const result = await leaveClassroom(classroomToLeave.id);
+            setClassrooms(prev => prev.filter(c => (c.id || (c as any)._id) !== classroomToLeave.id));
+            showToast(result.message || `Successfully left "${classroomToLeave.name}".`);
+        } catch (error: any) {
+            console.error('Failed to leave classroom:', error);
+            showToast(error?.response?.data?.detail || 'Failed to leave classroom.', 'error');
+            throw error;
+        }
+    };
+
+    // ── Teacher: Delete classroom ──────────────────────
+    const handleDeleteClick = (classroomId: string, classroomName: string) => {
+        setClassroomToDelete({ id: classroomId, name: classroomName });
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!classroomToDelete) return;
+
+        try {
+            await deleteClassroom(classroomToDelete.id);
+            setClassrooms(prev => prev.filter(c => (c.id || (c as any)._id) !== classroomToDelete.id));
+            showToast(`Classroom "${classroomToDelete.name}" deleted successfully.`);
+
+            // Re-fetch stats as total classrooms/students might have changed
+            if (user?.role === 'teacher') {
+                const data = await getDashboardStats();
+                setStats(data);
+            }
+        } catch (error) {
+            console.error('Failed to delete classroom:', error);
+            showToast('Failed to delete classroom.', 'error');
+            throw error;
+        }
     };
 
     // Format greeting based on time
@@ -265,16 +319,19 @@ const DashboardPage: React.FC = () => {
                         <>
                             {classrooms.map((classroom, index) => {
                                 const { icon, iconBg } = getIconForIndex(index);
+                                const classroomId = classroom.id || (classroom as any)._id;
                                 return (
                                     <ClassroomCard
-                                        key={classroom.id}
+                                        key={classroomId}
                                         title={classroom.name}
                                         studentCount={classroom.student_count}
                                         accessCode={classroom.access_code}
                                         icon={icon}
                                         iconBgClass={iconBg}
                                         actionButtonText="View Classroom"
-                                        onAction={() => navigate(`/dashboard/classroom/${classroom.id || (classroom as any)._id}`)}
+                                        onAction={() => navigate(`/dashboard/classroom/${classroomId}`)}
+                                        onDelete={isTeacher ? () => handleDeleteClick(classroomId, classroom.name) : undefined}
+                                        onLeave={!isTeacher ? () => handleLeaveClick(classroomId, classroom.name) : undefined}
                                     />
                                 );
                             })}
@@ -296,6 +353,22 @@ const DashboardPage: React.FC = () => {
                 mode={isTeacher ? 'create' : 'join'}
                 onCreateSubmit={handleCreateClassroom}
                 onJoinSubmit={handleJoinClassroom}
+            />
+
+            {/* Delete Classroom Modal */}
+            <DeleteClassroomModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                classroomName={classroomToDelete?.name || ''}
+            />
+
+            {/* Leave Classroom Modal */}
+            <LeaveClassroomModal
+                isOpen={isLeaveModalOpen}
+                onClose={() => setIsLeaveModalOpen(false)}
+                onConfirm={handleConfirmLeave}
+                classroomName={classroomToLeave?.name || ''}
             />
 
             {/* Toast Notification */}
