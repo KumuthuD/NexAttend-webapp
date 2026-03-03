@@ -177,6 +177,14 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     return response.data;
 };
 
+export const loginWithGoogle = async (token: string, role?: string): Promise<LoginResponse> => {
+    const response = await api.post<LoginResponse>('/api/v1/auth/google', {
+        token,
+        role: role || 'teacher',
+    });
+    return response.data;
+};
+
 export const registerUser = async (data: RegisterData, images?: File[]): Promise<UserData> => {
     const formData = new FormData();
     formData.append('full_name', data.full_name);

@@ -3,7 +3,7 @@ from typing import List, Optional
 from app.database.mongodb import get_database
 from pymongo.errors import DuplicateKeyError
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
+from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse, GoogleLogin
 
 from app.schemas.token import Token
 from app.core.security import get_password_hash, verify_password, create_access_token
@@ -166,6 +166,84 @@ async def login_user(user_in: UserLogin, db = Depends(get_database)):
             is_active=user.get("is_active", True)
         )
     )
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import os
+import secrets
+
+@router.post("/google", response_model=TokenResponse)
+async def authenticate_google(google_in: GoogleLogin, db = Depends(get_database)):
+    """
+    Authenticate user via Google.
+    Creates a new user if one doesn't exist.
+    """
+    try:
+        # Get Client ID from env, or use a default if not set
+        client_id = os.getenv("GOOGLE_CLIENT_ID", "dummy_client_id_for_dev.apps.googleusercontent.com")
+        
+        # Verify token
+        idinfo = id_token.verify_oauth2_token(
+            google_in.token, requests.Request(), client_id, clock_skew_in_seconds=10
+        )
+
+        email = idinfo['email']
+        name = idinfo.get('name', email.split('@')[0])
+        avatar = idinfo.get('picture', '')
+
+        # Check if user exists
+        user = await db["users"].find_one({"email": email})
+        
+        if not user:
+            # Register new user
+            from datetime import datetime, timezone
+            # Generate a random password hash for Google users since they don't have a password
+            random_pass = secrets.token_urlsafe(32)
+            hashed_password = get_password_hash(random_pass)
+
+            user_data = {
+                "full_name": name,
+                "email": email,
+                "password_hash": hashed_password,
+                "role": google_in.role or "teacher", # Default to provided role or teacher
+                "is_active": True,
+                "avatar": avatar,
+                "has_registered_face": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            new_user = await db["users"].insert_one(user_data)
+            user = await db["users"].find_one({"_id": new_user.inserted_id})
+        
+        # Check if user is active
+        if not user.get("is_active", True):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User account is disabled"
+            )
+        
+        # Create access token
+        access_token = create_access_token(subject=str(user["_id"]))
+        
+        # Return token and user info
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=UserResponse(
+                id=str(user["_id"]),
+                full_name=user["full_name"],
+                email=user["email"],
+                role=user["role"],
+                avatar=user.get("avatar"),
+                is_active=user.get("is_active", True)
+            )
+        )
+    except ValueError as e:
+        logger.error(f"Google Token Verification Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google Auth token"
+        )
+
 
 @router.get("/me", response_model=UserResponse)
 async def read_user_me(

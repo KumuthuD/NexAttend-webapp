@@ -63,6 +63,11 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class GoogleLogin(BaseModel):
+    token: str
+    role: Optional[str] = "teacher"
+
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {

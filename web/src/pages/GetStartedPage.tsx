@@ -8,11 +8,12 @@ import { useAuth } from "../contexts/AuthContext";
 import { User, Mail, Lock, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Alert from "../components/Alert";
+import { useGoogleLogin } from '@react-oauth/google';
 
 const GetStartedPage = () => {
     const navigate = useNavigate();
 
-    const { login, register, isLoading } = useAuth();
+    const { login, register, loginWithGoogleProvider, isLoading } = useAuth();
 
     // Scroll to top when page loads
     useEffect(() => {
@@ -96,6 +97,29 @@ const GetStartedPage = () => {
             setAuthError(errorMessage);
         }
     };
+
+    const googleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setAuthError("");
+            setAuthSuccess("");
+            try {
+                // Pass the access_token to the backend
+                await loginWithGoogleProvider(tokenResponse.access_token, formData.role);
+                setAuthSuccess("Google login successful! Redirecting...");
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 1500);
+            } catch (error: any) {
+                console.error("Google authentication failed", error);
+                const errorMessage = error.response?.data?.detail || "Google authentication failed.";
+                setAuthError(errorMessage);
+            }
+        },
+        onError: error => {
+            console.error('Google Login Failed:', error);
+            setAuthError("Google Login Failed.");
+        }
+    });
 
     return (
         <div className="relative min-h-screen bg-gray-900 pt-20 md:pt-24 flex items-center justify-center overflow-hidden">
@@ -296,11 +320,12 @@ const GetStartedPage = () => {
                                                     </span>
                                                 </div>
                                             </div>
-                                            
+
                                             {/* Social Login */}
                                             <div className="flex justify-center">
                                                 <button
                                                     type="button"
+                                                    onClick={() => googleLogin()}
                                                     className="flex items-center justify-center gap-3 py-3 px-8 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 rounded-xl transition-all w-full max-w-xs text-white"
                                                 >
                                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -343,8 +368,8 @@ const GetStartedPage = () => {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
