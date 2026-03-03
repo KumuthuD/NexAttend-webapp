@@ -10,16 +10,7 @@ import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboar
 import { AnimatePresence, motion } from 'framer-motion';
 import DatePicker from '../components/common/DatePicker';
 import MotivationScoreDisplay from '../components/dashboard/MotivationScoreDisplay';
-import { getStudentMotivationData, getClassroom, Classroom, getClassroomAnnouncements, createAnnouncement, deleteAnnouncement, Announcement } from '../services/api';
-
-// Mock history records for this classroom (replace with API call when ready)
-const MOCK_HISTORY: AttendanceRecord[] = [
-    { id: '1', date: '2026-02-18', classroom_name: 'Advance Client Side Development', presentCount: 42, totalCount: 45 },
-    { id: '2', date: '2026-02-17', classroom_name: 'Advance Client Side Development', presentCount: 38, totalCount: 45 },
-    { id: '3', date: '2026-02-14', classroom_name: 'Advance Client Side Development', presentCount: 40, totalCount: 45 },
-    { id: '4', date: '2026-02-13', classroom_name: 'Advance Client Side Development', presentCount: 41, totalCount: 45 },
-    { id: '5', date: '2026-02-12', classroom_name: 'Advance Client Side Development', presentCount: 44, totalCount: 45 },
-];
+import { getStudentMotivationData, getClassroom, Classroom, getClassroomAnnouncements, createAnnouncement, deleteAnnouncement, Announcement, startAttendanceSession, closeAttendanceSession, getClassroomAttendanceHistory } from '../services/api';
 
 interface Student {
     id: string;
@@ -42,6 +33,12 @@ const ClassroomPage: React.FC = () => {
     const [showHistory, setShowHistory] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Attendance session state
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+    const [attendanceHistory, setAttendanceHistory] = useState<AttendanceRecord[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [totalSessions, setTotalSessions] = useState(0);
 
     // Announcements state
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -109,10 +106,40 @@ const ClassroomPage: React.FC = () => {
         fetchMotivation();
     }, [user?.role, user?.id, id]);
 
+    // Fetch attendance history from API
+    const fetchAttendanceHistory = async () => {
+        if (!id) return;
+        setHistoryLoading(true);
+        try {
+            const data = await getClassroomAttendanceHistory(id);
+            setTotalSessions(data.total);
+            // Map backend sessions to AttendanceRecord format
+            const records: AttendanceRecord[] = data.items.map((session: any) => ({
+                id: session._id || session.id,
+                date: session.session_date ? session.session_date.split('T')[0] : '',
+                classroom_name: classroomDetails?.name || '',
+                presentCount: session.present_student_ids?.length || 0,
+                totalCount: classroomDetails?.student_count || 0,
+            }));
+            setAttendanceHistory(records);
+        } catch (error) {
+            console.error('Failed to fetch attendance history:', error);
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    // Fetch history when classroom details are loaded or history is toggled
+    useEffect(() => {
+        if (classroomDetails && id) {
+            fetchAttendanceHistory();
+        }
+    }, [classroomDetails, id]);
+
     // Filter history based on selected date
     const filteredHistory = selectedDate
-        ? MOCK_HISTORY.filter(record => record.date === selectedDate)
-        : MOCK_HISTORY;
+        ? attendanceHistory.filter(record => record.date === selectedDate)
+        : attendanceHistory;
 
     const handleFaceRecognized = (face: any) => {
         const student = face.student;
@@ -149,7 +176,42 @@ const ClassroomPage: React.FC = () => {
     const handleCapture = (file: File) => {
         console.log("Captured file:", file);
         setIsCameraOpen(false);
-        alert("Attendance marked successfully!");
+    };
+
+    // Start an attendance session and open the camera
+    const handleMarkAttendance = async () => {
+        if (!id) return;
+        try {
+            const session = await startAttendanceSession(id);
+            const sessionId = (session as any)._id || session.id;
+            setActiveSessionId(sessionId);
+            setPresentStudents([]);
+            setIsCameraOpen(true);
+        } catch (error) {
+            console.error('Failed to start attendance session:', error);
+            setToastMessage('Failed to start attendance session');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        }
+    };
+
+    // Close the session and stop the camera
+    const handleStopAttendance = async () => {
+        setIsCameraOpen(false);
+        if (activeSessionId) {
+            try {
+                await closeAttendanceSession(activeSessionId);
+                setToastMessage(`Session ended. ${presentStudents.length} student(s) marked present.`);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 4000);
+                // Refresh history data
+                fetchAttendanceHistory();
+            } catch (error) {
+                console.error('Failed to close attendance session:', error);
+            } finally {
+                setActiveSessionId(null);
+            }
+        }
     };
 
     const handlePostAnnouncement = async () => {
@@ -277,7 +339,7 @@ const ClassroomPage: React.FC = () => {
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Clock size={14} className="text-gray-400 dark:text-gray-500" />
-                                    0 sessions
+                                    {totalSessions} session{totalSessions !== 1 ? 's' : ''}
                                 </span>
                             </div>
                         </div>
@@ -297,7 +359,7 @@ const ClassroomPage: React.FC = () => {
 
                                 {/* Mark Attendance */}
                                 <button
-                                    onClick={() => setIsCameraOpen(true)}
+                                    onClick={handleMarkAttendance}
                                     className="flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
                                 >
                                     Mark Attendance
@@ -350,7 +412,7 @@ const ClassroomPage: React.FC = () => {
                                 )}
                             </div>
 
-                            <AttendanceHistoryTable records={filteredHistory} />
+                            <AttendanceHistoryTable records={filteredHistory} isLoading={historyLoading} />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -520,9 +582,10 @@ const ClassroomPage: React.FC = () => {
             {isCameraOpen && (
                 <CameraCapture
                     onCapture={handleCapture}
-                    onClose={() => setIsCameraOpen(false)}
+                    onClose={handleStopAttendance}
                     mode={user?.role === 'teacher' ? 'attendance' : 'single'}
                     classroomId={id}
+                    sessionId={activeSessionId || undefined}
                     onFaceRecognized={handleFaceRecognized}
                 />
             )}

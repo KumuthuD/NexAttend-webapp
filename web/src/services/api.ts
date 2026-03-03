@@ -283,6 +283,21 @@ export const getAttendanceSession = async (sessionId: string): Promise<Attendanc
     return response.data;
 };
 
+export interface AttendanceHistoryResponse {
+    items: AttendanceSession[];
+    total: number;
+    page: number;
+    size: number;
+    pages: number;
+}
+
+export const getClassroomAttendanceHistory = async (classroomId: string, page: number = 1, limit: number = 20): Promise<AttendanceHistoryResponse> => {
+    const response = await api.get<AttendanceHistoryResponse>(`/api/v1/attendance/classroom/${classroomId}/history`, {
+        params: { page, limit }
+    });
+    return response.data;
+};
+
 export interface DailyAttendanceStats {
     date: string;
     total_sessions: number;
