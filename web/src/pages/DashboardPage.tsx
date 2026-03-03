@@ -195,10 +195,10 @@ const DashboardPage: React.FC = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-3"
+                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8"
                 >
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1 transition-colors duration-300">
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
                             {greeting}{user?.name ? `, ${user.name.split(' ')[0]}!` : '!'} 
                         </h1>
                         
@@ -218,8 +218,6 @@ const DashboardPage: React.FC = () => {
 
                 {/* Divider */}
                 <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
-
-
 
                 {/* Student Attendance Overview */}
                 {!isTeacher && (

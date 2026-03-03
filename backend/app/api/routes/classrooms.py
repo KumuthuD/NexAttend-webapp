@@ -13,7 +13,11 @@ from app.schemas.classroom import (
 from app.schemas.face import ClassEmbeddingResponse
 from app.api.deps import get_current_user
 from app.models.user import User
+from app.models.notification import Notification
+from app.services.email_service import email_service
 import logging
+import asyncio
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +102,15 @@ async def create_classroom(
         f"with access code {classroom.access_code}"
     )
 
+    # Trigger notification
+    notification = Notification(
+        user_id=str(current_user.id),
+        title="Classroom Created",
+        message=f"You successfully created the classroom '{classroom.name}'.",
+        type="success"
+    )
+    await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
+
     return ClassroomResponse(
         **created,
         student_count=0,
@@ -158,6 +171,26 @@ async def join_classroom(
         f"Student {user_id} joined classroom '{classroom['name']}' "
         f"(id={classroom_id}) via access code {access_code}"
     )
+
+    # Trigger notification
+    notification = Notification(
+        user_id=user_id,
+        title="Joined Classroom",
+        message=f"You successfully joined the classroom '{classroom['name']}'.",
+        type="success"
+    )
+    await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
+
+    # Trigger email
+    if current_user.email:
+        asyncio.create_task(
+            email_service.send_class_join_confirmation(
+                email=current_user.email,
+                student_name=current_user.full_name or "Student",
+                class_name=classroom["name"],
+                date_time=datetime.utcnow()
+            )
+        )
 
     return JoinClassroomResponse(
         message=f"Successfully joined '{classroom['name']}'!",
@@ -282,6 +315,31 @@ async def delete_classroom(
         )
 
     logger.info(f"Classroom {class_id} deleted by teacher {current_user.id}")
+
+    # Notify teacher
+    teacher_notification = Notification(
+        user_id=str(current_user.id),
+        title="Classroom Deleted",
+        message=f"You successfully deleted the classroom '{classroom.get('name')}'.",
+        type="info"
+    )
+    await db["notifications"].insert_one(teacher_notification.model_dump(by_alias=True, exclude_none=True))
+
+    # Notify students
+    student_ids = classroom.get("student_ids", [])
+    if student_ids:
+        student_notifications = [
+            Notification(
+                user_id=sid,
+                title="Classroom Deleted",
+                message=f"The classroom '{classroom.get('name')}' has been deleted by the teacher.",
+                type="warning"
+            ).model_dump(by_alias=True, exclude_none=True)
+            for sid in student_ids
+        ]
+        if student_notifications:
+            await db["notifications"].insert_many(student_notifications)
+
     return {"message": "Classroom deleted successfully"}
 
 
@@ -333,6 +391,15 @@ async def leave_classroom(
         )
 
     logger.info(f"Student {user_id} left classroom '{classroom.get('name')}' (id={class_id})")
+
+    # Notify student
+    notification = Notification(
+        user_id=user_id,
+        title="Left Classroom",
+        message=f"You successfully left the classroom '{classroom.get('name')}'.",
+        type="info"
+    )
+    await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
 
     return {"message": f"Successfully left '{classroom.get('name')}'"}
 

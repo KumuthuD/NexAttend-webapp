@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends, BackgroundTasks
 from app.database.mongodb import get_database
+from app.services.anomaly_service import check_anomaly
 from app.services.email_service import email_service
 from app.models.attendance import AttendanceSession, AttendanceRecord
 from app.schemas.all_attendance import (
@@ -10,10 +11,11 @@ from app.schemas.all_attendance import (
     AttendanceBatchMarkRequest,
     AttendanceBatchMarkResponse,
     AttendanceBatchRecord,
-    PaginatedHistoryResponse
+    PaginatedHistoryResponse,
+    PaginatedFlaggedResponse
 )
-from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
+from app.models.notification import Notification
 from typing import Any, List, Optional
 from datetime import datetime
 from bson import ObjectId
@@ -67,6 +69,15 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
                 class_name=class_name,
                 date_time=date_str
             )
+        
+        # Also create in-app notification
+        notification = Notification(
+            user_id=sid,
+            title="Attendance Marked",
+            message=f"Your attendance was marked for {class_name} on {date_str}.",
+            type="info"
+        )
+        await db["notifications"].insert_one(notification.model_dump(by_alias=True))
 
 async def update_motivation_scores(db: Any, classroom_id: str, student_ids: List[str]):
     """
@@ -195,10 +206,13 @@ async def mark_attendance(
         )
 
     # 4. Create Record
+    anomaly = check_anomaly(request.confidence or 0.0, request.student_id)
     record = AttendanceRecord(
         student_id=request.student_id,
         status="present",
         confidence=request.confidence,
+        is_flagged=anomaly["is_flagged"],
+        flag_reason=anomaly["flag_reason"],
         method=request.method,
         timestamp=datetime.utcnow()
     )
@@ -229,13 +243,24 @@ async def mark_attendance(
         if student.get("email"):
             classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
             classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+            date_time = datetime.utcnow()
             background_tasks.add_task(
                 email_service.send_attendance_confirmation,
                 student["email"],
                 student.get("full_name", student.get("name", "Student")),
                 classroom_name,
-                datetime.utcnow()
+                date_time
             )
+            
+            # Create notification
+            date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+            notification = Notification(
+                user_id=request.student_id,
+                title="Attendance Marked",
+                message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                type="info"
+            )
+            await db["notifications"].insert_one(notification.model_dump(by_alias=True))
     except Exception as e:
         pass
         
@@ -299,10 +324,13 @@ async def batch_mark_attendance(
             skipped_count += 1
             continue
             
+        anomaly = check_anomaly(student_req.confidence or 0.0, student_id)
         record = AttendanceRecord(
             student_id=student_id,
             status="present",
             confidence=student_req.confidence,
+            is_flagged=anomaly["is_flagged"],
+            flag_reason=anomaly["flag_reason"],
             method=student_req.method,
             timestamp=datetime.utcnow()
         )
@@ -344,6 +372,9 @@ async def batch_mark_attendance(
                         students.append(u)
                 classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
                 classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+                date_time = datetime.utcnow()
+                date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+                
                 for student in students:
                     if student.get("email"):
                         background_tasks.add_task(
@@ -351,8 +382,17 @@ async def batch_mark_attendance(
                             student["email"],
                             student.get("full_name", student.get("name", "Student")),
                             classroom_name,
-                            datetime.utcnow()
+                            date_time
                         )
+                        
+                    # Create notification
+                    notification = Notification(
+                        user_id=str(student.get("_id")),
+                        title="Attendance Marked",
+                        message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                        type="info"
+                    )
+                    await db["notifications"].insert_one(notification.model_dump(by_alias=True))
         except Exception as e:
             pass
             
@@ -505,6 +545,84 @@ async def get_classroom_attendance_history(
     
     return {
         "items": sessions,
+        "total": total,
+        "page": page,
+        "size": limit,
+        "pages": pages
+    }
+
+@router.get("/flagged", response_model=PaginatedFlaggedResponse)
+async def get_flagged_records(
+    page: int = 1,
+    limit: int = 20,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve all flagged anomalous attendance records across all sessions.
+    This includes spoof attempts, low confidence matches, or internally flagged entries.
+    """
+    import math
+
+    skip = (page - 1) * limit
+    
+    # Base match pipeline to find sessions containing at least one flagged record
+    flagged_statuses = ["suspicious", "spoof", "low_confidence", "flagged"]
+    
+    pipeline = [
+        {"$unwind": "$records"},
+        {"$match": {"records.status": {"$in": flagged_statuses}}}
+    ]
+    
+    # Get total count first
+    count_pipeline = pipeline + [{"$count": "total_count"}]
+    count_result = await db["attendance_sessions"].aggregate(count_pipeline).to_list(1)
+    total = count_result[0]["total_count"] if count_result else 0
+    pages = math.ceil(total / limit) if limit > 0 else 0
+
+    # Main query pipeline
+    query_pipeline = pipeline + [
+        {"$sort": {"records.timestamp": -1}},
+        {"$skip": skip},
+        {"$limit": limit}
+    ]
+    
+    docs = await db["attendance_sessions"].aggregate(query_pipeline).to_list(length=limit)
+    
+    # We resolve the names in Python for simplicity and multi-collection support
+    items = []
+    
+    for doc in docs:
+        record = doc.get("records", {})
+        
+        # Resolve classroom name
+        classroom_id = doc.get("classroom_id")
+        classroom_name = "Unknown Classroom"
+        if classroom_id:
+            classroom = await db["classrooms"].find_one({"_id": classroom_id})
+            if classroom:
+                classroom_name = classroom.get("course_name", classroom.get("name", "Unknown Classroom"))
+
+        # Resolve student name
+        student_id = record.get("student_id")
+        student_name = "Unknown"
+        if student_id:
+            user = await _find_user_or_student(db, student_id)
+            if user:
+                student_name = user.get("full_name", user.get("name", "Unknown"))
+                
+        items.append({
+            "session_id": str(doc.get("_id", "")),
+            "classroom_id": str(classroom_id) if classroom_id else "",
+            "student_id": student_id,
+            "student_name": student_name,
+            "classroom_name": classroom_name,
+            "status": record.get("status", "unknown"),
+            "confidence": record.get("confidence"),
+            "timestamp": record.get("timestamp", datetime.utcnow())
+        })
+        
+    return {
+        "items": items,
         "total": total,
         "page": page,
         "size": limit,

@@ -54,13 +54,9 @@ async def init_database():
     
     # Connect to MongoDB
     print(f"\nConnecting to MongoDB...")
-<<<<<<< Updated upstream
     # Hide sensitive info if any (though currently simple local URL)
     safe_url = settings.MONGODB_URL.split('@')[-1] if '@' in settings.MONGODB_URL else settings.MONGODB_URL
     print(f"URL: {safe_url}")
-=======
-    print(f"URL: {settings.MONGODB_URL[:30]}...")
->>>>>>> Stashed changes
     print(f"Database: {settings.DATABASE_NAME}")
     
     try:
@@ -121,13 +117,9 @@ async def init_database():
 
 
 if __name__ == "__main__":
-<<<<<<< Updated upstream
     try:
         asyncio.run(init_database())
     except KeyboardInterrupt:
         print("\n❌ Initialization interrupted.")
     except Exception as e:
         print(f"\n❌ Initialization failed with error: {e}")
-=======
-    asyncio.run(init_database())
->>>>>>> Stashed changes

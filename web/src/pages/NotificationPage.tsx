@@ -1,22 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Info, AlertTriangle, AlertCircle, Trash2, CheckCircle2, Menu, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Types for notifications
-type NotificationType = 'info' | 'success' | 'warning' | 'error';
-
-interface Notification {
-    id: number;
-    title: string;
-    message: string;
-    type: NotificationType;
-    timestamp: string;
-    read: boolean;
-}
+import {
+    getNotifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    deleteNotification,
+    clearAllNotifications,
+    AppNotification,
+    NotificationType
+} from '../services/api';
 
 const NotificationPage: React.FC = () => {
     const { logout, user } = useAuth();
@@ -28,9 +25,26 @@ const NotificationPage: React.FC = () => {
         navigate('/get-started');
     };
 
-    // Mock data
-    // Mock data
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (user) {
+            fetchNotifications();
+        }
+    }, [user]);
+
+    const fetchNotifications = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getNotifications();
+            setNotifications(data);
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const getIcon = (type: NotificationType) => {
         switch (type) {
@@ -62,22 +76,73 @@ const NotificationPage: React.FC = () => {
         }
     };
 
-    const markAsRead = (id: number) => {
-        setNotifications(notifications.map(n =>
-            n.id === id ? { ...n, read: true } : n
-        ));
+    const markAsRead = async (id: string) => {
+        try {
+            // Optimistic update
+            setNotifications(notifications.map(n =>
+                n.id === id ? { ...n, read: true } : n
+            ));
+            await markNotificationRead(id);
+        } catch (error) {
+            console.error('Failed to mark notification as read:', error);
+            // Revert on error
+            fetchNotifications();
+        }
     };
 
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
+    const markAllAsRead = async () => {
+        try {
+            // Optimistic update
+            setNotifications(notifications.map(n => ({ ...n, read: true })));
+            await markAllNotificationsRead();
+        } catch (error) {
+            console.error('Failed to mark all as read:', error);
+            fetchNotifications();
+        }
     };
 
-    const deleteNotification = (id: number) => {
-        setNotifications(notifications.filter(n => n.id !== id));
+    const handleDelete = async (id: string) => {
+        try {
+            // Optimistic update
+            setNotifications(notifications.filter(n => n.id !== id));
+            await deleteNotification(id);
+        } catch (error) {
+            console.error('Failed to delete notification:', error);
+            fetchNotifications();
+        }
     };
 
-    const clearAll = () => {
-        setNotifications([]);
+    const clearAll = async () => {
+        try {
+            // Optimistic update
+            setNotifications([]);
+            await clearAllNotifications();
+        } catch (error) {
+            console.error('Failed to clear notifications:', error);
+            fetchNotifications();
+        }
+    };
+
+    // Helper to format date with timezone fix and relative "real time" display
+    const formatTime = (dateString: string) => {
+        if (!dateString) return '';
+        // Fix naive UTC datetimes missing 'Z'
+        const utcStr = (!dateString.includes('Z') && !dateString.includes('+') && dateString.includes('T')) ? dateString + 'Z' : dateString;
+        const date = new Date(utcStr);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+        if (diffInSeconds < 60 && diffInSeconds >= -60) return 'Just now';
+        if (diffInSeconds < 3600 && diffInSeconds >= 0) return `${Math.floor(diffInSeconds / 60)}m ago`;
+        if (diffInSeconds < 86400 && diffInSeconds >= 0) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+        if (diffInSeconds < 604800 && diffInSeconds >= 0) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+
+        return date.toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        });
     };
 
     // Format greeting
@@ -211,7 +276,7 @@ const NotificationPage: React.FC = () => {
                                                 {notification.title}
                                             </h3>
                                             <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-4">
-                                                {notification.timestamp}
+                                                {formatTime(notification.created_at)}
                                             </span>
                                         </div>
                                         <p className={`text-sm ${notification.read ? 'text-gray-500 dark:text-gray-500' : 'text-gray-600 dark:text-gray-300'}`}>
@@ -230,7 +295,7 @@ const NotificationPage: React.FC = () => {
                                             </button>
                                         )}
                                         <button
-                                            onClick={() => deleteNotification(notification.id)}
+                                            onClick={() => handleDelete(notification.id)}
                                             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                                             title="Delete"
                                         >
