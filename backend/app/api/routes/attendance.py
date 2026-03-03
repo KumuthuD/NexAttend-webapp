@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends, BackgroundTasks
 from app.database.mongodb import get_database
+from app.services.anomaly_service import check_anomaly
 from app.services.email_service import email_service
 from app.models.attendance import AttendanceSession, AttendanceRecord
 from app.schemas.all_attendance import (
@@ -10,13 +11,42 @@ from app.schemas.all_attendance import (
     AttendanceBatchMarkRequest,
     AttendanceBatchMarkResponse,
     AttendanceBatchRecord,
-    PaginatedHistoryResponse
+    PaginatedHistoryResponse,
+    PaginatedFlaggedResponse
 )
-from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
 from app.schemas.attendance import AttendanceUpdateRequest
+from app.models.notification import Notification
 from typing import Any, List, Optional
 from datetime import datetime
+from bson import ObjectId
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+async def _find_user_or_student(db: Any, user_id: str):
+    """
+    Look up a user by ID — tries 'users' collection first (where face-registered
+    students live), falls back to 'students' for backwards compatibility.
+    Handles both string and ObjectId _id formats.
+    """
+    # Try users collection with ObjectId
+    try:
+        user = await db["users"].find_one({"_id": ObjectId(user_id)})
+        if user:
+            return user
+    except Exception:
+        pass
+
+    # Try users collection with string _id
+    user = await db["users"].find_one({"_id": user_id})
+    if user:
+        return user
+
+    # Fallback to students collection
+    student = await db["students"].find_one({"_id": user_id})
+    return student
 
 async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[str], session_time: datetime):
     """
@@ -29,16 +59,26 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
     # 2. Format date
     date_str = session_time.strftime("%B %d, %Y at %I:%M %p")
     
-    # 3. Fetch students and send emails
-    students_cursor = db["students"].find({"_id": {"$in": student_ids}})
-    async for student in students_cursor:
-        if student.get("email"):
+    # 3. Fetch users and send emails
+    # Try users collection first (ObjectId), then students as fallback
+    for sid in student_ids:
+        user = await _find_user_or_student(db, sid)
+        if user and user.get("email"):
             await email_service.send_attendance_confirmation(
-                email=student["email"],
-                student_name=student.get("full_name", student.get("name", "Student")),
+                email=user["email"],
+                student_name=user.get("full_name", user.get("name", "Student")),
                 class_name=class_name,
                 date_time=date_str
             )
+        
+        # Also create in-app notification
+        notification = Notification(
+            user_id=sid,
+            title="Attendance Marked",
+            message=f"Your attendance was marked for {class_name} on {date_str}.",
+            type="info"
+        )
+        await db["notifications"].insert_one(notification.model_dump(by_alias=True))
 
 async def update_motivation_scores(db: Any, classroom_id: str, student_ids: List[str]):
     """
@@ -158,8 +198,8 @@ async def mark_attendance(
             detail="Active attendance session not found"
         )
 
-    # 2. Verify Student exists
-    student = await db["students"].find_one({"_id": request.student_id})
+    # 2. Verify Student/User exists (check users collection first, then students)
+    student = await _find_user_or_student(db, request.student_id)
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -167,10 +207,13 @@ async def mark_attendance(
         )
 
     # 4. Create Record
+    anomaly = check_anomaly(request.confidence or 0.0, request.student_id)
     record = AttendanceRecord(
         student_id=request.student_id,
         status="present",
         confidence=request.confidence,
+        is_flagged=anomaly["is_flagged"],
+        flag_reason=anomaly["flag_reason"],
         method=request.method,
         timestamp=datetime.utcnow()
     )
@@ -201,13 +244,24 @@ async def mark_attendance(
         if student.get("email"):
             classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
             classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+            date_time = datetime.utcnow()
             background_tasks.add_task(
                 email_service.send_attendance_confirmation,
                 student["email"],
                 student.get("full_name", student.get("name", "Student")),
                 classroom_name,
-                datetime.utcnow()
+                date_time
             )
+            
+            # Create notification
+            date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+            notification = Notification(
+                user_id=request.student_id,
+                title="Attendance Marked",
+                message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                type="info"
+            )
+            await db["notifications"].insert_one(notification.model_dump(by_alias=True))
     except Exception as e:
         pass
         
@@ -271,10 +325,13 @@ async def batch_mark_attendance(
             skipped_count += 1
             continue
             
+        anomaly = check_anomaly(student_req.confidence or 0.0, student_id)
         record = AttendanceRecord(
             student_id=student_id,
             status="present",
             confidence=student_req.confidence,
+            is_flagged=anomaly["is_flagged"],
+            flag_reason=anomaly["flag_reason"],
             method=student_req.method,
             timestamp=datetime.utcnow()
         )
@@ -308,10 +365,17 @@ async def batch_mark_attendance(
             
         try:
             if new_student_ids:
-                students_cursor = db["students"].find({"_id": {"$in": new_student_ids}})
-                students = await students_cursor.to_list(length=len(new_student_ids))
+                # Look up users from 'users' collection (where face-registered students live)
+                students = []
+                for sid in new_student_ids:
+                    u = await _find_user_or_student(db, sid)
+                    if u:
+                        students.append(u)
                 classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
                 classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+                date_time = datetime.utcnow()
+                date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+                
                 for student in students:
                     if student.get("email"):
                         background_tasks.add_task(
@@ -319,8 +383,17 @@ async def batch_mark_attendance(
                             student["email"],
                             student.get("full_name", student.get("name", "Student")),
                             classroom_name,
-                            datetime.utcnow()
+                            date_time
                         )
+                        
+                    # Create notification
+                    notification = Notification(
+                        user_id=str(student.get("_id")),
+                        title="Attendance Marked",
+                        message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                        type="info"
+                    )
+                    await db["notifications"].insert_one(notification.model_dump(by_alias=True))
         except Exception as e:
             pass
             

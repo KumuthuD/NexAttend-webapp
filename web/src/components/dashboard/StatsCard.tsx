@@ -22,24 +22,26 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, color,
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay }}
-            className="bg-white dark:bg-[#1a1d2e] rounded-2xl p-6 border border-gray-100 dark:border-white/[0.06] shadow-sm hover:shadow-md transition-all duration-300"
+            className="group relative overflow-hidden bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all duration-500"
         >
-            <div className="flex items-start justify-between">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/0 dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+            <div className="relative flex items-start justify-between z-10">
                 <div>
-                    <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">{title}</h3>
+                    <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">{title}</h3>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">{value}</span>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{value}</span>
                         {trend && (
-                            <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${isPositive ? 'text-green-600 bg-green-50 dark:bg-green-500/10' : 'text-red-600 bg-red-50 dark:bg-red-500/10'}`}>
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-lg ${isPositive ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300' : 'text-rose-700 bg-rose-100 dark:bg-rose-500/20 dark:text-rose-300'}`}>
                                 {isPositive ? '+' : ''}{trend.value}%
                             </span>
                         )}
                     </div>
                     {trend && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{trend.label}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 font-medium">{trend.label}</p>
                     )}
                 </div>
-                <div className={`p-3 rounded-xl ${bg} ${color}`}>
+                <div className={`p-3 rounded-2xl ${bg} ${color} shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 ring-1 ring-white/50 dark:ring-white/10`}>
                     {icon}
                 </div>
             </div>

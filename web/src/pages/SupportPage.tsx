@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const SupportPage: React.FC = () => {
-    const { logout, user } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
     const [openPrivacy, setOpenPrivacy] = useState<number | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -42,7 +42,7 @@ const SupportPage: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
+        <div className="flex min-h-screen bg-white dark:bg-[#0f1117] transition-colors duration-300">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Mobile Top Bar */}
@@ -66,7 +66,7 @@ const SupportPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
                 <div className="lg:hidden h-16" /> {/* Spacer for mobile header */}
 
                 {/* Header */}
@@ -121,9 +121,9 @@ const SupportPage: React.FC = () => {
                 {/* Support Categories Section */}
                 <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
                     {[
-                        { title: "Getting Started", icon: "🚀", desc: "New to NexAttend? Start here." },
-                        { title: "Account & Billing", icon: "💳", desc: "Manage your account and payments." },
-                        { title: "Technical Issues", icon: "🔧", desc: "Troubleshoot bugs and errors." }
+                        { title: "Getting Started", desc: "New to NexAttend? Start here." },
+                        { title: "Account & Billing", desc: "Manage your account and payments." },
+                        { title: "Technical Issues", desc: "Troubleshoot bugs and errors." }
                     ].map((item, index) => (
                         <motion.div
                             key={index}
@@ -133,7 +133,6 @@ const SupportPage: React.FC = () => {
                             whileHover={{ scale: 1.03, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.1)" }}
                             className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-blue-500/30 dark:hover:border-blue-500/50 transition-all duration-300 cursor-pointer group shadow-sm dark:shadow-none"
                         >
-                            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
                             <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.title}</h3>
                             <p className="text-gray-500 dark:text-gray-400">{item.desc}</p>
                         </motion.div>

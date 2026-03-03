@@ -29,6 +29,8 @@ const SettingsPage: React.FC = () => {
     // Profile Update State
     const [newName, setNewName] = useState(user?.name || '');
     const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || '');
+    const [dateOfBirth, setDateOfBirth] = useState(user?.date_of_birth || '');
+    const [gender, setGender] = useState(user?.gender || '');
     const [isUpdating, setIsUpdating] = useState(false);
 
     // Sync local state with user when user changes (e.g. after update or initial load)
@@ -36,6 +38,8 @@ const SettingsPage: React.FC = () => {
         if (user) {
             setNewName(user.name);
             setSelectedAvatar(user.avatar || '');
+            setDateOfBirth(user.date_of_birth || '');
+            setGender(user.gender || '');
         }
     }, [user]);
 
@@ -56,7 +60,9 @@ const SettingsPage: React.FC = () => {
         try {
             await updateUser({
                 name: newName,
-                avatar: selectedAvatar
+                avatar: selectedAvatar,
+                date_of_birth: dateOfBirth,
+                gender: gender
             });
             // Show success message or toast here if available
         } catch (error) {
@@ -115,7 +121,7 @@ const SettingsPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
+        <div className="flex min-h-screen bg-white dark:bg-[#0f1117] transition-colors duration-300">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Mobile Top Bar */}
@@ -139,7 +145,7 @@ const SettingsPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
                 <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
 
                 {/* Header */}
@@ -278,12 +284,38 @@ const SettingsPage: React.FC = () => {
                                                         />
                                                         <p className="text-xs text-gray-500 mt-1">Email address cannot be changed</p>
                                                     </div>
+                                                    
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+                                                            <input
+                                                                type="date"
+                                                                value={dateOfBirth}
+                                                                onChange={(e) => setDateOfBirth(e.target.value)}
+                                                                className="w-full px-4 py-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
+                                                            <select
+                                                                value={gender}
+                                                                onChange={(e) => setGender(e.target.value)}
+                                                                className="w-full px-4 py-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100"
+                                                            >
+                                                                <option value="" className="bg-white dark:bg-[#1a1d2e]">Select Gender</option>
+                                                                <option value="Male" className="bg-white dark:bg-[#1a1d2e]">Male</option>
+                                                                <option value="Female" className="bg-white dark:bg-[#1a1d2e]">Female</option>
+                                                                <option value="Other" className="bg-white dark:bg-[#1a1d2e]">Other</option>
+                                                                <option value="Prefer not to say" className="bg-white dark:bg-[#1a1d2e]">Prefer not to say</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div className="pt-4 flex justify-center">
                                                     <button
                                                         onClick={handleUpdateProfile}
-                                                        disabled={isUpdating || (newName === user?.name && selectedAvatar === user?.avatar)}
+                                                        disabled={isUpdating || (newName === user?.name && selectedAvatar === user?.avatar && dateOfBirth === (user?.date_of_birth || '') && gender === (user?.gender || ''))}
                                                         className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         {isUpdating ? 'Saving...' : (

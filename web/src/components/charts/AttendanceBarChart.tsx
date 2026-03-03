@@ -105,7 +105,7 @@ const AttendanceBarChart: React.FC<AttendanceBarChartProps> = ({
                         dy={8}
                     />
                     <YAxis
-                        domain={[60, 100]}
+                        domain={[0, 100]}
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: '#6B7280', fontSize: 12 }}

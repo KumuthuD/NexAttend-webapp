@@ -8,6 +8,9 @@ export interface UserData {
     role: string;
     is_active: boolean;
     avatar?: string;
+    date_of_birth?: string;
+    gender?: string;
+    created_at?: string;
 }
 
 export interface LoginResponse {
@@ -46,8 +49,32 @@ export interface Classroom {
     course_code: string;
     description?: string;
     teacher_id: string;
+    access_code: string;
     student_count: number;
+    student_ids: string[];
     schedule?: string;
+    created_at: string;
+}
+
+export interface ClassroomCreateData {
+    name: string;
+    course_code: string;
+    description?: string;
+    schedule?: string;
+}
+
+export interface JoinClassroomResponse {
+    message: string;
+    classroom_id: string;
+    classroom_name: string;
+}
+
+export interface Announcement {
+    id: string;
+    classroom_id: string;
+    teacher_id: string;
+    teacher_name?: string;
+    content: string;
     created_at: string;
 }
 
@@ -64,13 +91,34 @@ export interface AttendanceSession {
     updated_at: string;
 }
 
-// Create an Axios instance with a base URL
+// Backend port auto-detection
+// Tries VITE_API_URL (default :8000) first, falls back to :8001
+const PRIMARY_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const FALLBACK_URL = 'http://127.0.0.1:8001';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
+    baseURL: PRIMARY_URL,
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+// Auto-detect backend port on startup (runs once)
+(async () => {
+    try {
+        await axios.get(`${PRIMARY_URL}/`, { timeout: 2000 });
+        // Primary URL works, keep it
+    } catch {
+        try {
+            await axios.get(`${FALLBACK_URL}/`, { timeout: 2000 });
+            api.defaults.baseURL = FALLBACK_URL;
+            console.log(`[NexAttend] Backend detected on fallback port: ${FALLBACK_URL}`);
+        } catch {
+            // Neither works — keep primary, errors will surface naturally
+            console.warn('[NexAttend] No backend detected on 8000 or 8001');
+        }
+    }
+})();
 
 // Add request interceptor to attach JWT token
 api.interceptors.request.use(
@@ -120,6 +168,88 @@ export const getAttendanceHistory = async (classroomId?: string): Promise<Attend
     return response.data;
 };
 
+// ── Real-data attendance history (per-classroom, paginated) ───────────────────
+
+export interface AttendanceSessionRecord {
+    student_id: string;
+    status: string;
+    confidence?: number;
+    timestamp: string;
+}
+
+export interface AttendanceSessionDetail {
+    _id: string;
+    classroom_id: string;
+    session_date: string;
+    start_time: string;
+    end_time?: string;
+    status: 'active' | 'completed';
+    present_student_ids: string[];
+    records: AttendanceSessionRecord[];
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PaginatedHistoryResponse {
+    items: AttendanceSessionDetail[];
+    total: number;
+    page: number;
+    size: number;
+    pages: number;
+}
+
+/**
+ * Fetch paginated attendance history for a specific classroom.
+ * Backend: GET /api/v1/attendance/classroom/{classroom_id}/history
+ */
+export const getClassroomAttendanceHistory = async (
+    classroomId: string,
+    page = 1,
+    limit = 50
+): Promise<PaginatedHistoryResponse> => {
+    const response = await api.get<PaginatedHistoryResponse>(
+        `/api/v1/attendance/classroom/${classroomId}/history`,
+        { params: { page, limit } }
+    );
+    return response.data;
+};
+
+/**
+ * Fetch attendance history across ALL of the teacher's classrooms.
+ * 1) Fetches teacher's classrooms
+ * 2) For each classroom, fetches attendance sessions
+ * 3) Merges, enriches with classroom name + student counts, sorts by date (newest first)
+ */
+export const getTeacherAttendanceHistory = async (): Promise<AttendanceRecord[]> => {
+    // Step 1 — get teacher's classrooms
+    const classrooms = await getClassrooms();
+
+    // Step 2 — fetch history for each classroom in parallel
+    const historyPromises = classrooms.map(async (cls) => {
+        try {
+            const history = await getClassroomAttendanceHistory(cls.id, 1, 50);
+            return history.items.map((session) => ({
+                id: session._id,
+                date: session.session_date,
+                classroom_name: cls.name,
+                session_label: `Session`,
+                presentCount: session.present_student_ids.length,
+                totalCount: cls.student_count || session.present_student_ids.length,
+            }));
+        } catch {
+            return [] as AttendanceRecord[];
+        }
+    });
+
+    const results = await Promise.all(historyPromises);
+
+    // Step 3 — merge and sort by date (newest first)
+    const merged = results.flat();
+    merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return merged;
+};
+
 // Auth API functions
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
     const response = await api.post<LoginResponse>('/api/v1/auth/login', {
@@ -166,13 +296,55 @@ export const registerStudent = async (studentData: FormData) => {
     }
 };
 
-export const updateProfile = async (data: { full_name?: string; avatar?: string }): Promise<UserData> => {
+export const updateProfile = async (data: { full_name?: string; avatar?: string; date_of_birth?: string; gender?: string; }): Promise<UserData> => {
     const response = await api.put<UserData>('/api/v1/users/me', data);
     return response.data;
 };
 
 export const getClassrooms = async (): Promise<Classroom[]> => {
     const response = await api.get<Classroom[]>('/api/v1/classrooms');
+    return response.data;
+};
+
+export const getClassroom = async (classroomId: string): Promise<Classroom> => {
+    const response = await api.get<Classroom>(`/api/v1/classrooms/${classroomId}`);
+    return response.data;
+};
+
+export const createClassroom = async (data: ClassroomCreateData): Promise<Classroom> => {
+    const response = await api.post<Classroom>('/api/v1/classrooms/', data);
+    return response.data;
+};
+
+export const deleteClassroom = async (classroomId: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/classrooms/${classroomId}`);
+    return response.data;
+};
+
+export const joinClassroom = async (accessCode: string): Promise<JoinClassroomResponse> => {
+    const response = await api.post<JoinClassroomResponse>('/api/v1/classrooms/join', {
+        access_code: accessCode,
+    });
+    return response.data;
+};
+
+export const leaveClassroom = async (classroomId: string): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>(`/api/v1/classrooms/${classroomId}/leave`);
+    return response.data;
+};
+
+export const getClassroomAnnouncements = async (classroomId: string): Promise<Announcement[]> => {
+    const response = await api.get<any[]>(`/api/v1/classrooms/${classroomId}/announcements`);
+    return response.data.map(ann => ({ ...ann, id: ann._id || ann.id }));
+};
+
+export const createAnnouncement = async (classroomId: string, content: string): Promise<Announcement> => {
+    const response = await api.post<any>(`/api/v1/classrooms/${classroomId}/announcements`, { content });
+    return { ...response.data, id: response.data._id || response.data.id };
+};
+
+export const deleteAnnouncement = async (classroomId: string, announcementId: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/classrooms/${classroomId}/announcements/${announcementId}`);
     return response.data;
 };
 
@@ -192,6 +364,8 @@ export const getAttendanceSession = async (sessionId: string): Promise<Attendanc
     const response = await api.get<AttendanceSession>(`/api/v1/attendance/session/${sessionId}`);
     return response.data;
 };
+
+
 
 export interface DailyAttendanceStats {
     date: string;
@@ -259,6 +433,141 @@ export const getStudentMotivationData = async (
         `/api/v1/students/${studentId}`
     );
     return response.data.classroom_progress || {};
+};
+
+// --- Flagged Attendance Records (Day 26 - Thiviru) ---
+
+export interface FlaggedRecord {
+    id: string;
+    student_name: string;
+    student_id: string;
+    classroom_name: string;
+    session_date: string;
+    confidence: number;
+    status: 'pending' | 'approved' | 'rejected';
+    flagged_reason: string;
+    image_url?: string;
+}
+
+/**
+ * Fetches all flagged attendance records.
+ * Falls back to mock data when the backend endpoint is not available.
+ */
+export const getFlaggedRecords = async (): Promise<FlaggedRecord[]> => {
+    const response = await api.get<FlaggedRecord[]>('/api/v1/attendance/flagged');
+    return response.data;
+};
+
+/**
+ * Approve or reject a flagged attendance record.
+ */
+export const updateFlaggedRecord = async (
+    recordId: string,
+    action: 'approve' | 'reject'
+): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>(
+        `/api/v1/attendance/flagged/${recordId}`,
+        { action }
+    );
+    return response.data;
+};
+
+// --- Calendar Events ---
+
+export interface CalendarEvent {
+    id: string;
+    user_id: string;
+    title: string;
+    date: string;       // YYYY-MM-DD
+    start_time: string;  // HH:MM
+    end_time: string;    // HH:MM
+    location?: string;
+    type: 'class' | 'meeting' | 'deadline';
+    color: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CalendarEventCreate {
+    title: string;
+    date: string;
+    start_time: string;
+    end_time: string;
+    location?: string;
+    type: string;
+    color?: string;
+}
+
+export interface CalendarEventUpdate {
+    title?: string;
+    date?: string;
+    start_time?: string;
+    end_time?: string;
+    location?: string;
+    type?: string;
+    color?: string;
+}
+
+export const getEvents = async (month?: number, year?: number): Promise<CalendarEvent[]> => {
+    const params: any = {};
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await api.get<any[]>('/api/v1/events', { params });
+    return response.data.map((e: any) => ({ ...e, id: e._id || e.id }));
+};
+
+export const createCalendarEvent = async (data: CalendarEventCreate): Promise<CalendarEvent> => {
+    const response = await api.post<any>('/api/v1/events', data);
+    return { ...response.data, id: response.data._id || response.data.id };
+};
+
+export const updateCalendarEvent = async (eventId: string, data: CalendarEventUpdate): Promise<CalendarEvent> => {
+    const response = await api.put<any>(`/api/v1/events/${eventId}`, data);
+    return { ...response.data, id: response.data._id || response.data.id };
+};
+
+export const deleteCalendarEvent = async (eventId: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/events/${eventId}`);
+    return response.data;
+};
+
+// --- Notifications ---
+
+export type NotificationType = 'info' | 'success' | 'warning' | 'error';
+
+export interface AppNotification {
+    id: string;
+    user_id: string;
+    title: string;
+    message: string;
+    type: NotificationType;
+    read: boolean;
+    created_at: string;
+}
+
+export const getNotifications = async (): Promise<AppNotification[]> => {
+    const response = await api.get<AppNotification[]>('/api/v1/notifications');
+    return response.data;
+};
+
+export const markNotificationRead = async (id: string): Promise<AppNotification> => {
+    const response = await api.put<AppNotification>(`/api/v1/notifications/${id}/read`);
+    return response.data;
+};
+
+export const markAllNotificationsRead = async (): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>('/api/v1/notifications/read-all');
+    return response.data;
+};
+
+export const deleteNotification = async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/notifications/${id}`);
+    return response.data;
+};
+
+export const clearAllNotifications = async (): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>('/api/v1/notifications');
+    return response.data;
 };
 
 export default api;
