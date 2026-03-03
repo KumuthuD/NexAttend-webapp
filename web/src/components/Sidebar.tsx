@@ -10,8 +10,7 @@ import {
   QuestionMarkCircleIcon,
   ChartBarIcon,
   UserCircleIcon,
-  XMarkIcon,
-  FlagIcon
+  XMarkIcon
 } from './icons';
 import ThemeToggle from './ThemeToggle';
 import { LogOut } from 'lucide-react';
@@ -37,7 +36,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { id: 'calendar', label: 'Calendar', icon: <CalendarIcon className="w-5 h-5" />, path: '/calendar' },
     { id: 'notifications', label: 'Notifications', icon: <BellIcon className="w-5 h-5" />, path: '/notifications' },
     { id: 'analytics', label: 'Analytics', icon: <ChartBarIcon className="w-5 h-5" />, path: '/analytics' },
-    ...(user?.role === 'teacher' ? [{ id: 'manual-review', label: 'Manual Review', icon: <FlagIcon className="w-5 h-5" />, path: '/manual-review' }] : []),
     { id: 'settings', label: 'Settings', icon: <Cog6ToothIcon className="w-5 h-5" />, path: '/settings' },
     { id: 'support', label: 'Support', icon: <QuestionMarkCircleIcon className="w-5 h-5" />, path: '/support' },
     { id: 'profile', label: 'My Profile', icon: <UserCircleIcon className="w-5 h-5" />, path: '/profile' },

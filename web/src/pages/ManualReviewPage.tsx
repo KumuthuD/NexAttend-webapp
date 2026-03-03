@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
     getFlaggedRecords,
     updateFlaggedRecord,
     FlaggedRecord,
+    getClassroom,
 } from '../services/api';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
@@ -22,6 +23,7 @@ import {
     ShieldAlert,
     UserCheck,
     Filter,
+    ArrowLeft,
 } from 'lucide-react';
 
 // ── Mock data (fallback when backend is unavailable) ──────────────────────────
@@ -30,7 +32,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f1',
         student_name: 'Kavindu Perera',
         student_id: 's101',
-        classroom_name: 'Algorithms',
+        classroom_name: 'This Classroom',
         session_date: '2026-03-03',
         confidence: 42,
         status: 'pending',
@@ -40,7 +42,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f2',
         student_name: 'Nethmi Silva',
         student_id: 's102',
-        classroom_name: 'Database Systems',
+        classroom_name: 'This Classroom',
         session_date: '2026-03-03',
         confidence: 38,
         status: 'pending',
@@ -50,7 +52,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f3',
         student_name: 'Dineth Jayawardena',
         student_id: 's103',
-        classroom_name: 'Advance Client Side',
+        classroom_name: 'This Classroom',
         session_date: '2026-03-02',
         confidence: 51,
         status: 'pending',
@@ -60,7 +62,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f4',
         student_name: 'Amaya Fernando',
         student_id: 's104',
-        classroom_name: 'Algorithms',
+        classroom_name: 'This Classroom',
         session_date: '2026-03-02',
         confidence: 29,
         status: 'approved',
@@ -70,7 +72,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f5',
         student_name: 'Tharindu Bandara',
         student_id: 's105',
-        classroom_name: 'Database Systems',
+        classroom_name: 'This Classroom',
         session_date: '2026-03-01',
         confidence: 45,
         status: 'rejected',
@@ -80,7 +82,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f6',
         student_name: 'Isuru Wickramasinghe',
         student_id: 's106',
-        classroom_name: 'Advance Client Side',
+        classroom_name: 'This Classroom',
         session_date: '2026-03-01',
         confidence: 35,
         status: 'pending',
@@ -90,7 +92,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f7',
         student_name: 'Hiruni Dissanayake',
         student_id: 's107',
-        classroom_name: 'Algorithms',
+        classroom_name: 'This Classroom',
         session_date: '2026-02-28',
         confidence: 48,
         status: 'pending',
@@ -100,7 +102,7 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         id: 'f8',
         student_name: 'Sasanka Gunasekara',
         student_id: 's108',
-        classroom_name: 'Database Systems',
+        classroom_name: 'This Classroom',
         session_date: '2026-02-28',
         confidence: 33,
         status: 'rejected',
@@ -154,6 +156,7 @@ const statusBadge = (status: FlaggedRecord['status']) => {
 const ManualReviewPage: React.FC = () => {
     const { logout, user } = useAuth();
     const navigate = useNavigate();
+    const { classroomId } = useParams<{ classroomId: string }>();
 
     const [records, setRecords] = useState<FlaggedRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -161,6 +164,7 @@ const ManualReviewPage: React.FC = () => {
     const [activeFilter, setActiveFilter] = useState<StatusFilter>('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [classroomName, setClassroomName] = useState('');
 
     // Teacher-only guard — redirect students to dashboard
     useEffect(() => {
@@ -168,6 +172,20 @@ const ManualReviewPage: React.FC = () => {
             navigate('/dashboard');
         }
     }, [user, navigate]);
+
+    // Fetch classroom name
+    useEffect(() => {
+        const fetchClassroomName = async () => {
+            if (!classroomId) return;
+            try {
+                const cls = await getClassroom(classroomId);
+                setClassroomName(cls.name);
+            } catch {
+                setClassroomName('Classroom');
+            }
+        };
+        fetchClassroomName();
+    }, [classroomId]);
 
     // Toast state
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -284,6 +302,22 @@ const ManualReviewPage: React.FC = () => {
 
                 <div className="lg:hidden h-16" />
 
+                {/* ── Back Button ────────────────────────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative z-10 mb-4"
+                >
+                    <button
+                        onClick={() => navigate(`/dashboard/classroom/${classroomId}`)}
+                        className="flex items-center gap-2 text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 transition-colors duration-200 text-sm font-medium"
+                    >
+                        <ArrowLeft size={16} />
+                        <span>Back to Classroom</span>
+                    </button>
+                </motion.div>
+
                 {/* ── Page Header ──────────────────────────────────────────── */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -300,7 +334,7 @@ const ManualReviewPage: React.FC = () => {
                                 Manual Review
                             </h1>
                             <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-                                Review and resolve flagged attendance records.
+                                {classroomName ? `Flagged records for ${classroomName}` : 'Review and resolve flagged attendance records.'}
                             </p>
                         </div>
                     </div>

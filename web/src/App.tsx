@@ -140,9 +140,9 @@ const App: React.FC = () => {
                                     }
                                 />
 
-                                {/* Manual Review Route */}
+                                {/* Manual Review Route (per-classroom) */}
                                 <Route
-                                    path="/manual-review"
+                                    path="/manual-review/:classroomId"
                                     element={
                                         <ProtectedRoute>
                                             <ManualReviewPage />
