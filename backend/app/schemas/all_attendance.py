@@ -84,3 +84,20 @@ class PaginatedHistoryResponse(BaseModel):
     page: int
     size: int
     pages: int
+
+class FlaggedRecordItem(BaseModel):
+    session_id: str
+    classroom_id: str
+    student_id: Optional[str] = None
+    student_name: str = "Unknown"
+    classroom_name: str = "Unknown Classroom"
+    status: str
+    confidence: Optional[float] = None
+    timestamp: datetime
+
+class PaginatedFlaggedResponse(BaseModel):
+    items: List[FlaggedRecordItem]
+    total: int
+    page: int
+    size: int
+    pages: int
