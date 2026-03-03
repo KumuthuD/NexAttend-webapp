@@ -366,4 +366,63 @@ export const getStudentMotivationData = async (
     return response.data.classroom_progress || {};
 };
 
+// --- Calendar Events ---
+
+export interface CalendarEvent {
+    id: string;
+    user_id: string;
+    title: string;
+    date: string;       // YYYY-MM-DD
+    start_time: string;  // HH:MM
+    end_time: string;    // HH:MM
+    location?: string;
+    type: 'class' | 'meeting' | 'deadline';
+    color: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CalendarEventCreate {
+    title: string;
+    date: string;
+    start_time: string;
+    end_time: string;
+    location?: string;
+    type: string;
+    color?: string;
+}
+
+export interface CalendarEventUpdate {
+    title?: string;
+    date?: string;
+    start_time?: string;
+    end_time?: string;
+    location?: string;
+    type?: string;
+    color?: string;
+}
+
+export const getEvents = async (month?: number, year?: number): Promise<CalendarEvent[]> => {
+    const params: any = {};
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await api.get<any[]>('/api/v1/events', { params });
+    return response.data.map((e: any) => ({ ...e, id: e._id || e.id }));
+};
+
+export const createCalendarEvent = async (data: CalendarEventCreate): Promise<CalendarEvent> => {
+    const response = await api.post<any>('/api/v1/events', data);
+    return { ...response.data, id: response.data._id || response.data.id };
+};
+
+export const updateCalendarEvent = async (eventId: string, data: CalendarEventUpdate): Promise<CalendarEvent> => {
+    const response = await api.put<any>(`/api/v1/events/${eventId}`, data);
+    return { ...response.data, id: response.data._id || response.data.id };
+};
+
+export const deleteCalendarEvent = async (eventId: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/events/${eventId}`);
+    return response.data;
+};
+
 export default api;
