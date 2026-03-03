@@ -92,6 +92,8 @@ class FlaggedRecordItem(BaseModel):
     student_name: str = "Unknown"
     classroom_name: str = "Unknown Classroom"
     status: str
+    is_flagged: bool = False
+    flag_reason: Optional[str] = None
     confidence: Optional[float] = None
     timestamp: datetime
 

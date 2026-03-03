@@ -566,11 +566,15 @@ async def get_flagged_records(
     skip = (page - 1) * limit
     
     # Base match pipeline to find sessions containing at least one flagged record
-    flagged_statuses = ["suspicious", "spoof", "low_confidence", "flagged"]
-    
+    # Support both Sudam's status check and Kumuthu's is_flagged boolean
     pipeline = [
         {"$unwind": "$records"},
-        {"$match": {"records.status": {"$in": flagged_statuses}}}
+        {"$match": {
+            "$or": [
+                {"records.status": {"$in": ["suspicious", "spoof", "low_confidence", "flagged"]}},
+                {"records.is_flagged": True}
+            ]
+        }}
     ]
     
     # Get total count first
@@ -617,6 +621,8 @@ async def get_flagged_records(
             "student_name": student_name,
             "classroom_name": classroom_name,
             "status": record.get("status", "unknown"),
+            "is_flagged": record.get("is_flagged", False),
+            "flag_reason": record.get("flag_reason"),
             "confidence": record.get("confidence"),
             "timestamp": record.get("timestamp", datetime.utcnow())
         })
