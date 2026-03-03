@@ -11,6 +11,8 @@ class AttendanceRecord(BaseModel):
     status: str = Field(..., description="Attendance status (present, absent, late)")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     confidence: Optional[float] = Field(None, description="AI confidence score for face recognition")
+    is_flagged: bool = Field(False, description="True if confidence is below LOW_CONFIDENCE_FLAG_THRESHOLD — needs manual review")
+    flag_reason: Optional[str] = Field(None, description="Why this record was flagged, e.g. 'low_confidence'")
 
     class Config:
         json_schema_extra = {

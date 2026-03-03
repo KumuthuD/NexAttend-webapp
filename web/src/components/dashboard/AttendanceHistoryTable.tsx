@@ -25,7 +25,7 @@ const SkeletonRow = ({ index }: { index: number }) => (
         className="border-b border-gray-100 dark:border-white/[0.05]"
     >
         {[1, 2, 3, 4].map((col) => (
-            <td key={col} className={`px-4 py-4 ${col === 4 ? 'hidden sm:table-cell' : ''}`}>
+            <td key={col} className="px-4 py-4">
                 <div className="h-4 bg-gray-100 dark:bg-white/[0.06] rounded-lg animate-pulse" />
             </td>
         ))}
@@ -58,12 +58,11 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     isLoading = false,
     className = '',
 }) => {
-    const COLUMNS = ['Date', 'Present Students', 'Percentage'];
+    const COLUMNS = ['Date', 'Classroom', 'Present Students', 'Percentage'];
 
     return (
-        <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`} >
-            {/* Table header */}
-            < div className="overflow-x-auto" >
+        <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`}>
+            <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-gray-100 dark:border-white/[0.06] bg-gray-50/60 dark:bg-white/[0.02]">
@@ -87,7 +86,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                         {/* Empty state */}
                         {!isLoading && records.length === 0 && (
                             <tr>
-                                <td colSpan={3} className="px-5 py-16 text-center">
+                                <td colSpan={4} className="px-5 py-16 text-center">
                                     <div className="flex flex-col items-center gap-3">
                                         <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
                                             <BookOpen className="w-6 h-6 text-violet-500 dark:text-violet-400" />
@@ -116,11 +115,21 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                                     </div>
                                 </td>
 
+                                {/* Classroom Name */}
+                                <td className="px-4 py-4">
+                                    <div className="flex items-center gap-2">
+                                        <BookOpen className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400 flex-shrink-0" />
+                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[160px]">
+                                            {record.classroom_name}
+                                        </span>
+                                    </div>
+                                </td>
+
                                 {/* Marked Students */}
                                 <td className="px-4 py-4">
                                     <div className="flex items-center gap-1.5">
                                         <span className="font-semibold text-gray-900 dark:text-white">
-                                            {record.presentCount} Students
+                                            {record.presentCount}/{record.totalCount} Students
                                         </span>
                                     </div>
                                 </td>
@@ -133,19 +142,17 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                         ))}
                     </tbody>
                 </table>
-            </div >
+            </div>
 
             {/* Footer row count */}
-            {
-                !isLoading && records.length > 0 && (
-                    <div className="px-5 py-3 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/40 dark:bg-white/[0.01]">
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
-                            Showing <span className="font-semibold text-gray-600 dark:text-gray-300">{records.length}</span> record{records.length !== 1 ? 's' : ''}
-                        </p>
-                    </div>
-                )
-            }
-        </div >
+            {!isLoading && records.length > 0 && (
+                <div className="px-5 py-3 border-t border-gray-100 dark:border-white/[0.06] bg-gray-50/40 dark:bg-white/[0.01]">
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                        Showing <span className="font-semibold text-gray-600 dark:text-gray-300">{records.length}</span> record{records.length !== 1 ? 's' : ''}
+                    </p>
+                </div>
+            )}
+        </div>
     );
 };
 
