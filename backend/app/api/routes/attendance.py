@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends, BackgroundTasks
 from app.database.mongodb import get_database
+from app.services.anomaly_service import check_anomaly
 from app.services.email_service import email_service
 from app.models.attendance import AttendanceSession, AttendanceRecord
 from app.schemas.all_attendance import (
@@ -204,10 +205,13 @@ async def mark_attendance(
         )
 
     # 4. Create Record
+    anomaly = check_anomaly(request.confidence or 0.0, request.student_id)
     record = AttendanceRecord(
         student_id=request.student_id,
         status="present",
         confidence=request.confidence,
+        is_flagged=anomaly["is_flagged"],
+        flag_reason=anomaly["flag_reason"],
         method=request.method,
         timestamp=datetime.utcnow()
     )
@@ -319,10 +323,13 @@ async def batch_mark_attendance(
             skipped_count += 1
             continue
             
+        anomaly = check_anomaly(student_req.confidence or 0.0, student_id)
         record = AttendanceRecord(
             student_id=student_id,
             status="present",
             confidence=student_req.confidence,
+            is_flagged=anomaly["is_flagged"],
+            flag_reason=anomaly["flag_reason"],
             method=student_req.method,
             timestamp=datetime.utcnow()
         )

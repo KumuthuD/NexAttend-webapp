@@ -6,6 +6,8 @@ class AttendanceRecordBase(BaseModel):
     student_id: str
     status: str
     confidence: Optional[float] = None
+    is_flagged: bool = False
+    flag_reason: Optional[str] = None
 
 class AttendanceRecordCreate(AttendanceRecordBase):
     pass
