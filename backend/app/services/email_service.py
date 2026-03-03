@@ -97,6 +97,142 @@ class EmailService:
             except Exception as log_err:
                 logger.error(f"Failed to create email log entry: {log_err}")
 
+    async def send_class_join_confirmation(self, email: str, student_name: str, class_name: str, date_time: datetime):
+        if not email:
+            logger.warning("No email provided. Cannot send class join confirmation.")
+            return False
+
+        status_val = "failed"
+        error_message = None
+
+        if not settings.SMTP_HOST or not settings.SMTP_USER:
+            error_message = "SMTP configuration is missing"
+            logger.warning(f"{error_message}. Cannot send email.")
+            return False
+            
+        if not self.env:
+            error_message = "Jinja2 Environment not initialized"
+            logger.error(f"{error_message}. Cannot send email.")
+            return False
+            
+        try:
+            template = self.env.get_template("class_join_confirmation.html")
+            
+            # Format datetime safely
+            if isinstance(date_time, datetime):
+                formatted_date_time = date_time.strftime("%B %d, %Y")
+            else:
+                formatted_date_time = str(date_time)
+            
+            html_content = template.render(
+                student_name=student_name,
+                class_name=class_name,
+                date_time=formatted_date_time,
+                dashboard_link="https://nexattend.com/dashboard"
+            )
+            
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"Welcome to {class_name}"
+            msg["From"] = settings.FROM_EMAIL
+            msg["To"] = email
+            
+            msg.attach(MIMEText(html_content, "html"))
+            
+            def _send():
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    if settings.SMTP_HOST != "localhost" and settings.SMTP_PORT != 1025:
+                        server.starttls()
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+            
+            await asyncio.to_thread(_send)
+                
+            logger.info(f"Class join confirmation email sent to {email}")
+            status_val = "sent"
+            return True
+            
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Failed to send email to {email}: {e}")
+            logger.debug(traceback.format_exc())
+            return False
+        finally:
+            try:
+                log_entry = EmailLog(
+                    recipient_email=email,
+                    subject=f"Welcome to {class_name}",
+                    template_used="class_join_confirmation",
+                    status=status_val,
+                    error_message=error_message
+                )
+                await self._save_log(log_entry)
+            except Exception as log_err:
+                logger.error(f"Failed to create email log entry: {log_err}")
+
+    async def send_profile_update_confirmation(self, email: str, student_name: str):
+        if not email:
+            logger.warning("No email provided. Cannot send profile update confirmation.")
+            return False
+
+        status_val = "failed"
+        error_message = None
+
+        if not settings.SMTP_HOST or not settings.SMTP_USER:
+            error_message = "SMTP configuration is missing"
+            logger.warning(f"{error_message}. Cannot send email.")
+            return False
+            
+        if not self.env:
+            error_message = "Jinja2 Environment not initialized"
+            logger.error(f"{error_message}. Cannot send email.")
+            return False
+            
+        try:
+            template = self.env.get_template("profile_update_confirmation.html")
+            
+            html_content = template.render(
+                student_name=student_name,
+                dashboard_link="https://nexattend.com/dashboard"
+            )
+            
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = "Profile Update Confirmation"
+            msg["From"] = settings.FROM_EMAIL
+            msg["To"] = email
+            
+            msg.attach(MIMEText(html_content, "html"))
+            
+            def _send():
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    if settings.SMTP_HOST != "localhost" and settings.SMTP_PORT != 1025:
+                        server.starttls()
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+            
+            await asyncio.to_thread(_send)
+                
+            logger.info(f"Profile update confirmation email sent to {email}")
+            status_val = "sent"
+            return True
+            
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Failed to send email to {email}: {e}")
+            logger.debug(traceback.format_exc())
+            return False
+        finally:
+            try:
+                log_entry = EmailLog(
+                    recipient_email=email,
+                    subject="Profile Update Confirmation",
+                    template_used="profile_update_confirmation",
+                    status=status_val,
+                    error_message=error_message
+                )
+                await self._save_log(log_entry)
+            except Exception as log_err:
+                logger.error(f"Failed to create email log entry: {log_err}")
+
     async def _save_log(self, log_data: EmailLog):
         """
         Internal helper to save an email log to MongoDB.

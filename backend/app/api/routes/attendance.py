@@ -12,8 +12,8 @@ from app.schemas.all_attendance import (
     AttendanceBatchRecord,
     PaginatedHistoryResponse
 )
-from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
+from app.models.notification import Notification
 from typing import Any, List, Optional
 from datetime import datetime
 from bson import ObjectId
@@ -67,6 +67,15 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
                 class_name=class_name,
                 date_time=date_str
             )
+        
+        # Also create in-app notification
+        notification = Notification(
+            user_id=sid,
+            title="Attendance Marked",
+            message=f"Your attendance was marked for {class_name} on {date_str}.",
+            type="info"
+        )
+        await db["notifications"].insert_one(notification.model_dump(by_alias=True))
 
 async def update_motivation_scores(db: Any, classroom_id: str, student_ids: List[str]):
     """
@@ -229,13 +238,24 @@ async def mark_attendance(
         if student.get("email"):
             classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
             classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+            date_time = datetime.utcnow()
             background_tasks.add_task(
                 email_service.send_attendance_confirmation,
                 student["email"],
                 student.get("full_name", student.get("name", "Student")),
                 classroom_name,
-                datetime.utcnow()
+                date_time
             )
+            
+            # Create notification
+            date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+            notification = Notification(
+                user_id=request.student_id,
+                title="Attendance Marked",
+                message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                type="info"
+            )
+            await db["notifications"].insert_one(notification.model_dump(by_alias=True))
     except Exception as e:
         pass
         
@@ -344,6 +364,9 @@ async def batch_mark_attendance(
                         students.append(u)
                 classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
                 classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+                date_time = datetime.utcnow()
+                date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+                
                 for student in students:
                     if student.get("email"):
                         background_tasks.add_task(
@@ -351,8 +374,17 @@ async def batch_mark_attendance(
                             student["email"],
                             student.get("full_name", student.get("name", "Student")),
                             classroom_name,
-                            datetime.utcnow()
+                            date_time
                         )
+                        
+                    # Create notification
+                    notification = Notification(
+                        user_id=str(student.get("_id")),
+                        title="Attendance Marked",
+                        message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                        type="info"
+                    )
+                    await db["notifications"].insert_one(notification.model_dump(by_alias=True))
         except Exception as e:
             pass
             

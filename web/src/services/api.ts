@@ -425,4 +425,43 @@ export const deleteCalendarEvent = async (eventId: string): Promise<{ message: s
     return response.data;
 };
 
+// --- Notifications ---
+
+export type NotificationType = 'info' | 'success' | 'warning' | 'error';
+
+export interface AppNotification {
+    id: string;
+    user_id: string;
+    title: string;
+    message: string;
+    type: NotificationType;
+    read: boolean;
+    created_at: string;
+}
+
+export const getNotifications = async (): Promise<AppNotification[]> => {
+    const response = await api.get<AppNotification[]>('/api/v1/notifications');
+    return response.data;
+};
+
+export const markNotificationRead = async (id: string): Promise<AppNotification> => {
+    const response = await api.put<AppNotification>(`/api/v1/notifications/${id}/read`);
+    return response.data;
+};
+
+export const markAllNotificationsRead = async (): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>('/api/v1/notifications/read-all');
+    return response.data;
+};
+
+export const deleteNotification = async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/api/v1/notifications/${id}`);
+    return response.data;
+};
+
+export const clearAllNotifications = async (): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>('/api/v1/notifications');
+    return response.data;
+};
+
 export default api;
