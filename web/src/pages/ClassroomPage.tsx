@@ -18,6 +18,7 @@ interface Student {
     time: string;
     status: 'present' | 'late';
     avatar?: string;
+    isFlagged?: boolean;
 }
 
 const ClassroomPage: React.FC = () => {
@@ -163,7 +164,8 @@ const ClassroomPage: React.FC = () => {
                 name: student.full_name,
                 time: timeString,
                 status: 'present',
-                avatar: undefined // Backend might provide this later
+                avatar: undefined, // Backend might provide this later
+                isFlagged: face.is_flagged || (face.confidence !== undefined && face.confidence < 0.6)
             }, ...prev];
         });
     };
