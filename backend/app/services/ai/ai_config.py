@@ -1,6 +1,7 @@
 """Viraj Jayasiri - Week 04 Day 18
 Updated: Week 05 Day 22 - added speed optimization constants
-Updated: Week 05 Day 23 - added face quality check constants"""
+Updated: Week 05 Day 23 - added face quality check constants
+Updated: Week 06 Day 26 - anomaly_detector.py uses these thresholds (no changes here)"""
 
 # AI Configuration
 
