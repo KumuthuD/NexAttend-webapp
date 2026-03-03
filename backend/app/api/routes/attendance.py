@@ -10,7 +10,8 @@ from app.schemas.all_attendance import (
     AttendanceBatchMarkRequest,
     AttendanceBatchMarkResponse,
     AttendanceBatchRecord,
-    PaginatedHistoryResponse
+    PaginatedHistoryResponse,
+    PaginatedFlaggedResponse
 )
 from app.models.logs import RecognitionLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
@@ -505,6 +506,84 @@ async def get_classroom_attendance_history(
     
     return {
         "items": sessions,
+        "total": total,
+        "page": page,
+        "size": limit,
+        "pages": pages
+    }
+
+@router.get("/flagged", response_model=PaginatedFlaggedResponse)
+async def get_flagged_records(
+    page: int = 1,
+    limit: int = 20,
+    db: Any = Depends(get_database)
+):
+    """
+    Retrieve all flagged anomalous attendance records across all sessions.
+    This includes spoof attempts, low confidence matches, or internally flagged entries.
+    """
+    import math
+
+    skip = (page - 1) * limit
+    
+    # Base match pipeline to find sessions containing at least one flagged record
+    flagged_statuses = ["suspicious", "spoof", "low_confidence", "flagged"]
+    
+    pipeline = [
+        {"$unwind": "$records"},
+        {"$match": {"records.status": {"$in": flagged_statuses}}}
+    ]
+    
+    # Get total count first
+    count_pipeline = pipeline + [{"$count": "total_count"}]
+    count_result = await db["attendance_sessions"].aggregate(count_pipeline).to_list(1)
+    total = count_result[0]["total_count"] if count_result else 0
+    pages = math.ceil(total / limit) if limit > 0 else 0
+
+    # Main query pipeline
+    query_pipeline = pipeline + [
+        {"$sort": {"records.timestamp": -1}},
+        {"$skip": skip},
+        {"$limit": limit}
+    ]
+    
+    docs = await db["attendance_sessions"].aggregate(query_pipeline).to_list(length=limit)
+    
+    # We resolve the names in Python for simplicity and multi-collection support
+    items = []
+    
+    for doc in docs:
+        record = doc.get("records", {})
+        
+        # Resolve classroom name
+        classroom_id = doc.get("classroom_id")
+        classroom_name = "Unknown Classroom"
+        if classroom_id:
+            classroom = await db["classrooms"].find_one({"_id": classroom_id})
+            if classroom:
+                classroom_name = classroom.get("course_name", classroom.get("name", "Unknown Classroom"))
+
+        # Resolve student name
+        student_id = record.get("student_id")
+        student_name = "Unknown"
+        if student_id:
+            user = await _find_user_or_student(db, student_id)
+            if user:
+                student_name = user.get("full_name", user.get("name", "Unknown"))
+                
+        items.append({
+            "session_id": str(doc.get("_id", "")),
+            "classroom_id": str(classroom_id) if classroom_id else "",
+            "student_id": student_id,
+            "student_name": student_name,
+            "classroom_name": classroom_name,
+            "status": record.get("status", "unknown"),
+            "confidence": record.get("confidence"),
+            "timestamp": record.get("timestamp", datetime.utcnow())
+        })
+        
+    return {
+        "items": items,
         "total": total,
         "page": page,
         "size": limit,
