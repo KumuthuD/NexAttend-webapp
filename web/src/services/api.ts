@@ -351,4 +351,41 @@ export const getStudentMotivationData = async (
     return response.data.classroom_progress || {};
 };
 
+// --- Flagged Attendance Records (Day 26 - Thiviru) ---
+
+export interface FlaggedRecord {
+    id: string;
+    student_name: string;
+    student_id: string;
+    classroom_name: string;
+    session_date: string;
+    confidence: number;
+    status: 'pending' | 'approved' | 'rejected';
+    flagged_reason: string;
+    image_url?: string;
+}
+
+/**
+ * Fetches all flagged attendance records.
+ * Falls back to mock data when the backend endpoint is not available.
+ */
+export const getFlaggedRecords = async (): Promise<FlaggedRecord[]> => {
+    const response = await api.get<FlaggedRecord[]>('/api/v1/attendance/flagged');
+    return response.data;
+};
+
+/**
+ * Approve or reject a flagged attendance record.
+ */
+export const updateFlaggedRecord = async (
+    recordId: string,
+    action: 'approve' | 'reject'
+): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>(
+        `/api/v1/attendance/flagged/${recordId}`,
+        { action }
+    );
+    return response.data;
+};
+
 export default api;

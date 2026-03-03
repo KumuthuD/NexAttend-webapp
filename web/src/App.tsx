@@ -16,6 +16,7 @@ import ProfilePage from './pages/ProfilePage';
 import SupportPage from './pages/SupportPage';
 import AttendanceHistoryPage from './pages/AttendanceHistoryPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import ManualReviewPage from './pages/ManualReviewPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import SplashScreen from './components/common/SplashScreen';
 
@@ -135,6 +136,16 @@ const App: React.FC = () => {
                                     element={
                                         <ProtectedRoute>
                                             <AnalyticsPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+
+                                {/* Manual Review Route */}
+                                <Route
+                                    path="/manual-review"
+                                    element={
+                                        <ProtectedRoute>
+                                            <ManualReviewPage />
                                         </ProtectedRoute>
                                     }
                                 />
