@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Clock } from 'lucide-react';
+import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 interface Student {
     id: string;
@@ -7,6 +7,7 @@ interface Student {
     time: string;
     status: 'present' | 'late';
     avatar?: string;
+    isFlagged?: boolean;
 }
 
 interface AttendanceListProps {
@@ -73,12 +74,20 @@ const AttendanceList: React.FC<AttendanceListProps> = ({ students }) => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 ${student.status === 'present'
-                                    ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
-                                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400'
-                                    }`}>
-                                    <CheckCircle size={12} />
-                                    {student.status === 'present' ? 'Present' : 'Late'}
+                                <div className="flex items-center gap-2">
+                                    {student.isFlagged && (
+                                        <div className="px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400">
+                                            <AlertTriangle size={12} />
+                                            Flagged
+                                        </div>
+                                    )}
+                                    <div className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 ${student.status === 'present'
+                                        ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+                                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400'
+                                        }`}>
+                                        <CheckCircle size={12} />
+                                        {student.status === 'present' ? 'Present' : 'Late'}
+                                    </div>
                                 </div>
                             </motion.div>
                         ))
