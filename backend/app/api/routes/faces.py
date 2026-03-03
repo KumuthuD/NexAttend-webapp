@@ -10,6 +10,7 @@ Viraj Jayasiri - Week 04 Day 16 (Low-light optimization)
 """
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status, BackgroundTasks
+from app.services.anomaly_service import check_anomaly
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.services.face_detector import FaceDetector
@@ -269,6 +270,7 @@ async def recognize_faces(
 
     #convert distance to confidence (lower distance = higher confidence)
             confidence = round(max(0.0, 1.0 - distance), 4)
+            anomaly = check_anomaly(confidence, str(best_user["_id"]) if best_user else None)
 
             if best_user:
                 results.append({
@@ -281,6 +283,8 @@ async def recognize_faces(
                         "email": best_user.get("email", "")
                     },
                     "similarity": confidence,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "identified"
                 })
             else:
@@ -290,6 +294,8 @@ async def recognize_faces(
                     "matched": False,
                     "student": None,
                     "similarity": confidence,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "unknown"
                 })
 
@@ -439,6 +445,7 @@ async def recognize_multi_faces(
                     continue
 
                 matched_student_ids.append(student_id)
+                anomaly = check_anomaly(similarity, student_id)
                 results.append({
                     "box": [int(c) for c in face['box']],
                     "detection_confidence": float(face['confidence']),
@@ -449,16 +456,21 @@ async def recognize_multi_faces(
                         "email": best_user.get("email", "")
                     },
                     "similarity": similarity,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "identified",
                     "attendance": "pending"
                 })
             else:
+                anomaly = check_anomaly(similarity, "Unknown")
                 results.append({
                     "box": [int(c) for c in face['box']],
                     "detection_confidence": float(face['confidence']),
                     "matched": False,
                     "student": None,
                     "similarity": similarity,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "unknown",
                     "attendance": "skipped"
                 })
@@ -516,6 +528,8 @@ async def recognize_multi_faces(
                                 "student_id": sid,
                                 "status": "present",
                                 "confidence": result["similarity"],
+                                "is_flagged": result.get("is_flagged", False),
+                                "flag_reason": result.get("flag_reason"),
                                 "method": "face_recognition",
                                 "timestamp": datetime.utcnow()
                             })
