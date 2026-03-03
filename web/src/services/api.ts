@@ -168,6 +168,88 @@ export const getAttendanceHistory = async (classroomId?: string): Promise<Attend
     return response.data;
 };
 
+// ── Real-data attendance history (per-classroom, paginated) ───────────────────
+
+export interface AttendanceSessionRecord {
+    student_id: string;
+    status: string;
+    confidence?: number;
+    timestamp: string;
+}
+
+export interface AttendanceSessionDetail {
+    _id: string;
+    classroom_id: string;
+    session_date: string;
+    start_time: string;
+    end_time?: string;
+    status: 'active' | 'completed';
+    present_student_ids: string[];
+    records: AttendanceSessionRecord[];
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PaginatedHistoryResponse {
+    items: AttendanceSessionDetail[];
+    total: number;
+    page: number;
+    size: number;
+    pages: number;
+}
+
+/**
+ * Fetch paginated attendance history for a specific classroom.
+ * Backend: GET /api/v1/attendance/classroom/{classroom_id}/history
+ */
+export const getClassroomAttendanceHistory = async (
+    classroomId: string,
+    page = 1,
+    limit = 50
+): Promise<PaginatedHistoryResponse> => {
+    const response = await api.get<PaginatedHistoryResponse>(
+        `/api/v1/attendance/classroom/${classroomId}/history`,
+        { params: { page, limit } }
+    );
+    return response.data;
+};
+
+/**
+ * Fetch attendance history across ALL of the teacher's classrooms.
+ * 1) Fetches teacher's classrooms
+ * 2) For each classroom, fetches attendance sessions
+ * 3) Merges, enriches with classroom name + student counts, sorts by date (newest first)
+ */
+export const getTeacherAttendanceHistory = async (): Promise<AttendanceRecord[]> => {
+    // Step 1 — get teacher's classrooms
+    const classrooms = await getClassrooms();
+
+    // Step 2 — fetch history for each classroom in parallel
+    const historyPromises = classrooms.map(async (cls) => {
+        try {
+            const history = await getClassroomAttendanceHistory(cls.id, 1, 50);
+            return history.items.map((session) => ({
+                id: session._id,
+                date: session.session_date,
+                classroom_name: cls.name,
+                session_label: `Session`,
+                presentCount: session.present_student_ids.length,
+                totalCount: cls.student_count || session.present_student_ids.length,
+            }));
+        } catch {
+            return [] as AttendanceRecord[];
+        }
+    });
+
+    const results = await Promise.all(historyPromises);
+
+    // Step 3 — merge and sort by date (newest first)
+    const merged = results.flat();
+    merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return merged;
+};
+
 // Auth API functions
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
     const response = await api.post<LoginResponse>('/api/v1/auth/login', {
@@ -283,20 +365,7 @@ export const getAttendanceSession = async (sessionId: string): Promise<Attendanc
     return response.data;
 };
 
-export interface AttendanceHistoryResponse {
-    items: AttendanceSession[];
-    total: number;
-    page: number;
-    size: number;
-    pages: number;
-}
 
-export const getClassroomAttendanceHistory = async (classroomId: string, page: number = 1, limit: number = 20): Promise<AttendanceHistoryResponse> => {
-    const response = await api.get<AttendanceHistoryResponse>(`/api/v1/attendance/classroom/${classroomId}/history`, {
-        params: { page, limit }
-    });
-    return response.data;
-};
 
 export interface DailyAttendanceStats {
     date: string;
@@ -364,6 +433,43 @@ export const getStudentMotivationData = async (
         `/api/v1/students/${studentId}`
     );
     return response.data.classroom_progress || {};
+};
+
+// --- Flagged Attendance Records (Day 26 - Thiviru) ---
+
+export interface FlaggedRecord {
+    id: string;
+    student_name: string;
+    student_id: string;
+    classroom_name: string;
+    session_date: string;
+    confidence: number;
+    status: 'pending' | 'approved' | 'rejected';
+    flagged_reason: string;
+    image_url?: string;
+}
+
+/**
+ * Fetches all flagged attendance records.
+ * Falls back to mock data when the backend endpoint is not available.
+ */
+export const getFlaggedRecords = async (): Promise<FlaggedRecord[]> => {
+    const response = await api.get<FlaggedRecord[]>('/api/v1/attendance/flagged');
+    return response.data;
+};
+
+/**
+ * Approve or reject a flagged attendance record.
+ */
+export const updateFlaggedRecord = async (
+    recordId: string,
+    action: 'approve' | 'reject'
+): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>(
+        `/api/v1/attendance/flagged/${recordId}`,
+        { action }
+    );
+    return response.data;
 };
 
 // --- Calendar Events ---

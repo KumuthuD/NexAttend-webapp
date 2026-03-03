@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw, Smile, Activity, Menu, LogOut, Trash2, AlertTriangle } from 'lucide-react';
+import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw, Smile, Activity, Menu, LogOut, Trash2, AlertTriangle, Flag } from 'lucide-react';
 import CameraCapture from '../components/common/WebcamCapture';
 import AttendanceList from '../components/classroom/AttendanceList';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
@@ -355,6 +355,15 @@ const ClassroomPage: React.FC = () => {
                                 >
                                     <History size={15} />
                                     {showHistory ? 'Hide History' : 'Attendance History'}
+                                </button>
+
+                                {/* Manual Review — per-classroom */}
+                                <button
+                                    onClick={() => navigate(`/manual-review/${id}`)}
+                                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border bg-white dark:bg-white/5 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-300 dark:hover:border-amber-500/30"
+                                >
+                                    <Flag size={15} />
+                                    Manual Review
                                 </button>
 
                                 {/* Mark Attendance */}
