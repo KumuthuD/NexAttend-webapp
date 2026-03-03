@@ -15,6 +15,7 @@ from app.schemas.all_attendance import (
     PaginatedFlaggedResponse
 )
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
+from app.schemas.attendance import AttendanceUpdateRequest
 from app.models.notification import Notification
 from typing import Any, List, Optional
 from datetime import datetime
@@ -551,86 +552,94 @@ async def get_classroom_attendance_history(
         "pages": pages
     }
 
-@router.get("/flagged", response_model=PaginatedFlaggedResponse)
-async def get_flagged_records(
-    page: int = 1,
-    limit: int = 20,
+@router.post("/update")
+async def update_attendance(
+    background_tasks: BackgroundTasks,
+    request: AttendanceUpdateRequest = Body(...),
     db: Any = Depends(get_database)
 ):
     """
-    Retrieve all flagged anomalous attendance records across all sessions.
-    This includes spoof attempts, low confidence matches, or internally flagged entries.
+    Manual attendance status update (Day 26 - Thisandu).
+    
+    Allows teachers to manually override a student's attendance status in an active or completed session.
+    - If status is 'present', it increments motivation scores.
+    - Updates are atomic and handle both existing and new records.
     """
-    import math
+    # 1. Verify Session exists
+    session = await db["attendance_sessions"].find_one({"_id": request.session_id})
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance session {request.session_id} not found"
+        )
+    
+    # 2. Verify Student exists
+    student = await db["students"].find_one({"_id": request.student_id})
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Student {request.student_id} not found"
+        )
 
-    skip = (page - 1) * limit
-    
-    # Base match pipeline to find sessions containing at least one flagged record
-    # Support both Sudam's status check and Kumuthu's is_flagged boolean
-    pipeline = [
-        {"$unwind": "$records"},
-        {"$match": {
-            "$or": [
-                {"records.status": {"$in": ["suspicious", "spoof", "low_confidence", "flagged"]}},
-                {"records.is_flagged": True}
-            ]
-        }}
-    ]
-    
-    # Get total count first
-    count_pipeline = pipeline + [{"$count": "total_count"}]
-    count_result = await db["attendance_sessions"].aggregate(count_pipeline).to_list(1)
-    total = count_result[0]["total_count"] if count_result else 0
-    pages = math.ceil(total / limit) if limit > 0 else 0
-
-    # Main query pipeline
-    query_pipeline = pipeline + [
-        {"$sort": {"records.timestamp": -1}},
-        {"$skip": skip},
-        {"$limit": limit}
-    ]
-    
-    docs = await db["attendance_sessions"].aggregate(query_pipeline).to_list(length=limit)
-    
-    # We resolve the names in Python for simplicity and multi-collection support
-    items = []
-    
-    for doc in docs:
-        record = doc.get("records", {})
+    # 3. Perform atomic update
+    try:
+        now = datetime.utcnow()
         
-        # Resolve classroom name
-        classroom_id = doc.get("classroom_id")
-        classroom_name = "Unknown Classroom"
-        if classroom_id:
-            classroom = await db["classrooms"].find_one({"_id": classroom_id})
-            if classroom:
-                classroom_name = classroom.get("course_name", classroom.get("name", "Unknown Classroom"))
+        # Helper for present_student_ids list
+        if request.new_status == "present":
+            array_op = {"$addToSet": {"present_student_ids": request.student_id}}
+        else:
+            array_op = {"$pull": {"present_student_ids": request.student_id}}
 
-        # Resolve student name
-        student_id = record.get("student_id")
-        student_name = "Unknown"
-        if student_id:
-            user = await _find_user_or_student(db, student_id)
-            if user:
-                student_name = user.get("full_name", user.get("name", "Unknown"))
-                
-        items.append({
-            "session_id": str(doc.get("_id", "")),
-            "classroom_id": str(classroom_id) if classroom_id else "",
-            "student_id": student_id,
-            "student_name": student_name,
-            "classroom_name": classroom_name,
-            "status": record.get("status", "unknown"),
-            "is_flagged": record.get("is_flagged", False),
-            "flag_reason": record.get("flag_reason"),
-            "confidence": record.get("confidence"),
-            "timestamp": record.get("timestamp", datetime.utcnow())
-        })
-        
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "size": limit,
-        "pages": pages
-    }
+        # Step 1: Try to update an existing record in the array
+        result = await db["attendance_sessions"].update_one(
+            {"_id": request.session_id, "records.student_id": request.student_id},
+            {
+                "$set": {
+                    "records.$.status": request.new_status,
+                    "records.$.timestamp": now,
+                    "updated_at": now
+                },
+                **array_op
+            }
+        )
+
+        # Step 2: If no existing record was found, push a new one
+        if result.matched_count == 0:
+            new_record = {
+                "student_id": request.student_id,
+                "status": request.new_status,
+                "timestamp": now,
+                "method": "manual"
+            }
+            await db["attendance_sessions"].update_one(
+                {"_id": request.session_id},
+                {
+                    "$push": {"records": new_record},
+                    "$set": {"updated_at": now},
+                    **array_op
+                }
+            )
+
+        # Trigger motivation score update if marked present
+        if request.new_status == "present":
+            background_tasks.add_task(
+                update_motivation_scores,
+                db,
+                session["classroom_id"],
+                [request.student_id]
+            )
+
+        # 4. Return the updated session
+        updated_session = await db["attendance_sessions"].find_one({"_id": request.session_id})
+        return {
+            "message": f"Attendance successfully updated to {request.new_status}",
+            "student": student.get("full_name", "Student"),
+            "session": updated_session
+        }
+    except Exception as e:
+        logger.error(f"Manual update failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update attendance record"
+        )
