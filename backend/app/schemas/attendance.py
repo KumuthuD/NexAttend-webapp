@@ -60,3 +60,12 @@ class AttendanceSessionResponse(AttendanceSessionBase):
     class Config:
         from_attributes = True
 
+class AttendanceReviewRequest(BaseModel):
+    """
+    Request model for approving/rejecting flagged attendance records (Day 27).
+    """
+    session_id: str
+    student_id: str
+    status: str = Field(..., description="Review action: approved, rejected")
+    remarks: Optional[str] = Field(None, description="Optional remarks for the review")
+

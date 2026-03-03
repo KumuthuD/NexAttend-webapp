@@ -13,6 +13,7 @@ class AttendanceRecord(BaseModel):
     confidence: Optional[float] = Field(None, description="AI confidence score for face recognition")
     is_flagged: bool = Field(False, description="True if confidence is below LOW_CONFIDENCE_FLAG_THRESHOLD — needs manual review")
     flag_reason: Optional[str] = Field(None, description="Why this record was flagged, e.g. 'low_confidence'")
+    review_status: str = Field("pending", description="Status of manual review: 'pending', 'approved', 'rejected'")
 
     class Config:
         json_schema_extra = {

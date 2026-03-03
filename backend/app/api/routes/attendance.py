@@ -15,7 +15,7 @@ from app.schemas.all_attendance import (
     PaginatedFlaggedResponse
 )
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
-from app.schemas.attendance import AttendanceUpdateRequest
+from app.schemas.attendance import AttendanceUpdateRequest, AttendanceReviewRequest
 from app.models.notification import Notification
 from typing import Any, List, Optional
 from datetime import datetime
@@ -643,3 +643,46 @@ async def update_attendance(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update attendance record"
         )
+
+@router.post("/review")
+async def review_attendance_record(
+    request: AttendanceReviewRequest = Body(...),
+    db: Any = Depends(get_database)
+):
+    """
+    Review a flagged attendance record (Day 27 - Sudam).
+    Allows administrators to approve or reject anomalies.
+    """
+    # 1. Verify Session exists
+    session = await db["attendance_sessions"].find_one({"_id": request.session_id})
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance session {request.session_id} not found"
+        )
+
+    # 2. Update the review_status in the records array
+    now = datetime.utcnow()
+    result = await db["attendance_sessions"].update_one(
+        {"_id": request.session_id, "records.student_id": request.student_id},
+        {
+            "$set": {
+                "records.$.review_status": request.status,
+                "records.$.is_flagged": False if request.status == "approved" else True,
+                "updated_at": now
+            }
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance record for student {request.student_id} not found in this session"
+        )
+
+    return {
+        "message": f"Record successfully {request.status}",
+        "session_id": request.session_id,
+        "student_id": request.student_id,
+        "review_status": request.status
+    }
