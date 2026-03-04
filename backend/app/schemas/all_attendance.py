@@ -86,6 +86,14 @@ class PaginatedHistoryResponse(BaseModel):
     size: int
     pages: int
 
+class AttendanceUpdateRequest(BaseModel):
+    """
+    Request model for manual attendance status updates (Day 26/27).
+    """
+    session_id: str
+    student_id: str
+    new_status: str = Field(..., description="Target status: present, absent, excused")
+    reason: Optional[str] = Field(None, description="Reason for manual override")
 class FlaggedRecordItem(BaseModel):
     session_id: str
     classroom_id: str

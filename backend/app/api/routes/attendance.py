@@ -12,6 +12,11 @@ from app.schemas.all_attendance import (
     AttendanceBatchMarkResponse,
     AttendanceBatchRecord,
     PaginatedHistoryResponse,
+    AttendanceUpdateRequest
+)
+from app.models.logs import RecognitionLog, AuditLog
+from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse, AuditLogCreate, AuditLogResponse
+from app.services.audit_service import audit_service
     PaginatedFlaggedResponse
 )
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
@@ -559,11 +564,11 @@ async def update_attendance(
     db: Any = Depends(get_database)
 ):
     """
-    Manual attendance status update (Day 26 - Thisandu).
+    Manual attendance status update (Day 26/27).
     
-    Allows teachers to manually override a student's attendance status in an active or completed session.
+    Allows teachers to manually override a student's attendance status.
     - If status is 'present', it increments motivation scores.
-    - Updates are atomic and handle both existing and new records.
+    - Records an audit log entry for the change (Commit 4).
     """
     # 1. Verify Session exists
     session = await db["attendance_sessions"].find_one({"_id": request.session_id})
@@ -574,14 +579,21 @@ async def update_attendance(
         )
     
     # 2. Verify Student exists
-    student = await db["students"].find_one({"_id": request.student_id})
+    student = await _find_user_or_student(db, request.student_id)
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Student {request.student_id} not found"
         )
 
-    # 3. Perform atomic update
+    # 3. Get old status for auditing
+    old_status = "unknown"
+    for record in session.get("records", []):
+        if record.get("student_id") == request.student_id:
+            old_status = record.get("status", "unknown")
+            break
+
+    # 4. Perform atomic update
     try:
         now = datetime.utcnow()
         
@@ -598,12 +610,14 @@ async def update_attendance(
                 "$set": {
                     "records.$.status": request.new_status,
                     "records.$.timestamp": now,
+                    "records.$.method": "manual",
                     "updated_at": now
                 },
                 **array_op
             }
         )
 
+        # Step 2: If no existing record was found (e.g. marking a previously absent student)
         # Step 2: If no existing record was found, push a new one
         if result.matched_count == 0:
             new_record = {
@@ -621,8 +635,21 @@ async def update_attendance(
                 }
             )
 
-        # Trigger motivation score update if marked present
-        if request.new_status == "present":
+        # 5. INTEGRATION: Record Audit Log (Commit 4)
+        # Note: In a real app, changed_by would come from the auth token
+        background_tasks.add_task(
+            audit_service.log_change,
+            db,
+            target_type="attendance",
+            target_id=f"{request.session_id}_{request.student_id}",
+            changed_by="admin_teacher", # Placeholder for auth implementation
+            old_value={"status": old_status},
+            new_value={"status": request.new_status},
+            reason=request.reason
+        )
+
+        # 6. Trigger motivation score update if marked present
+        if request.new_status == "present" and old_status != "present":
             background_tasks.add_task(
                 update_motivation_scores,
                 db,
@@ -630,11 +657,11 @@ async def update_attendance(
                 [request.student_id]
             )
 
-        # 4. Return the updated session
+        # 7. Return the updated session
         updated_session = await db["attendance_sessions"].find_one({"_id": request.session_id})
         return {
             "message": f"Attendance successfully updated to {request.new_status}",
-            "student": student.get("full_name", "Student"),
+            "student_name": student.get("full_name", student.get("name", "Student")),
             "session": updated_session
         }
     except Exception as e:
