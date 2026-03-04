@@ -6,6 +6,7 @@ and the AI configuration constants.
 
 Updated: Week 05 Day 24 - export quality check constants from Day 23
 Updated: Week 06 Day 26 - export AnomalyDetector
+Updated: Week 06 Day 27 - export ConfidenceCalibrator
 """
 
 from .camera_service import CameraService
@@ -15,6 +16,7 @@ from .single_face_recognition_service import (
     get_single_face_service
 )
 from .anomaly_detector import AnomalyDetector
+from .confidence_calibrator import ConfidenceCalibrator
 from .ai_config import (
     FACE_MODEL_NAME,
     FACE_DETECTION_MIN_CONFIDENCE,
@@ -61,6 +63,7 @@ __all__ = [
     'SingleFaceRecognitionService',
     'get_single_face_service',
     'AnomalyDetector',
+    'ConfidenceCalibrator',
     'LightingOptimizer',
     'lighting_optimizer',
     # ai config constants
