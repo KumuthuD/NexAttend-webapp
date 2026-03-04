@@ -175,18 +175,26 @@ async def login_user(user_in: UserLogin, db = Depends(get_database)):
         )
     )
 def get_google_user_info(token: str):
+    import requests
     try:
-        # Specify the CLIENT_ID of the app that accesses the backend:
-        idinfo = id_token.verify_oauth2_token(
-            token, 
-            google_requests.Request(), 
-            settings.GOOGLE_CLIENT_ID
-        )
-
-        # ID token is valid. Get the user's Google Account ID from the decoded token.
-        return idinfo
-    except ValueError:
-        # Invalid token
+        # Try as ID token first
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                settings.GOOGLE_CLIENT_ID
+            )
+            return idinfo
+        except ValueError:
+            # If ID token verification fails, try as Access Token
+            response = requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            if response.status_code == 200:
+                return response.json()
+            return None
+    except Exception:
         return None
 
 @router.post("/google", response_model=TokenResponse)

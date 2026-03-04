@@ -19,6 +19,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import ManualReviewPage from './pages/AttendanceReviewPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import SplashScreen from './components/common/SplashScreen';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Layout for marketing/public pages
 const MarketingLayout = () => {
@@ -46,124 +47,126 @@ const App: React.FC = () => {
 
     return (
         <ThemeProvider>
-            <AuthProvider>
-                <AnimatePresence mode="wait">
-                    {loading ? (
-                        <SplashScreen key="splash" />
-                    ) : (
-                        <Router key="router">
-                            <Routes>
-                                {/* Public / Marketing Routes */}
-                                <Route element={<MarketingLayout />}>
-                                    <Route path="/" element={<LandingPage />} />
-                                    <Route path="/get-started" element={<GetStartedPage />} />  
-                                </Route>
+            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
+                <AuthProvider>
+                    <AnimatePresence mode="wait">
+                        {loading ? (
+                            <SplashScreen key="splash" />
+                        ) : (
+                            <Router key="router">
+                                <Routes>
+                                    {/* Public / Marketing Routes */}
+                                    <Route element={<MarketingLayout />}>
+                                        <Route path="/" element={<LandingPage />} />
+                                        <Route path="/get-started" element={<GetStartedPage />} />
+                                    </Route>
 
-                                {/* Dashboard Route - Standalone Layout */}
-                                <Route
-                                    path="/dashboard"
-                                    element={
-                                        <ProtectedRoute>
-                                            <DashboardPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Dashboard Route - Standalone Layout */}
+                                    <Route
+                                        path="/dashboard"
+                                        element={
+                                            <ProtectedRoute>
+                                                <DashboardPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Calendar Route */}
-                                <Route
-                                    path="/calendar"
-                                    element={
-                                        <ProtectedRoute>
-                                            <CalendarPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Calendar Route */}
+                                    <Route
+                                        path="/calendar"
+                                        element={
+                                            <ProtectedRoute>
+                                                <CalendarPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
 
-                                {/* Classroom Route */}
-                                <Route
-                                    path="/dashboard/classroom/:id"
-                                    element={
-                                        <ProtectedRoute>
-                                            <ClassroomPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Classroom Route */}
+                                    <Route
+                                        path="/dashboard/classroom/:id"
+                                        element={
+                                            <ProtectedRoute>
+                                                <ClassroomPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Notification Route */}
-                                <Route
-                                    path="/notifications"
-                                    element={
-                                        <ProtectedRoute>
-                                            <NotificationPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Notification Route */}
+                                    <Route
+                                        path="/notifications"
+                                        element={
+                                            <ProtectedRoute>
+                                                <NotificationPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Support Route */}
-                                <Route
-                                    path="/support"
-                                    element={
-                                        <ProtectedRoute>
-                                            <SupportPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Support Route */}
+                                    <Route
+                                        path="/support"
+                                        element={
+                                            <ProtectedRoute>
+                                                <SupportPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Settings Route */}
-                                <Route
-                                    path="/settings"
-                                    element={
-                                        <ProtectedRoute>
-                                            <SettingsPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Settings Route */}
+                                    <Route
+                                        path="/settings"
+                                        element={
+                                            <ProtectedRoute>
+                                                <SettingsPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Attendance History Route */}
-                                <Route
-                                    path="/attendance-history"
-                                    element={
-                                        <ProtectedRoute>
-                                            <AttendanceHistoryPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Attendance History Route */}
+                                    <Route
+                                        path="/attendance-history"
+                                        element={
+                                            <ProtectedRoute>
+                                                <AttendanceHistoryPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Analytics Route */}
-                                <Route
-                                    path="/analytics"
-                                    element={
-                                        <ProtectedRoute>
-                                            <AnalyticsPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Analytics Route */}
+                                    <Route
+                                        path="/analytics"
+                                        element={
+                                            <ProtectedRoute>
+                                                <AnalyticsPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Manual Review Route (per-classroom) */}
-                                <Route
-                                    path="/manual-review/:classroomId"
-                                    element={
-                                        <ProtectedRoute>
-                                            <ManualReviewPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* Manual Review Route (per-classroom) */}
+                                    <Route
+                                        path="/manual-review/:classroomId"
+                                        element={
+                                            <ProtectedRoute>
+                                                <ManualReviewPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* Profile Route */}
-                                <Route
-                                    path="/profile"
-                                    element={
-                                        <ProtectedRoute>
-                                            <ProfilePage />
-                                        </ProtectedRoute>
-                                    }
-                                />
-                            </Routes>
-                        </Router>
-                    )}
-                </AnimatePresence>
-            </AuthProvider>
+                                    {/* Profile Route */}
+                                    <Route
+                                        path="/profile"
+                                        element={
+                                            <ProtectedRoute>
+                                                <ProfilePage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                </Routes>
+                            </Router>
+                        )}
+                    </AnimatePresence>
+                </AuthProvider>
+            </GoogleOAuthProvider>
         </ThemeProvider>
     );
 };
