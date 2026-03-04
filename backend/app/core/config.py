@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str | None = None
     FROM_EMAIL: str | None = "noreply@nexattend.com"
     
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str | None = None
+    
     class Config:
         case_sensitive = True
         env_file = ".env"

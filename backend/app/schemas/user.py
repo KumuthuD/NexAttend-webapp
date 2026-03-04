@@ -89,3 +89,7 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+class GoogleLogin(BaseModel):
+    token: str
+    role: Optional[str] = "teacher" # Default role for new users

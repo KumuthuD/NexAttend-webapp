@@ -24,3 +24,7 @@ certifi>=2024.2.2
 
 # Email
 sendgrid>=6.11.0
+
+# Google Auth
+google-auth>=2.23.0
+requests>=2.31.0
