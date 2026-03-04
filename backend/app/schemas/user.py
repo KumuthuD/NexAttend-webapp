@@ -59,6 +59,19 @@ class UserUpdate(BaseModel):
         }
     )
 
+class UserPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=6)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "current_password": "oldpassword123",
+                "new_password": "newsecurepassword123"
+            }
+        }
+    )
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
