@@ -1,10 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, CheckCircle, XCircle, BookOpen } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, XCircle, BookOpen, Flag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export interface AttendanceRecord {
     id: string;
     date: string;           // ISO date string e.g. "2026-02-18"
+    classroom_id?: string;
     classroom_name: string;
     presentCount: number;
     totalCount: number;
@@ -58,7 +61,9 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     isLoading = false,
     className = '',
 }) => {
-    const COLUMNS = ['Date', 'Classroom', 'Present Students', 'Percentage'];
+    const COLUMNS = ['Date', 'Classroom', 'Present Students', 'Percentage', ''];
+    const navigate = useNavigate();
+    const { user } = useAuth();
 
     return (
         <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`}>
@@ -86,7 +91,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                         {/* Empty state */}
                         {!isLoading && records.length === 0 && (
                             <tr>
-                                <td colSpan={4} className="px-5 py-16 text-center">
+                                <td colSpan={5} className="px-5 py-16 text-center">
                                     <div className="flex flex-col items-center gap-3">
                                         <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
                                             <BookOpen className="w-6 h-6 text-violet-500 dark:text-violet-400" />
@@ -137,6 +142,22 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                                 {/* Percentage */}
                                 <td className="px-4 py-4">
                                     <PercentageBar present={record.presentCount} total={record.totalCount} />
+                                </td>
+
+                                {/* Action */}
+                                <td className="px-4 py-4 content-center">
+                                    {user?.role === 'teacher' && record.classroom_id && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/manual-review/${record.classroom_id}`);
+                                            }}
+                                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-xs border bg-white dark:bg-white/5 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-300 dark:hover:border-amber-500/30 w-auto"
+                                            title="Manual Review"
+                                        >
+                                            <span>View List</span>
+                                        </button>
+                                    )}
                                 </td>
                             </motion.tr>
                         ))}

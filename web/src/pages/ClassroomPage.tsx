@@ -118,6 +118,7 @@ const ClassroomPage: React.FC = () => {
             const records: AttendanceRecord[] = data.items.map((session: any) => ({
                 id: session._id || session.id,
                 date: session.session_date ? session.session_date.split('T')[0] : '',
+                classroom_id: id,
                 classroom_name: classroomDetails?.name || '',
                 presentCount: session.present_student_ids?.length || 0,
                 totalCount: classroomDetails?.student_count || 0,
@@ -359,14 +360,6 @@ const ClassroomPage: React.FC = () => {
                                     {showHistory ? 'Hide History' : 'Attendance History'}
                                 </button>
 
-                                {/* Manual Review — per-classroom */}
-                                <button
-                                    onClick={() => navigate(`/manual-review/${id}`)}
-                                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border bg-white dark:bg-white/5 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-300 dark:hover:border-amber-500/30"
-                                >
-                                    <Flag size={15} />
-                                    Manual Review
-                                </button>
 
                                 {/* Mark Attendance */}
                                 <button
