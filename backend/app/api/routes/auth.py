@@ -183,9 +183,26 @@ async def authenticate_google(google_in: GoogleLogin, db = Depends(get_database)
         client_id = os.getenv("GOOGLE_CLIENT_ID", "dummy_client_id_for_dev.apps.googleusercontent.com")
         
         # Verify token
-        idinfo = id_token.verify_oauth2_token(
-            google_in.token, requests.Request(), client_id, clock_skew_in_seconds=10
-        )
+        try:
+            # Try as ID Token first
+            idinfo = id_token.verify_oauth2_token(
+                google_in.token, requests.Request(), client_id, clock_skew_in_seconds=10
+            )
+        except ValueError as e:
+            logger.info(f"Not an ID token, trying as access token: {e}")
+            # Try as Access Token by calling Google's userinfo endpoint
+            import requests as py_requests
+            userinfo_response = py_requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {google_in.token}"},
+                timeout=5
+            )
+            
+            if userinfo_response.status_code != 200:
+                logger.error(f"Google userinfo failed: {userinfo_response.text}")
+                raise ValueError("Invalid Google token")
+            
+            idinfo = userinfo_response.json()
 
         email = idinfo['email']
         name = idinfo.get('name', email.split('@')[0])
