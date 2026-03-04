@@ -124,7 +124,7 @@ const SettingsPage: React.FC = () => {
 
     const handleSavePassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
             showToast("Please fill in all password fields", "error");
             return;
@@ -137,15 +137,15 @@ const SettingsPage: React.FC = () => {
 
         setIsUpdatingPassword(true);
         try {
-             await updatePassword({
-                 current_password: passwordData.current,
-                 new_password: passwordData.new
-             });
-             showToast("Password updated successfully!");
-             setPasswordData({ current: '', new: '', confirm: '' });
+            await updatePassword({
+                current_password: passwordData.current,
+                new_password: passwordData.new
+            });
+            showToast("Password updated successfully!");
+            setPasswordData({ current: '', new: '', confirm: '' });
         } catch (error: any) {
-             console.error("Failed to update password", error);
-             showToast(error.response?.data?.detail || "Failed to update password", "error");
+            console.error("Failed to update password", error);
+            showToast(error.response?.data?.detail || "Failed to update password", "error");
         } finally {
             setIsUpdatingPassword(false);
         }
@@ -279,8 +279,8 @@ const SettingsPage: React.FC = () => {
                                                 </div>
 
                                                 <div className="text-center">
-                                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{user?.name}</h3>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{user?.role} Account</p>
+                                                    <h3 className="capitalize text-lg font-bold text-gray-900 dark:text-white">{user?.name}</h3>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
                                                 </div>
                                             </div>
 
@@ -322,7 +322,7 @@ const SettingsPage: React.FC = () => {
                                                         />
                                                         <p className="text-xs text-gray-500 mt-1">Email address cannot be changed</p>
                                                     </div>
-                                                    
+
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                         <div>
                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
@@ -601,7 +601,7 @@ const SettingsPage: React.FC = () => {
                     </div>
                 </div>
             </main>
-            
+
             {/* Toast Notification */}
             <AnimatePresence>
                 {toast && (
