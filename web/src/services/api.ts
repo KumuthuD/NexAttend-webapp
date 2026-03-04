@@ -37,6 +37,7 @@ export interface DashboardStats {
 export interface AttendanceRecord {
     id: string;
     date: string;
+    classroom_id?: string;
     classroom_name: string;
     session_label: string;
     presentCount: number;
@@ -231,6 +232,7 @@ export const getTeacherAttendanceHistory = async (): Promise<AttendanceRecord[]>
             return history.items.map((session) => ({
                 id: session._id,
                 date: session.session_date,
+                classroom_id: cls.id,
                 classroom_name: cls.name,
                 session_label: `Session`,
                 presentCount: session.present_student_ids.length,
