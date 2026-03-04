@@ -447,11 +447,11 @@ const SettingsPage: React.FC = () => {
                                         transition={{ duration: 0.4 }}
                                         className="space-y-6"
                                     >
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Security</h3>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Update Password</h3>
 
                                         <div className="flex flex-col lg:flex-row gap-10">
                                             {/* Left Side: Form */}
-                                            <div className="flex-1">
+                                            <div className="flex-1 mt-6">
                                                 <form onSubmit={handleSavePassword} className="space-y-4">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
@@ -508,13 +508,6 @@ const SettingsPage: React.FC = () => {
                                                         </button>
                                                     </div>
                                                 </form>
-
-                                                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/[0.06]">
-                                                    <button className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2">
-                                                        <LogOut size={16} />
-                                                        Sign out from all devices
-                                                    </button>
-                                                </div>
                                             </div>
 
                                             {/* Right Side: Illustration */}
