@@ -9,7 +9,6 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
     role: str = "teacher"
-    email_notifications: Optional[bool] = True
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -40,7 +39,6 @@ class UserResponse(BaseModel):
     date_of_birth: Optional[str] = None
     gender: Optional[str] = None
     created_at: Optional[str] = None
-    email_notifications: bool = True
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -49,7 +47,6 @@ class UserUpdate(BaseModel):
     avatar: Optional[str] = None
     date_of_birth: Optional[str] = None
     gender: Optional[str] = None
-    email_notifications: Optional[bool] = None
 
     model_config = ConfigDict(
         json_schema_extra={

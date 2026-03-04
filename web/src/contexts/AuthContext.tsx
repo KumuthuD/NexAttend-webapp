@@ -11,7 +11,6 @@ export interface User {
   date_of_birth?: string;
   gender?: string;
   created_at?: string;
-  email_notifications?: boolean;
 }
 
 interface AuthContextType {
@@ -19,7 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => Promise<void>;
-  updateUser: (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; email_notifications?: boolean; }) => Promise<void>;
+  updateUser: (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -49,10 +48,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const response = await loginUser(email, password);
-
+      
       // Store token
       localStorage.setItem('nexattend_token', response.access_token);
-
+      
       // Map API response to User format
       const newUser: User = {
         id: response.user.id,
@@ -63,9 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         date_of_birth: response.user.date_of_birth,
         gender: response.user.gender,
         created_at: response.user.created_at,
-        email_notifications: response.user.email_notifications,
       };
-
+      
       setUser(newUser);
       localStorage.setItem('nexattend_user', JSON.stringify(newUser));
     } finally {
@@ -76,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => {
     setIsLoading(true);
     console.log('Registering with images:', images);
-
+    
     try {
       const registerData: RegisterData = {
         full_name: userData.name,
@@ -84,9 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password: userData.password,
         role: userData.role,
       };
-
+      
       const response = await registerUser(registerData, images);
-
+      
       // Map API response to User format
       const newUser: User = {
         id: response.id,
@@ -94,12 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: response.email,
         role: response.role as 'teacher' | 'student',
         created_at: response.created_at,
-        email_notifications: true, // Defaulting as backend does
       };
-
+      
       setUser(newUser);
       localStorage.setItem('nexattend_user', JSON.stringify(newUser));
-
+      
       // Note: Token will be obtained on subsequent login
       // For auto-login after registration, call login API
     } finally {
@@ -109,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUser = async (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; }) => {
     if (!user) return;
-
+    
     setIsLoading(true);
     try {
       const apiData: { full_name?: string; avatar?: string; date_of_birth?: string; gender?: string; } = {};
@@ -117,9 +114,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.avatar) apiData.avatar = data.avatar;
       if (data.date_of_birth !== undefined) apiData.date_of_birth = data.date_of_birth;
       if (data.gender !== undefined) apiData.gender = data.gender;
-
+      
       const updatedUserFn = await updateProfile(apiData);
-
+      
       const updatedUser: User = {
         ...user,
         name: updatedUserFn.full_name,
@@ -127,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         date_of_birth: updatedUserFn.date_of_birth,
         gender: updatedUserFn.gender,
       };
-
+      
       setUser(updatedUser);
       localStorage.setItem('nexattend_user', JSON.stringify(updatedUser));
     } finally {

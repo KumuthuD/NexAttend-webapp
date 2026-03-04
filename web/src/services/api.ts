@@ -11,7 +11,6 @@ export interface UserData {
   date_of_birth?: string;
   gender?: string;
   created_at?: string;
-  email_notifications?: boolean;
 }
 
 export interface LoginResponse {
@@ -355,7 +354,6 @@ export const updateProfile = async (data: {
   avatar?: string;
   date_of_birth?: string;
   gender?: string;
-  email_notifications?: boolean;
 }): Promise<UserData> => {
   const response = await api.put<UserData>("/api/v1/users/me", data);
   return response.data;
