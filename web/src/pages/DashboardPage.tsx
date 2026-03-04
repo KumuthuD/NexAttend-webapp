@@ -17,12 +17,13 @@ import AddClassroomCard from '../components/dashboard/AddClassroomCard';
 import CreateClassroomModal from '../components/dashboard/CreateClassroomModal';
 import DeleteClassroomModal from '../components/dashboard/DeleteClassroomModal';
 import LeaveClassroomModal from '../components/dashboard/LeaveClassroomModal';
+import ExportAttendanceModal from '../components/dashboard/ExportAttendanceModal';
 import StudentAttendanceOverview from '../components/dashboard/StudentAttendanceOverview';
 import StatsCard from '../components/dashboard/StatsCard';
 import ThemeToggle from '../components/ThemeToggle';
 import {
     Smile, Database, Code, BookOpen, Cpu, Palette,
-    Users, CheckCircle, Activity, Menu, LogOut, AlertCircle,
+    Users, CheckCircle, Activity, Menu, LogOut, AlertCircle, Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -38,6 +39,7 @@ const DashboardPage: React.FC = () => {
     const [classroomToDelete, setClassroomToDelete] = useState<{ id: string; name: string } | null>(null);
     const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
     const [classroomToLeave, setClassroomToLeave] = useState<{ id: string; name: string } | null>(null);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     // Real classrooms from the API
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -230,13 +232,25 @@ const DashboardPage: React.FC = () => {
                 )}
 
                 {/* Section header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">
-                        Your Classrooms
-                    </h2>
-                    <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">
-                        {classrooms.length} classrooms
-                    </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">
+                            Your Classrooms
+                        </h2>
+                        <span className="text-sm font-medium text-gray-500 bg-gray-100 dark:bg-white/5 dark:text-gray-400 px-3 py-1 rounded-full transition-colors duration-300">
+                            {classrooms.length} classrooms
+                        </span>
+                    </div>
+
+                    {isTeacher && (
+                        <button
+                            onClick={() => setIsExportModalOpen(true)}
+                            className="bg-white dark:bg-[#1a1d2e] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
+                        >
+                            <Download className="w-4 h-4" />
+                            Export CSV
+                        </button>
+                    )}
                 </div>
 
                 {/* Error state */}
@@ -314,6 +328,14 @@ const DashboardPage: React.FC = () => {
                 onConfirm={handleConfirmLeave}
                 classroomName={classroomToLeave?.name || ''}
             />
+
+            {/* Export Attendance Modal */}
+            {isTeacher && (
+                <ExportAttendanceModal
+                    isOpen={isExportModalOpen}
+                    onClose={() => setIsExportModalOpen(false)}
+                />
+            )}
 
             {/* Toast Notification */}
             <AnimatePresence>
