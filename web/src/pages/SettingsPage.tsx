@@ -15,16 +15,27 @@ import {
     Sun,
     Lock,
     Save,
-    Menu
+    Menu,
+    AlertCircle,
+    CheckCircle,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import Input from '../components/common/Input';
 import { motion, AnimatePresence } from 'framer-motion';
+import { updatePassword } from '../services/api';
 
 const SettingsPage: React.FC = () => {
     const { logout, user, updateUser } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('profile');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     // Profile Update State
     const [newName, setNewName] = useState(user?.name || '');
@@ -64,9 +75,10 @@ const SettingsPage: React.FC = () => {
                 date_of_birth: dateOfBirth,
                 gender: gender
             });
-            // Show success message or toast here if available
+            showToast("Profile updated successfully!");
         } catch (error) {
             console.error("Failed to update profile", error);
+            showToast("Failed to update profile", "error");
         } finally {
             setIsUpdating(false);
         }
@@ -85,6 +97,10 @@ const SettingsPage: React.FC = () => {
         new: '',
         confirm: ''
     });
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -106,11 +122,33 @@ const SettingsPage: React.FC = () => {
         }));
     };
 
-    const handleSavePassword = (e: React.FormEvent) => {
+    const handleSavePassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock API call
-        alert("Password update functionality coming soon!");
-        setPasswordData({ current: '', new: '', confirm: '' });
+        
+        if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
+            showToast("Please fill in all password fields", "error");
+            return;
+        }
+
+        if (passwordData.new !== passwordData.confirm) {
+            showToast("New passwords do not match", "error");
+            return;
+        }
+
+        setIsUpdatingPassword(true);
+        try {
+             await updatePassword({
+                 current_password: passwordData.current,
+                 new_password: passwordData.new
+             });
+             showToast("Password updated successfully!");
+             setPasswordData({ current: '', new: '', confirm: '' });
+        } catch (error: any) {
+             console.error("Failed to update password", error);
+             showToast(error.response?.data?.detail || "Failed to update password", "error");
+        } finally {
+            setIsUpdatingPassword(false);
+        }
     };
 
     const tabs = [
@@ -457,13 +495,22 @@ const SettingsPage: React.FC = () => {
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
                                                         <div className="relative">
                                                             <Input
-                                                                type="password"
+                                                                type={showCurrentPassword ? "text" : "password"}
                                                                 name="current"
                                                                 value={passwordData.current}
                                                                 onChange={handlePasswordChange}
                                                                 placeholder="Enter current password"
                                                                 className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
                                                                 leftIcon={<Lock size={18} />}
+                                                                rightIcon={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                                        className="focus:outline-none"
+                                                                    >
+                                                                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                                    </button>
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
@@ -472,13 +519,22 @@ const SettingsPage: React.FC = () => {
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
                                                         <div className="relative">
                                                             <Input
-                                                                type="password"
+                                                                type={showNewPassword ? "text" : "password"}
                                                                 name="new"
                                                                 value={passwordData.new}
                                                                 onChange={handlePasswordChange}
                                                                 placeholder="Enter new password"
                                                                 className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
                                                                 leftIcon={<Lock size={18} />}
+                                                                rightIcon={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                                                        className="focus:outline-none"
+                                                                    >
+                                                                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                                    </button>
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
@@ -487,13 +543,22 @@ const SettingsPage: React.FC = () => {
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
                                                         <div className="relative">
                                                             <Input
-                                                                type="password"
+                                                                type={showConfirmPassword ? "text" : "password"}
                                                                 name="confirm"
                                                                 value={passwordData.confirm}
                                                                 onChange={handlePasswordChange}
                                                                 placeholder="Confirm new password"
                                                                 className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
                                                                 leftIcon={<Lock size={18} />}
+                                                                rightIcon={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                                        className="focus:outline-none"
+                                                                    >
+                                                                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                                    </button>
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
@@ -501,10 +566,20 @@ const SettingsPage: React.FC = () => {
                                                     <div className="pt-6 mb-10 flex justify-center">
                                                         <button
                                                             type="submit"
-                                                            className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none"
+                                                            disabled={isUpdatingPassword}
+                                                            className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
-                                                            <Save size={18} />
-                                                            Update Password
+                                                            {isUpdatingPassword ? (
+                                                                <>
+                                                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                                    Updating...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Save size={18} />
+                                                                    Update Password
+                                                                </>
+                                                            )}
                                                         </button>
                                                     </div>
                                                 </form>
@@ -526,6 +601,25 @@ const SettingsPage: React.FC = () => {
                     </div>
                 </div>
             </main>
+            
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg flex items-center gap-3 z-50 text-sm font-medium
+                            ${toast.type === 'success'
+                                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border dark:border-white/10'
+                                : 'bg-red-600 text-white'
+                            }`}
+                    >
+                        {toast.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                        {toast.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

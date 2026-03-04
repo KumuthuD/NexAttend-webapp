@@ -359,6 +359,11 @@ export const updateProfile = async (data: {
   return response.data;
 };
 
+export const updatePassword = async (data: { current_password: string; new_password: string; }): Promise<{ message: string }> => {
+    const response = await api.put<{ message: string }>('/api/v1/users/me/password', data);
+    return response.data;
+};
+
 export const getClassrooms = async (): Promise<Classroom[]> => {
   const response = await api.get<Classroom[]>("/api/v1/classrooms");
   return response.data;

@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.api.deps import get_current_user
 from app.models.user import User
-from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.user import UserResponse, UserUpdate, UserPasswordUpdate
 from app.schemas.classroom import ClassroomResponse
 from app.database.mongodb import get_database
 from app.models.notification import Notification
 from app.services.email_service import email_service
+from app.core.security import get_password_hash, verify_password
 import asyncio
 from bson import ObjectId
 
@@ -55,7 +56,7 @@ async def update_user_me(
             message="Your profile details were successfully updated.",
             type="info"
         )
-        await db["notifications"].insert_one(notification.model_dump(by_alias=True))
+        await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
         
         # Trigger email
         if updated_user.email:
@@ -70,6 +71,49 @@ async def update_user_me(
         
     return current_user
 
+@router.put("/me/password")
+async def update_user_password(
+    password_data: UserPasswordUpdate,
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_database)
+):
+    """
+    Update own user password.
+    """
+    # 1. Fetch the user document from the db to get the hashed password
+    user_doc = await db["users"].find_one({"_id": ObjectId(current_user.id)})
+    if not user_doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # 2. Verify current password
+    if not verify_password(password_data.current_password, user_doc.get("password_hash", "")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password"
+        )
+
+    # 3. Hash the new password
+    hashed_password = get_password_hash(password_data.new_password)
+
+    # 4. Update the password in db
+    await db["users"].update_one(
+        {"_id": ObjectId(current_user.id)},
+        {"$set": {"password_hash": hashed_password}}
+    )
+
+    # 5. Trigger security notification
+    notification = Notification(
+        user_id=str(current_user.id),
+        title="Security Alert",
+        message="Your password was successfully updated.",
+        type="warning"
+    )
+    await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
+
+    return {"message": "Password updated successfully"}
 
 @router.get("/me/classrooms", response_model=List[ClassroomResponse])
 async def get_my_classrooms(
