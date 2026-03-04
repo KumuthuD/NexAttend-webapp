@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import Input from '../components/common/Input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { updatePassword } from '../services/api';
+import { updatePassword, uploadAvatar } from '../services/api';
 
 const SettingsPage: React.FC = () => {
     const { logout, user, updateUser } = useAuth();
@@ -43,6 +43,30 @@ const SettingsPage: React.FC = () => {
     const [dateOfBirth, setDateOfBirth] = useState(user?.date_of_birth || '');
     const [gender, setGender] = useState(user?.gender || '');
     const [isUpdating, setIsUpdating] = useState(false);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        showToast("Uploading photo...");
+        try {
+            const updatedUser = await uploadAvatar(file);
+            setSelectedAvatar(updatedUser.avatar);
+
+            // Sync with backend by making the context pull down the entire new `user` model through the token or update explicitly
+            // But we already updated the backend user object so calling updateUser context handles React side:
+            await updateUser({ avatar: updatedUser.avatar });
+
+            showToast("Profile photo uploaded!");
+        } catch (error) {
+            console.error("Failed to upload avatar", error);
+            showToast("Failed to upload profile photo", "error");
+        } finally {
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     // Sync local state with user when user changes (e.g. after update or initial load)
     React.useEffect(() => {
@@ -273,9 +297,19 @@ const SettingsPage: React.FC = () => {
                                                             className="w-full h-full object-cover bg-violet-100 dark:bg-violet-900/20"
                                                         />
                                                     </div>
-                                                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                                        <span className="text-white text-xs font-medium">Change</span>
+                                                    <div
+                                                        className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                    >
+                                                        <span className="text-white text-xs font-medium">Upload Photo</span>
                                                     </div>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        ref={fileInputRef}
+                                                        onChange={handleAvatarUpload}
+                                                    />
                                                 </div>
 
                                                 <div className="text-center">

@@ -359,9 +359,20 @@ export const updateProfile = async (data: {
   return response.data;
 };
 
+export const uploadAvatar = async (file: File): Promise<UserData> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await api.post<UserData>("/api/v1/users/me/avatar", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
 export const updatePassword = async (data: { current_password: string; new_password: string; }): Promise<{ message: string }> => {
-    const response = await api.put<{ message: string }>('/api/v1/users/me/password', data);
-    return response.data;
+  const response = await api.put<{ message: string }>('/api/v1/users/me/password', data);
+  return response.data;
 };
 
 export const getClassrooms = async (): Promise<Classroom[]> => {

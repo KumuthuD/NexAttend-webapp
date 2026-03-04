@@ -3,6 +3,8 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.api.routes import router as api_router
 from app.database.mongodb import db
+import os
+from fastapi.staticfiles import StaticFiles
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,6 +23,9 @@ app = FastAPI(
     debug=settings.DEBUG,
     lifespan=lifespan
 )
+
+os.makedirs(os.path.join("uploads", "avatars"), exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # allow origin wildcard (*) with credentials is invalid in CORS spec
 # browsers block it — use explicit origin list from settings instead

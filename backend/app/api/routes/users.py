@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from typing import List
 from app.api.deps import get_current_user
 from app.models.user import User
@@ -10,6 +10,9 @@ from app.services.email_service import email_service
 from app.core.security import get_password_hash, verify_password
 import asyncio
 from bson import ObjectId
+import os
+import shutil
+import uuid
 
 router = APIRouter()
 
@@ -70,6 +73,43 @@ async def update_user_me(
         return updated_user
         
     return current_user
+
+@router.post("/me/avatar", response_model=UserResponse)
+async def upload_user_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_database)
+):
+    """
+    Upload a new profile avatar.
+    """
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be an image"
+        )
+
+    # Generate secure filename
+    ext = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    
+    filepath = os.path.join("uploads", "avatars", filename)
+    
+    # Save file
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    avatar_url = f"http://127.0.0.1:8000/uploads/avatars/{filename}"
+    
+    # Update user in DB
+    await db["users"].update_one(
+        {"_id": ObjectId(current_user.id)},
+        {"$set": {"avatar": avatar_url}}
+    )
+    
+    updated_user = current_user.model_copy(update={"avatar": avatar_url})
+    
+    return updated_user
 
 @router.put("/me/password")
 async def update_user_password(
