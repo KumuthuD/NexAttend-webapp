@@ -415,17 +415,13 @@ async def recognize_multi_faces(
             logger.info(f"[Multi-Face] Embedding #{i+1} took: {(t_emb_end-t_emb_start)*1000:.2f}ms")
             
             if not embedding:
-                 # ... existing error handling ...
                 results.append({ "status": "embedding_failed", "matched": False, "box": [int(c) for c in face['box']], "detection_confidence": float(face['confidence']), "similarity": 0.0 })
                 continue
 
             # Match the face embedding against all registered students
             best_user, distance = embedding_service.identify_user(embedding, all_users)
 
-            # ... rest of loop logic (unchanged structure, just showing log insertion)
-            # Copied original logic below to be safe with replacement
-            
-            # Convert distance to similarity (lower distance = higher similarity)
+            # convert distance to similarity (lower distance = higher similarity)
             similarity = round(max(0.0, 1.0 - distance), 4)
 
             if best_user:
