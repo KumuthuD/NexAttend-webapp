@@ -163,7 +163,11 @@ async def login_user(user_in: UserLogin, db = Depends(get_database)):
             full_name=user["full_name"],
             email=user["email"],
             role=user["role"],
-            is_active=user.get("is_active", True)
+            is_active=user.get("is_active", True),
+            avatar=user.get("avatar"),
+            date_of_birth=user.get("date_of_birth"),
+            gender=user.get("gender"),
+            created_at=user.get("created_at")
         )
     )
 
