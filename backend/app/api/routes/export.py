@@ -1,144 +1,44 @@
-import csv
-import io
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
+from typing import Any, Optional
+from datetime import datetime
 from app.database.mongodb import get_database
-from typing import Any, Optional, List
-from datetime import datetime, timezone
-from bson import ObjectId
+from app.schemas.export import AttendanceExportFilter
+from app.services.export_service import export_service
+import io
 
 router = APIRouter()
 
-async def _find_user_or_student(db: Any, user_id: str):
-    """
-    Helper to resolve student names. 
-    Duplicate of logic in attendance.py - consider refactoring to a shared service later.
-    """
-    try:
-        user = await db["users"].find_one({"_id": ObjectId(user_id)})
-        if user: return user
-    except Exception: pass
-    
-    user = await db["users"].find_one({"_id": user_id})
-    if user: return user
-    
-    return await db["students"].find_one({"_id": user_id})
-
-@router.get("/csv")
+@router.get("/attendance/csv")
 async def export_attendance_csv(
-    classroom_id: Optional[str] = Query(None),
-    start_date: Optional[str] = Query(None),
-    end_date: Optional[str] = Query(None),
-    status_filter: Optional[str] = Query(None, alias="status"),
+    classroom_id: Optional[str] = Query(None, description="Filter by classroom ID"),
+    start_date: Optional[datetime] = Query(None, description="Start date (inclusive)"),
+    end_date: Optional[datetime] = Query(None, description="End date (inclusive)"),
+    status: Optional[str] = Query(None, description="Filter by status: present, absent, excused"),
     db: Any = Depends(get_database)
 ):
     """
-    Export attendance data to CSV.
-    Day 28 Task - Sudam (Plumbing & Basic Export)
+    Export filtered attendance data as a downloadable CSV file.
+    
+    All query parameters are optional — omit to export all data.
     """
-    
-    # 1. Build Query (Thisandu will expand this, but Sudam provides the basic structure)
-    query = {}
-    if classroom_id:
-        query["classroom_id"] = classroom_id
-        
-    # Date filtering (Basic implementation)
-    if start_date or end_date:
-        date_query = {}
-        if start_date:
-            try:
-                date_query["$gte"] = datetime.fromisoformat(start_date)
-            except ValueError:
-                pass
-        if end_date:
-            try:
-                date_query["$lte"] = datetime.fromisoformat(end_date)
-            except ValueError:
-                pass
-        if date_query:
-            query["session_date"] = date_query
+    # 1. Build filter from query params
+    filters = AttendanceExportFilter(
+        classroom_id=classroom_id,
+        start_date=start_date,
+        end_date=end_date,
+        status=status
+    )
 
-    # 2. Fetch Sessions
-    cursor = db["attendance_sessions"].find(query).sort("session_date", -1)
-    
-    # 3. Define Generator for StreamingResponse
-    async def generate():
-        output = io.StringIO()
-        writer = csv.writer(output)
-        
-        # Header
-        writer.writerow([
-            "Session ID", "Classroom Name", "Date", 
-            "Student Name", "Student Email", "Status", 
-            "Confidence", "Method", "Flagged", "Flag Reason"
-        ])
-        yield output.getvalue()
-        output.truncate(0)
-        output.seek(0)
+    # 2. Fetch filtered sessions
+    sessions = await export_service.fetch_filtered_sessions(db, filters)
 
-        # Cache for classrooms and students to avoid redundant DB calls per record
-        classroom_cache = {}
-        student_cache = {}
+    # 3. Generate CSV string
+    csv_content = export_service.generate_csv(sessions)
 
-        async for session in cursor:
-            # Resolve Classroom Name
-            cid = session.get("classroom_id")
-            if cid not in classroom_cache:
-                classroom = await db["classrooms"].find_one({"_id": cid})
-                if classroom:
-                    classroom_cache[cid] = classroom.get("course_name", classroom.get("name", "Unknown"))
-                else:
-                    classroom_cache[cid] = "Unknown"
-            
-            classroom_name = classroom_cache[cid]
-            session_date = session.get("session_date")
-            if isinstance(session_date, datetime):
-                date_str = session_date.strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                date_str = str(session_date)
-                
-            session_id = str(session.get("_id"))
-
-            for record in session.get("records", []):
-                sid = record.get("student_id")
-                
-                # Filter by status if requested (Thisandu's part, but adding base)
-                if status_filter and record.get("status") != status_filter:
-                    continue
-
-                if sid not in student_cache:
-                    student = await _find_user_or_student(db, sid)
-                    if student:
-                        student_cache[sid] = {
-                            "name": student.get("full_name", student.get("name", "Unknown")),
-                            "email": student.get("email", "N/A")
-                        }
-                    else:
-                        student_cache[sid] = {"name": "Unknown", "email": "N/A"}
-                
-                student_info = student_cache[sid]
-                
-                writer.writerow([
-                    session_id,
-                    classroom_name,
-                    date_str,
-                    student_info["name"],
-                    student_info["email"],
-                    record.get("status", "N/A"),
-                    record.get("confidence", "N/A"),
-                    record.get("method", "N/A"),
-                    record.get("is_flagged", False),
-                    record.get("flag_reason", "")
-                ])
-                
-                yield output.getvalue()
-                output.truncate(0)
-                output.seek(0)
-
-    filename = f"attendance_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    
+    # 4. Return as downloadable CSV
     return StreamingResponse(
-        generate(),
+        io.StringIO(csv_content),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": "attachment; filename=attendance_export.csv"}
     )
