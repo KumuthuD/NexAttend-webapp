@@ -310,6 +310,17 @@ export const loginUser = async (
   return response.data;
 };
 
+export const loginWithGoogle = async (
+  token: string,
+  role: string = "teacher",
+): Promise<LoginResponse> => {
+  const response = await api.post<LoginResponse>("/api/v1/auth/google", {
+    token,
+    role,
+  });
+  return response.data;
+};
+
 export const registerUser = async (
   data: RegisterData,
   images?: File[],
@@ -360,8 +371,8 @@ export const updateProfile = async (data: {
 };
 
 export const updatePassword = async (data: { current_password: string; new_password: string; }): Promise<{ message: string }> => {
-    const response = await api.put<{ message: string }>('/api/v1/users/me/password', data);
-    return response.data;
+  const response = await api.put<{ message: string }>('/api/v1/users/me/password', data);
+  return response.data;
 };
 
 export const getClassrooms = async (): Promise<Classroom[]> => {

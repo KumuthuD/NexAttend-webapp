@@ -9,6 +9,10 @@ from app.schemas.token import Token
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.api import deps
 from typing import Any
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from app.core.config import settings
+from app.schemas.user import GoogleLogin
 
 router = APIRouter()
 
@@ -167,6 +171,88 @@ async def login_user(user_in: UserLogin, db = Depends(get_database)):
             avatar=user.get("avatar"),
             date_of_birth=user.get("date_of_birth"),
             gender=user.get("gender"),
+            created_at=user.get("created_at")
+        )
+    )
+def get_google_user_info(token: str):
+    try:
+        # Specify the CLIENT_ID of the app that accesses the backend:
+        idinfo = id_token.verify_oauth2_token(
+            token, 
+            google_requests.Request(), 
+            settings.GOOGLE_CLIENT_ID
+        )
+
+        # ID token is valid. Get the user's Google Account ID from the decoded token.
+        return idinfo
+    except ValueError:
+        # Invalid token
+        return None
+
+@router.post("/google", response_model=TokenResponse)
+async def google_login(login_data: GoogleLogin, db = Depends(get_database)):
+    """
+    Authenticate user via Google ID Token.
+    """
+    user_info = get_google_user_info(login_data.token)
+    
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token"
+        )
+    
+    email = user_info.get("email")
+    full_name = user_info.get("name")
+    avatar = user_info.get("picture")
+    
+    if not email:
+         raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Google account must have an email"
+        )
+
+    # Check if user exists
+    user = await db["users"].find_one({"email": email})
+    
+    if not user:
+        # Create new user
+        from datetime import datetime, timezone
+        user_data = {
+            "full_name": full_name,
+            "email": email,
+            "role": login_data.role,
+            "avatar": avatar,
+            "is_active": True,
+            "has_registered_face": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "auth_provider": "google"
+        }
+        
+        result = await db["users"].insert_one(user_data)
+        user = await db["users"].find_one({"_id": result.inserted_id})
+    else:
+        # Update avatar if it changed
+        if avatar and user.get("avatar") != avatar:
+            await db["users"].update_one(
+                {"_id": user["_id"]},
+                {"$set": {"avatar": avatar}}
+            )
+            user["avatar"] = avatar
+
+    # Create access token
+    access_token = create_access_token(subject=str(user["_id"]))
+    
+    return TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=UserResponse(
+            id=str(user["_id"]),
+            full_name=user["full_name"],
+            email=user["email"],
+            role=user["role"],
+            is_active=user.get("is_active", True),
+            avatar=user.get("avatar"),
             created_at=user.get("created_at")
         )
     )
