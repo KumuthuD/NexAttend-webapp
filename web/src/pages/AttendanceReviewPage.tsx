@@ -44,9 +44,9 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         student_id: 's102',
         classroom_name: 'This Classroom',
         session_date: '2026-03-03',
-        confidence: 38,
-        status: 'pending',
-        flagged_reason: 'Poor lighting conditions during capture',
+        confidence: 85,
+        status: 'approved',
+        flagged_reason: 'Clear match',
     },
     {
         id: 'f3',
@@ -54,9 +54,9 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         student_id: 's103',
         classroom_name: 'This Classroom',
         session_date: '2026-03-02',
-        confidence: 51,
-        status: 'pending',
-        flagged_reason: 'Multiple face matches — ambiguous identity',
+        confidence: 0,
+        status: 'rejected',
+        flagged_reason: 'Student joined classroom but no face detected in session',
     },
     {
         id: 'f4',
@@ -74,9 +74,9 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         student_id: 's105',
         classroom_name: 'This Classroom',
         session_date: '2026-03-01',
-        confidence: 45,
-        status: 'rejected',
-        flagged_reason: 'Blurred image — motion detected',
+        confidence: 92,
+        status: 'approved',
+        flagged_reason: 'Clear match',
     },
     {
         id: 'f6',
@@ -84,9 +84,9 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         student_id: 's106',
         classroom_name: 'This Classroom',
         session_date: '2026-03-01',
-        confidence: 35,
-        status: 'pending',
-        flagged_reason: 'Wearing glasses — altered facial features',
+        confidence: 0,
+        status: 'rejected',
+        flagged_reason: 'Student joined classroom but no face detected in session',
     },
     {
         id: 'f7',
@@ -98,55 +98,35 @@ const MOCK_FLAGGED: FlaggedRecord[] = [
         status: 'pending',
         flagged_reason: 'New face — no prior embeddings found',
     },
-    {
-        id: 'f8',
-        student_name: 'Sasanka Gunasekara',
-        student_id: 's108',
-        classroom_name: 'This Classroom',
-        session_date: '2026-02-28',
-        confidence: 33,
-        status: 'rejected',
-        flagged_reason: 'Background interference — crowded frame',
-    },
 ];
 
 // ── Status filter options ─────────────────────────────────────────────────────
-const STATUS_FILTERS = ['All', 'Pending', 'Approved', 'Rejected'] as const;
+const STATUS_FILTERS = ['All', 'Pending', 'Absent'] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const confidenceColor = (c: number) => {
-    if (c >= 60) return 'text-emerald-600 dark:text-emerald-400';
-    if (c >= 40) return 'text-amber-600 dark:text-amber-400';
-    return 'text-red-600 dark:text-red-400';
-};
-
-const confidenceBg = (c: number) => {
-    if (c >= 60) return 'bg-emerald-50 dark:bg-emerald-500/10';
-    if (c >= 40) return 'bg-amber-50 dark:bg-amber-500/10';
-    return 'bg-red-50 dark:bg-red-500/10';
-};
-
-const statusBadge = (status: FlaggedRecord['status']) => {
-    switch (status) {
-        case 'approved':
-            return (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
-                    <CheckCircle className="w-3 h-3" /> Approved
-                </span>
-            );
-        case 'rejected':
-            return (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20">
-                    <XCircle className="w-3 h-3" /> Rejected
-                </span>
-            );
-        default:
-            return (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
-                    <Clock className="w-3 h-3" /> Pending
-                </span>
-            );
+const getStatusBadge = (confidence: number) => {
+    if (confidence >= 60) {
+        return {
+            label: 'Present',
+            bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+            text: 'text-emerald-700 dark:text-emerald-400',
+            icon: <CheckCircle className="w-3.5 h-3.5" />
+        };
+    } else if (confidence > 0) {
+        return {
+            label: 'Pending',
+            bg: 'bg-amber-50 dark:bg-amber-500/10',
+            text: 'text-amber-700 dark:text-amber-400',
+            icon: <Clock className="w-3.5 h-3.5" />
+        };
+    } else {
+        return {
+            label: 'Absent',
+            bg: 'bg-red-50 dark:bg-red-500/10',
+            text: 'text-red-700 dark:text-red-400',
+            icon: <XCircle className="w-3.5 h-3.5" />
+        };
     }
 };
 
@@ -163,7 +143,6 @@ const ManualReviewPage: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState<StatusFilter>('All');
     const [searchQuery, setSearchQuery] = useState('');
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [classroomName, setClassroomName] = useState('');
 
     // Teacher-only guard — redirect students to dashboard
@@ -212,54 +191,42 @@ const ManualReviewPage: React.FC = () => {
         fetchRecords();
     }, [fetchRecords]);
 
-    // ── Handle approve / reject ───────────────────────────────────────────────
-    const handleAction = async (recordId: string, action: 'approve' | 'reject') => {
-        setActionLoading(recordId);
-        try {
-            await updateFlaggedRecord(recordId, action);
-            setRecords((prev) =>
-                prev.map((r) =>
-                    r.id === recordId
-                        ? { ...r, status: action === 'approve' ? 'approved' : 'rejected' }
-                        : r
-                )
-            );
-            showToast(
-                `Record ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
-                'success'
-            );
-        } catch {
-            // Offline fallback — update locally anyway
-            setRecords((prev) =>
-                prev.map((r) =>
-                    r.id === recordId
-                        ? { ...r, status: action === 'approve' ? 'approved' : 'rejected' }
-                        : r
-                )
-            );
-            showToast(
-                `Record ${action === 'approve' ? 'approved' : 'rejected'} (offline)`,
-                'success'
-            );
-        } finally {
-            setActionLoading(null);
-        }
-    };
-
     const handleLogout = () => {
         logout();
         navigate('/get-started');
     };
 
+    const handleApprove = async (recordId: string) => {
+        try {
+            // Update the local state for immediate feedback
+            setRecords((prev) =>
+                prev.map((r) =>
+                    r.id === recordId ? { ...r, confidence: 100 } : r
+                )
+            );
+            showToast('Student marked as present', 'success');
+            // If backend becomes available, uncomment the call below
+            // await updateFlaggedRecord(recordId, 'approve'); 
+        } catch (error) {
+            showToast('Failed to approve record', 'error');
+        }
+    };
+
     // ── Filtering ─────────────────────────────────────────────────────────────
     const filteredRecords = records.filter((r) => {
+        let recordStatus = 'Pending';
+        if (r.confidence >= 60) recordStatus = 'Present';
+        else if (r.confidence === 0) recordStatus = 'Absent';
+
         const matchesFilter =
-            activeFilter === 'All' || r.status === activeFilter.toLowerCase();
+            activeFilter === 'All' ||
+            (activeFilter === 'Pending' && recordStatus === 'Pending') ||
+            (activeFilter === 'Absent' && recordStatus === 'Absent');
+
         const matchesSearch =
             searchQuery === '' ||
             r.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.classroom_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.flagged_reason.toLowerCase().includes(searchQuery.toLowerCase());
+            r.classroom_name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesFilter && matchesSearch;
     });
 
@@ -294,48 +261,36 @@ const ManualReviewPage: React.FC = () => {
             </div>
 
             <main
-                className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}
+                className={`flex-1 lg:ml-64 p-4 mt-5 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}
             >
-                {/* Ambient backgrounds */}
-                <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent dark:from-amber-500/20 dark:via-orange-500/10 dark:to-transparent pointer-events-none rounded-t-3xl blur-3xl opacity-70 z-0" />
-                <div className="absolute top-40 right-0 w-96 h-96 bg-gradient-to-bl from-red-500/10 via-rose-500/5 to-transparent dark:from-red-500/20 dark:via-rose-500/5 dark:to-transparent pointer-events-none blur-3xl opacity-60 z-0" />
 
-                <div className="lg:hidden h-16" />
+                {/* ── Top Header ─────────────────────────────────────────────── */}
+                <div className="flex justify-between items-center mb-4 relative z-10 w-full">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => navigate(`/dashboard/classroom/${classroomId}`)}
+                            className="flex items-center justify-center p-2.5 -ml-2 text-gray-500 hover:text-violet-600 dark:text-gray-400 dark:hover:text-violet-400 transition-colors duration-200 rounded-full hover:bg-gray-100 dark:hover:bg-white/5"
+                        >
+                            <ArrowLeft size={22} />
+                        </button>
 
-                {/* ── Back Button ────────────────────────────────────────── */}
-                <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="relative z-10 mb-4"
-                >
-                    <button
-                        onClick={() => navigate(`/dashboard/classroom/${classroomId}`)}
-                        className="flex items-center gap-2 text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 transition-colors duration-200 text-sm font-medium"
-                    >
-                        <ArrowLeft size={16} />
-                        <span>Back to Classroom</span>
-                    </button>
-                </motion.div>
-
-                {/* ── Page Header ──────────────────────────────────────────── */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative z-10 flex justify-between items-center mb-3"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
-                            <FlagIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-                                Manual Review
-                            </h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
-                                {classroomName ? `Flagged records for ${classroomName}` : 'Review and resolve flagged attendance records.'}
-                            </p>
+                        <div className="flex flex-col">
+                            <motion.h1
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300"
+                            >
+                                Attendance Review
+                            </motion.h1>
+                            <motion.p
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.5, delay: 0.1 }}
+                                className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300"
+                            >
+                                {classroomName ? `` : 'Review and resolve flagged attendance records.'}
+                            </motion.p>
                         </div>
                     </div>
 
@@ -350,39 +305,46 @@ const ManualReviewPage: React.FC = () => {
                             <LogOut className="w-5 h-5" />
                         </button>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Divider */}
-                <div className="w-full h-1 bg-amber-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
+                <div className="w-full h-1 bg-violet-500 dark:bg-white/[0.1] rounded-full mb-8 transition-colors duration-300" />
 
                 {/* ── Summary Strip ────────────────────────────────────────── */}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.1 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 relative z-10"
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 relative z-10"
                 >
                     {[
                         {
-                            label: 'Total Flagged',
+                            label: 'Total Students',
                             value: totalFlagged,
-                            icon: <ShieldAlert className="w-5 h-5" />,
+                            icon: <UserCheck className="w-5 h-5" />,
+                            color: 'text-violet-600 dark:text-violet-400',
+                            bg: 'bg-violet-50 dark:bg-violet-500/10',
+                        },
+                        {
+                            label: 'Present',
+                            value: records.filter((r) => r.confidence >= 60).length,
+                            icon: <CheckCircle className="w-5 h-5" />,
+                            color: 'text-emerald-600 dark:text-emerald-400',
+                            bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+                        },
+                        {
+                            label: 'Pending Review',
+                            value: records.filter((r) => r.confidence > 0 && r.confidence < 60).length,
+                            icon: <Clock className="w-5 h-5" />,
                             color: 'text-amber-600 dark:text-amber-400',
                             bg: 'bg-amber-50 dark:bg-amber-500/10',
                         },
                         {
-                            label: 'Pending Review',
-                            value: pendingCount,
-                            icon: <Clock className="w-5 h-5" />,
-                            color: 'text-orange-600 dark:text-orange-400',
-                            bg: 'bg-orange-50 dark:bg-orange-500/10',
-                        },
-                        {
-                            label: 'Reviewed',
-                            value: reviewedCount,
-                            icon: <UserCheck className="w-5 h-5" />,
-                            color: 'text-emerald-600 dark:text-emerald-400',
-                            bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+                            label: 'Absent',
+                            value: records.filter((r) => r.confidence === 0).length,
+                            icon: <XCircle className="w-5 h-5" />,
+                            color: 'text-red-600 dark:text-red-400',
+                            bg: 'bg-red-50 dark:bg-red-500/10',
                         },
                     ].map((stat) => (
                         <div
@@ -421,7 +383,7 @@ const ManualReviewPage: React.FC = () => {
                                 {activeFilter === filter && (
                                     <motion.div
                                         layoutId="activeReviewFilter"
-                                        className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg -z-10 shadow-[0_2px_8px_rgba(245,158,11,0.3)]"
+                                        className="absolute inset-0 bg-violet-500 rounded-lg -z-10"
                                         initial={false}
                                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                     />
@@ -438,20 +400,22 @@ const ManualReviewPage: React.FC = () => {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search by name, class, reason…"
-                            className="w-full pl-9 pr-4 py-2 text-sm bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all duration-300"
+                            placeholder="Search"
+                            className="w-full pl-9 pr-4 py-2 text-sm bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all duration-300"
                         />
                     </div>
 
                     {/* Refresh */}
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={fetchRecords}
                         disabled={isLoading}
                         className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 rounded-xl bg-white dark:bg-white/5 transition-all duration-200 disabled:opacity-50"
                     >
                         <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                         Refresh
-                    </button>
+                    </motion.button>
                 </motion.div>
 
                 {/* ── Records ──────────────────────────────────────────────── */}
@@ -488,12 +452,12 @@ const ManualReviewPage: React.FC = () => {
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                                 {activeFilter === 'All' && searchQuery === ''
-                                    ? 'No Flagged Records'
+                                    ? 'No Records Detected'
                                     : 'No Matching Records'}
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                                 {activeFilter === 'All' && searchQuery === ''
-                                    ? 'All attendance records have been verified by the AI system. Great job!'
+                                    ? 'There are currently no detected attendance records.'
                                     : 'Try adjusting your filters or search query.'}
                             </p>
                         </div>
@@ -515,63 +479,46 @@ const ManualReviewPage: React.FC = () => {
                                             {/* Avatar + Student info */}
                                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                                 <img
-                                                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(record.student_name)}&backgroundColor=f59e0b&textColor=ffffff`}
+                                                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(record.student_name)}&backgroundColor=8b5cf6&textColor=ffffff`}
                                                     alt={record.student_name}
-                                                    className="w-10 h-10 rounded-full border-2 border-amber-200 dark:border-amber-500/30 flex-shrink-0"
+                                                    className="w-10 h-10 rounded-full border-2 border-violet-200 dark:border-violet-500/30 flex-shrink-0"
                                                 />
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                                         {record.student_name}
                                                     </p>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                        {record.classroom_name} · {new Date(record.session_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        Marked at: {new Date(record.session_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             {/* Confidence */}
                                             <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${confidenceBg(record.confidence)}`}>
-                                                    <AlertTriangle className={`w-3.5 h-3.5 ${confidenceColor(record.confidence)}`} />
-                                                    <span className={`text-sm font-bold ${confidenceColor(record.confidence)}`}>
-                                                        {record.confidence}%
-                                                    </span>
-                                                </div>
+                                                {(() => {
+                                                    const badge = getStatusBadge(record.confidence);
+                                                    return (
+                                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${badge.bg}`}>
+                                                            <span className={badge.text}>{badge.icon}</span>
+                                                            <span className={`text-sm font-bold ${badge.text}`}>
+                                                                {badge.label}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })()}
 
-                                                {/* Status badge */}
-                                                {statusBadge(record.status)}
-
-                                                {/* Action buttons (only for pending) */}
-                                                {record.status === 'pending' && (
-                                                    <div className="flex items-center gap-2 ml-auto sm:ml-0">
-                                                        <button
-                                                            onClick={() => handleAction(record.id, 'approve')}
-                                                            disabled={actionLoading === record.id}
-                                                            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/20 rounded-xl transition-all duration-200 disabled:opacity-50"
-                                                        >
-                                                            <CheckCircle className="w-3.5 h-3.5" />
-                                                            Approve
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleAction(record.id, 'reject')}
-                                                            disabled={actionLoading === record.id}
-                                                            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 rounded-xl transition-all duration-200 disabled:opacity-50"
-                                                        >
-                                                            <XCircle className="w-3.5 h-3.5" />
-                                                            Reject
-                                                        </button>
-                                                    </div>
+                                                {/* Approve Button */}
+                                                {record.confidence < 60 && (
+                                                    <button
+                                                        onClick={() => handleApprove(record.id)}
+                                                        className="px-3 py-1.5 text-sm font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/30 rounded-xl transition-colors border border-emerald-200 dark:border-emerald-500/20 shadow-sm"
+                                                    >
+                                                        Mark present
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
 
-                                        {/* Reason row */}
-                                        <div className="mt-3 flex items-start gap-2 pl-[52px]">
-                                            <Filter className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                                                {record.flagged_reason}
-                                            </p>
-                                        </div>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
