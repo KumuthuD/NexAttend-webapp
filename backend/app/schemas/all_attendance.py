@@ -6,6 +6,7 @@ class AttendanceRecordBase(BaseModel):
     student_id: str
     status: str
     confidence: Optional[float] = None
+    review_status: str = "pending"
     is_flagged: bool = False
     flag_reason: Optional[str] = None
 
