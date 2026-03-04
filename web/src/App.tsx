@@ -16,7 +16,7 @@ import ProfilePage from './pages/ProfilePage';
 import SupportPage from './pages/SupportPage';
 import AttendanceHistoryPage from './pages/AttendanceHistoryPage';
 import AnalyticsPage from './pages/AnalyticsPage';
-import ManualReviewPage from './pages/ManualReviewPage';
+import ManualReviewPage from './pages/AttendanceReviewPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import SplashScreen from './components/common/SplashScreen';
 
