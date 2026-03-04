@@ -6,7 +6,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
-import { getAttendanceHistory } from '../services/api';
+import { getAttendanceHistory, getTeacherAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
 const MOCK_RECORDS: AttendanceRecord[] = [
@@ -37,10 +37,16 @@ const AttendanceHistoryPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await getAttendanceHistory();
-            setRecords(data);
+            // Try fetching real data from per-classroom history endpoints
+            const data = await getTeacherAttendanceHistory();
+            if (data.length > 0) {
+                setRecords(data);
+            } else {
+                // No sessions yet — show empty state (not mock data)
+                setRecords([]);
+            }
         } catch {
-            // Backend may not have this endpoint yet — fall back to mock data
+            // Backend unavailable — fall back to mock data
             setRecords(MOCK_RECORDS);
         } finally {
             setIsLoading(false);

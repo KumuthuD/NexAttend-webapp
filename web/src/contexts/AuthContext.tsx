@@ -8,6 +8,9 @@ export interface User {
   email: string;
   role: 'teacher' | 'student';
   avatar?: string;
+  date_of_birth?: string;
+  gender?: string;
+  created_at?: string;
 }
 
 interface AuthContextType {
@@ -15,7 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => Promise<void>;
-  updateUser: (data: { name?: string; avatar?: string }) => Promise<void>;
+  updateUser: (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -55,7 +58,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: response.user.full_name,
         email: response.user.email,
         role: response.user.role as 'teacher' | 'student',
-        avatar: response.user.avatar
+        avatar: response.user.avatar,
+        date_of_birth: response.user.date_of_birth,
+        gender: response.user.gender,
+        created_at: response.user.created_at,
       };
       
       setUser(newUser);
@@ -85,6 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: response.full_name,
         email: response.email,
         role: response.role as 'teacher' | 'student',
+        created_at: response.created_at,
       };
       
       setUser(newUser);
@@ -97,21 +104,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUser = async (data: { name?: string; avatar?: string }) => {
+  const updateUser = async (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; }) => {
     if (!user) return;
     
     setIsLoading(true);
     try {
-      const apiData: { full_name?: string; avatar?: string } = {};
+      const apiData: { full_name?: string; avatar?: string; date_of_birth?: string; gender?: string; } = {};
       if (data.name) apiData.full_name = data.name;
       if (data.avatar) apiData.avatar = data.avatar;
+      if (data.date_of_birth !== undefined) apiData.date_of_birth = data.date_of_birth;
+      if (data.gender !== undefined) apiData.gender = data.gender;
       
       const updatedUserFn = await updateProfile(apiData);
       
       const updatedUser: User = {
         ...user,
         name: updatedUserFn.full_name,
-        avatar: updatedUserFn.avatar
+        avatar: updatedUserFn.avatar,
+        date_of_birth: updatedUserFn.date_of_birth,
+        gender: updatedUserFn.gender,
       };
       
       setUser(updatedUser);

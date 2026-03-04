@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Body, Depends, BackgroundTasks
 from app.database.mongodb import get_database
+from app.services.anomaly_service import check_anomaly
 from app.services.email_service import email_service
 from app.models.attendance import AttendanceSession, AttendanceRecord
 from app.schemas.all_attendance import (
@@ -16,6 +17,11 @@ from app.schemas.all_attendance import (
 from app.models.logs import RecognitionLog, AuditLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse, AuditLogCreate, AuditLogResponse
 from app.services.audit_service import audit_service
+    PaginatedFlaggedResponse
+)
+from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
+from app.schemas.attendance import AttendanceUpdateRequest, AttendanceReviewRequest
+from app.models.notification import Notification
 from typing import Any, List, Optional
 from datetime import datetime
 from bson import ObjectId
@@ -69,6 +75,15 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
                 class_name=class_name,
                 date_time=date_str
             )
+        
+        # Also create in-app notification
+        notification = Notification(
+            user_id=sid,
+            title="Attendance Marked",
+            message=f"Your attendance was marked for {class_name} on {date_str}.",
+            type="info"
+        )
+        await db["notifications"].insert_one(notification.model_dump(by_alias=True))
 
 async def update_motivation_scores(db: Any, classroom_id: str, student_ids: List[str]):
     """
@@ -197,10 +212,13 @@ async def mark_attendance(
         )
 
     # 4. Create Record
+    anomaly = check_anomaly(request.confidence or 0.0, request.student_id)
     record = AttendanceRecord(
         student_id=request.student_id,
         status="present",
         confidence=request.confidence,
+        is_flagged=anomaly["is_flagged"],
+        flag_reason=anomaly["flag_reason"],
         method=request.method,
         timestamp=datetime.utcnow()
     )
@@ -231,13 +249,24 @@ async def mark_attendance(
         if student.get("email"):
             classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
             classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+            date_time = datetime.utcnow()
             background_tasks.add_task(
                 email_service.send_attendance_confirmation,
                 student["email"],
                 student.get("full_name", student.get("name", "Student")),
                 classroom_name,
-                datetime.utcnow()
+                date_time
             )
+            
+            # Create notification
+            date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+            notification = Notification(
+                user_id=request.student_id,
+                title="Attendance Marked",
+                message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                type="info"
+            )
+            await db["notifications"].insert_one(notification.model_dump(by_alias=True))
     except Exception as e:
         pass
         
@@ -301,10 +330,13 @@ async def batch_mark_attendance(
             skipped_count += 1
             continue
             
+        anomaly = check_anomaly(student_req.confidence or 0.0, student_id)
         record = AttendanceRecord(
             student_id=student_id,
             status="present",
             confidence=student_req.confidence,
+            is_flagged=anomaly["is_flagged"],
+            flag_reason=anomaly["flag_reason"],
             method=student_req.method,
             timestamp=datetime.utcnow()
         )
@@ -346,6 +378,9 @@ async def batch_mark_attendance(
                         students.append(u)
                 classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
                 classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
+                date_time = datetime.utcnow()
+                date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
+                
                 for student in students:
                     if student.get("email"):
                         background_tasks.add_task(
@@ -353,8 +388,17 @@ async def batch_mark_attendance(
                             student["email"],
                             student.get("full_name", student.get("name", "Student")),
                             classroom_name,
-                            datetime.utcnow()
+                            date_time
                         )
+                        
+                    # Create notification
+                    notification = Notification(
+                        user_id=str(student.get("_id")),
+                        title="Attendance Marked",
+                        message=f"Your attendance was marked for {classroom_name} on {date_str}.",
+                        type="info"
+                    )
+                    await db["notifications"].insert_one(notification.model_dump(by_alias=True))
         except Exception as e:
             pass
             
@@ -574,6 +618,7 @@ async def update_attendance(
         )
 
         # Step 2: If no existing record was found (e.g. marking a previously absent student)
+        # Step 2: If no existing record was found, push a new one
         if result.matched_count == 0:
             new_record = {
                 "student_id": request.student_id,
@@ -625,3 +670,46 @@ async def update_attendance(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update attendance record"
         )
+
+@router.post("/review")
+async def review_attendance_record(
+    request: AttendanceReviewRequest = Body(...),
+    db: Any = Depends(get_database)
+):
+    """
+    Review a flagged attendance record (Day 27 - Sudam).
+    Allows administrators to approve or reject anomalies.
+    """
+    # 1. Verify Session exists
+    session = await db["attendance_sessions"].find_one({"_id": request.session_id})
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance session {request.session_id} not found"
+        )
+
+    # 2. Update the review_status in the records array
+    now = datetime.utcnow()
+    result = await db["attendance_sessions"].update_one(
+        {"_id": request.session_id, "records.student_id": request.student_id},
+        {
+            "$set": {
+                "records.$.review_status": request.status,
+                "records.$.is_flagged": False if request.status == "approved" else True,
+                "updated_at": now
+            }
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Attendance record for student {request.student_id} not found in this session"
+        )
+
+    return {
+        "message": f"Record successfully {request.status}",
+        "session_id": request.session_id,
+        "student_id": request.student_id,
+        "review_status": request.status
+    }

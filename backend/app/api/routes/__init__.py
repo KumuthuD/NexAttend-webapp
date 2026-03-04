@@ -10,6 +10,8 @@ from app.api.routes import attendance
 from app.api.routes import analytics
 from app.api.routes import email_logs
 from app.api.routes import audit
+from app.api.routes import events
+from app.api.routes import notifications
 
 router = APIRouter()
 
@@ -24,6 +26,8 @@ router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 router.include_router(email_logs.router, prefix="/email-logs", tags=["email-logs"])
 router.include_router(audit.router, prefix="/audit", tags=["audit"])
+router.include_router(events.router, prefix="/events", tags=["events"])
+router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 
 @router.get("/health")
 async def health_check():

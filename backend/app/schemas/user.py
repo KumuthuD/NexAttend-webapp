@@ -36,18 +36,25 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     avatar: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    created_at: Optional[str] = None
 
     model_config = ConfigDict(populate_by_name=True)
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     avatar: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "full_name": "Jane Doe",
-                "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=JD"
+                "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=JD",
+                "date_of_birth": "1990-01-01",
+                "gender": "Female"
             }
         }
     )
