@@ -52,5 +52,42 @@ class ExportService:
 
         return sessions
 
+    @staticmethod
+    def generate_csv(sessions: List[Dict[str, Any]]) -> str:
+        """
+        Converts filtered attendance sessions into a CSV string.
+        Columns: Session ID, Session Date, Classroom ID, Student ID, Status, Method, Timestamp
+        """
+        import csv
+        import io
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+
+        # Header row
+        writer.writerow([
+            "Session ID", "Session Date", "Classroom ID",
+            "Student ID", "Status", "Method", "Timestamp"
+        ])
+
+        # Data rows
+        for session in sessions:
+            session_id = session.get("_id", "")
+            session_date = session.get("session_date", "")
+            classroom_id = session.get("classroom_id", "")
+
+            for record in session.get("records", []):
+                writer.writerow([
+                    session_id,
+                    session_date,
+                    classroom_id,
+                    record.get("student_id", ""),
+                    record.get("status", ""),
+                    record.get("method", ""),
+                    record.get("timestamp", "")
+                ])
+
+        return output.getvalue()
+
 # Global instance
 export_service = ExportService()
