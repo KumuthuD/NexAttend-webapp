@@ -12,14 +12,13 @@ from app.schemas.all_attendance import (
     AttendanceBatchMarkResponse,
     AttendanceBatchRecord,
     PaginatedHistoryResponse,
-    AttendanceUpdateRequest
+    AttendanceUpdateRequest,
+    PaginatedFlaggedResponse
 )
 from app.models.logs import RecognitionLog, AuditLog
 from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse, AuditLogCreate, AuditLogResponse
 from app.services.audit_service import audit_service
-    PaginatedFlaggedResponse
-)
-from app.schemas.logs import RecognitionLogCreate, RecognitionLogResponse
+
 from app.schemas.attendance import AttendanceUpdateRequest, AttendanceReviewRequest
 from app.models.notification import Notification
 from typing import Any, List, Optional
