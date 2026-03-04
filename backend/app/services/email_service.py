@@ -27,6 +27,12 @@ class EmailService:
             logger.warning("No email provided. Cannot send attendance confirmation.")
             return False
 
+        # Check user preference
+        user_doc = await database.db["users"].find_one({"email": email})
+        if user_doc and not user_doc.get("email_notifications", True):
+            logger.info("User has opted out of email notifications. Skipping attendance confirmation.")
+            return True
+
         status = "failed"
         error_message = None
 
@@ -102,6 +108,12 @@ class EmailService:
             logger.warning("No email provided. Cannot send class join confirmation.")
             return False
 
+        # Check user preference
+        user_doc = await database.db["users"].find_one({"email": email})
+        if user_doc and not user_doc.get("email_notifications", True):
+            logger.info("User has opted out of email notifications. Skipping class join confirmation.")
+            return True
+
         status_val = "failed"
         error_message = None
 
@@ -173,6 +185,12 @@ class EmailService:
         if not email:
             logger.warning("No email provided. Cannot send profile update confirmation.")
             return False
+
+        # Check user preference
+        user_doc = await database.db["users"].find_one({"email": email})
+        if user_doc and not user_doc.get("email_notifications", True):
+            logger.info("User has opted out of email notifications. Skipping profile update confirmation.")
+            return True
 
         status_val = "failed"
         error_message = None
