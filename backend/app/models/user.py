@@ -16,6 +16,7 @@ class User(BaseModel):
     date_of_birth: Optional[str] = Field(default=None)
     gender: Optional[str] = Field(default=None)
     created_at: Optional[str] = Field(default=None)
+    email_notifications: bool = Field(default=True)
 
     model_config = ConfigDict(
         populate_by_name=True,

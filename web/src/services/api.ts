@@ -11,6 +11,7 @@ export interface UserData {
   date_of_birth?: string;
   gender?: string;
   created_at?: string;
+  email_notifications?: boolean;
 }
 
 export interface LoginResponse {
@@ -140,10 +141,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error("API call failed:", error);
-    // Handle 401 unauthorized - clear token and redirect
+    // Handle 401 unauthorized - clear token and redirect to login
     if (error.response?.status === 401) {
       localStorage.removeItem("nexattend_token");
       localStorage.removeItem("nexattend_user");
+      // Redirect to login page so user can re-authenticate
+      window.location.href = "/get-started";
     }
     return Promise.reject(error);
   },
@@ -365,6 +368,7 @@ export const updateProfile = async (data: {
   avatar?: string;
   date_of_birth?: string;
   gender?: string;
+  email_notifications?: boolean;
 }): Promise<UserData> => {
   const response = await api.put<UserData>("/api/v1/users/me", data);
   return response.data;

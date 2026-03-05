@@ -233,6 +233,114 @@ class EmailService:
             except Exception as log_err:
                 logger.error(f"Failed to create email log entry: {log_err}")
 
+    async def send_classroom_created_confirmation(self, email: str, teacher_name: str, class_name: str, access_code: str, date_time):
+        if not email:
+            return False
+        status_val = "failed"
+        error_message = None
+        if not settings.SMTP_HOST or not settings.SMTP_USER:
+            return False
+        if not self.env:
+            return False
+        try:
+            template = self.env.get_template("classroom_created_confirmation.html")
+            if isinstance(date_time, datetime):
+                formatted = date_time.strftime("%B %d, %Y at %I:%M %p")
+            else:
+                formatted = str(date_time)
+            html_content = template.render(
+                teacher_name=teacher_name,
+                class_name=class_name,
+                access_code=access_code,
+                date_time=formatted,
+                dashboard_link="https://nexattend.com/dashboard"
+            )
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"Classroom Created: {class_name} - NexAttend"
+            msg["From"] = settings.FROM_EMAIL
+            msg["To"] = email
+            msg.attach(MIMEText(html_content, "html"))
+            def _send():
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    if settings.SMTP_HOST != "localhost" and settings.SMTP_PORT != 1025:
+                        server.starttls()
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+            await asyncio.to_thread(_send)
+            logger.info(f"Classroom created email sent to {email}")
+            status_val = "sent"
+            return True
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Failed to send classroom created email: {e}")
+            return False
+        finally:
+            try:
+                log_entry = EmailLog(
+                    recipient_email=email,
+                    subject=f"Classroom Created: {class_name} - NexAttend",
+                    template_used="classroom_created_confirmation",
+                    status=status_val,
+                    error_message=error_message
+                )
+                await self._save_log(log_entry)
+            except Exception as log_err:
+                logger.error(f"Failed to create email log entry: {log_err}")
+
+    async def send_classroom_deleted_notification(self, email: str, recipient_name: str, class_name: str, message_body: str, date_time):
+        if not email:
+            return False
+        status_val = "failed"
+        error_message = None
+        if not settings.SMTP_HOST or not settings.SMTP_USER:
+            return False
+        if not self.env:
+            return False
+        try:
+            template = self.env.get_template("classroom_deleted_notification.html")
+            if isinstance(date_time, datetime):
+                formatted = date_time.strftime("%B %d, %Y at %I:%M %p")
+            else:
+                formatted = str(date_time)
+            html_content = template.render(
+                recipient_name=recipient_name,
+                class_name=class_name,
+                message_body=message_body,
+                date_time=formatted,
+                dashboard_link="https://nexattend.com/dashboard"
+            )
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"Classroom Deleted: {class_name} - NexAttend"
+            msg["From"] = settings.FROM_EMAIL
+            msg["To"] = email
+            msg.attach(MIMEText(html_content, "html"))
+            def _send():
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    if settings.SMTP_HOST != "localhost" and settings.SMTP_PORT != 1025:
+                        server.starttls()
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+            await asyncio.to_thread(_send)
+            logger.info(f"Classroom deleted email sent to {email}")
+            status_val = "sent"
+            return True
+        except Exception as e:
+            error_message = str(e)
+            logger.error(f"Failed to send classroom deleted email: {e}")
+            return False
+        finally:
+            try:
+                log_entry = EmailLog(
+                    recipient_email=email,
+                    subject=f"Classroom Deleted: {class_name} - NexAttend",
+                    template_used="classroom_deleted_notification",
+                    status=status_val,
+                    error_message=error_message
+                )
+                await self._save_log(log_entry)
+            except Exception as log_err:
+                logger.error(f"Failed to create email log entry: {log_err}")
+
     async def _save_log(self, log_data: EmailLog):
         """
         Internal helper to save an email log to MongoDB.

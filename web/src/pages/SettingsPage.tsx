@@ -108,13 +108,19 @@ const SettingsPage: React.FC = () => {
         }
     };
 
-    // Mock states for form interactions
+    // Mock states for form interactions (except email)
     const [notifications, setNotifications] = useState({
-        email: true,
+        email: user?.email_notifications ?? true,
         push: false,
         marketing: false,
         security: true
     });
+
+    React.useEffect(() => {
+        if (user) {
+            setNotifications(prev => ({ ...prev, email: user.email_notifications ?? true }));
+        }
+    }, [user?.email_notifications]);
 
     const [passwordData, setPasswordData] = useState({
         current: '',
@@ -131,11 +137,22 @@ const SettingsPage: React.FC = () => {
         navigate('/get-started');
     };
 
-    const handleNotificationChange = (key: keyof typeof notifications) => {
-        setNotifications(prev => ({
-            ...prev,
-            [key]: !prev[key]
-        }));
+    const handleNotificationChange = async (key: keyof typeof notifications) => {
+        const newValue = !notifications[key];
+        setNotifications(prev => ({ ...prev, [key]: newValue }));
+
+        if (key === 'email') {
+            try {
+                await updateUser({ email_notifications: newValue });
+                showToast("Email notifications preference updated!");
+            } catch (error: any) {
+                console.error("Failed to update email notifications", error);
+                const errorMsg = error.response?.data?.detail || error.message || "Unknown error";
+                showToast(`Failed: ${typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)}`, "error");
+                // Revert local state on error
+                setNotifications(prev => ({ ...prev, [key]: !newValue }));
+            }
+        }
     };
 
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -432,48 +449,6 @@ const SettingsPage: React.FC = () => {
                                                         className="sr-only peer"
                                                         checked={notifications.email}
                                                         onChange={() => handleNotificationChange('email')}
-                                                    />
-                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
-                                                </label>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg">
-                                                        <Smartphone size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-900 dark:text-white">Push Notifications</h4>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Receive updates on your device</p>
-                                                    </div>
-                                                </div>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only peer"
-                                                        checked={notifications.push}
-                                                        onChange={() => handleNotificationChange('push')}
-                                                    />
-                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
-                                                </label>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg">
-                                                        <Shield size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-900 dark:text-white">Security Alerts</h4>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Get notified about security events</p>
-                                                    </div>
-                                                </div>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only peer"
-                                                        checked={notifications.security}
-                                                        onChange={() => handleNotificationChange('security')}
                                                     />
                                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
                                                 </label>

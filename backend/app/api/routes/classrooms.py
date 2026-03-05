@@ -111,6 +111,18 @@ async def create_classroom(
     )
     await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
 
+    # Send email to teacher if notifications enabled
+    if current_user.email and getattr(current_user, "email_notifications", True):
+        asyncio.create_task(
+            email_service.send_classroom_created_confirmation(
+                email=current_user.email,
+                teacher_name=current_user.full_name or "Teacher",
+                class_name=classroom.name,
+                access_code=classroom.access_code,
+                date_time=datetime.utcnow()
+            )
+        )
+
     return ClassroomResponse(
         **created,
         student_count=0,
@@ -182,7 +194,7 @@ async def join_classroom(
     await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
 
     # Trigger email
-    if current_user.email:
+    if current_user.email and getattr(current_user, "email_notifications", True):
         asyncio.create_task(
             email_service.send_class_join_confirmation(
                 email=current_user.email,
@@ -325,6 +337,18 @@ async def delete_classroom(
     )
     await db["notifications"].insert_one(teacher_notification.model_dump(by_alias=True, exclude_none=True))
 
+    # Email teacher if notifications enabled
+    if current_user.email and getattr(current_user, "email_notifications", True):
+        asyncio.create_task(
+            email_service.send_classroom_deleted_notification(
+                email=current_user.email,
+                recipient_name=current_user.full_name or "Teacher",
+                class_name=classroom.get("name", "Unknown"),
+                message_body="You have successfully deleted the classroom from NexAttend.",
+                date_time=datetime.utcnow()
+            )
+        )
+
     # Notify students
     student_ids = classroom.get("student_ids", [])
     if student_ids:
@@ -339,6 +363,23 @@ async def delete_classroom(
         ]
         if student_notifications:
             await db["notifications"].insert_many(student_notifications)
+
+        # Email students who have email_notifications enabled
+        students = await db["users"].find(
+            {"_id": {"$in": student_ids}},
+            {"email": 1, "full_name": 1, "email_notifications": 1}
+        ).to_list(None)
+        for student in students:
+            if student.get("email") and student.get("email_notifications", True):
+                asyncio.create_task(
+                    email_service.send_classroom_deleted_notification(
+                        email=student["email"],
+                        recipient_name=student.get("full_name") or "Student",
+                        class_name=classroom.get("name", "Unknown"),
+                        message_body=f"The classroom '{classroom.get('name')}' has been deleted by the teacher.",
+                        date_time=datetime.utcnow()
+                    )
+                )
 
     return {"message": "Classroom deleted successfully"}
 

@@ -280,7 +280,8 @@ async def recognize_faces(
                     "student": {
                         "id": str(best_user["_id"]),
                         "full_name": best_user.get("full_name", "Unknown"),
-                        "email": best_user.get("email", "")
+                        "email": best_user.get("email", ""),
+                        "email_notifications": best_user.get("email_notifications", True)
                     },
                     "similarity": confidence,
                     "is_flagged": anomaly["is_flagged"],
@@ -453,7 +454,8 @@ async def recognize_multi_faces(
                     "student": {
                         "id": student_id,
                         "full_name": best_user.get("full_name", "Unknown"),
-                        "email": best_user.get("email", "")
+                        "email": best_user.get("email", ""),
+                        "email_notifications": best_user.get("email_notifications", True)
                     },
                     "similarity": similarity,
                     "is_flagged": anomaly["is_flagged"],
@@ -537,7 +539,7 @@ async def recognize_multi_faces(
                             result["attendance"] = "marked"
                             
                             # Queue email
-                            if result.get("student") and result["student"].get("email"):
+                            if result.get("student") and result["student"].get("email") and result["student"].get("email_notifications", True):
                                 background_tasks.add_task(
                                     email_service.send_attendance_confirmation,
                                     result["student"]["email"],

@@ -52,23 +52,27 @@ async def update_user_me(
         # Pydantic mappings rules smartly seamlessly cleanly flawlessly beautifully
         updated_user = current_user.model_copy(update=updated_data_sets)
         
-        # Trigger notification
-        notification = Notification(
-            user_id=str(current_user.id),
-            title="Profile Updated",
-            message="Your profile details were successfully updated.",
-            type="info"
-        )
-        await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
+        # Check if actual profile details were updated, not just email_notifications settings
+        profile_details_updated = any(k in updated_data_sets for k in ["full_name", "date_of_birth", "gender", "avatar"])
         
-        # Trigger email
-        if updated_user.email:
-            asyncio.create_task(
-                email_service.send_profile_update_confirmation(
-                    email=updated_user.email,
-                    student_name=updated_user.full_name or "User"
-                )
+        if profile_details_updated:
+            # Trigger notification
+            notification = Notification(
+                user_id=str(current_user.id),
+                title="Profile Updated",
+                message="Your profile details were successfully updated.",
+                type="info"
             )
+            await db["notifications"].insert_one(notification.model_dump(by_alias=True, exclude_none=True))
+            
+            # Trigger email
+            if updated_user.email and getattr(updated_user, "email_notifications", True):
+                asyncio.create_task(
+                    email_service.send_profile_update_confirmation(
+                        email=updated_user.email,
+                        student_name=updated_user.full_name or "User"
+                    )
+                )
             
         return updated_user
         

@@ -11,6 +11,7 @@ export interface User {
   date_of_birth?: string;
   gender?: string;
   created_at?: string;
+  email_notifications?: boolean;
 }
 
 interface AuthContextType {
@@ -19,7 +20,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   googleLogin: (token: string, role?: string) => Promise<void>;
   register: (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => Promise<void>;
-  updateUser: (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; }) => Promise<void>;
+  updateUser: (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; email_notifications?: boolean; }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -63,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         date_of_birth: response.user.date_of_birth,
         gender: response.user.gender,
         created_at: response.user.created_at,
+        email_notifications: response.user.email_notifications,
       };
 
       setUser(newUser);
@@ -90,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         date_of_birth: response.user.date_of_birth,
         gender: response.user.gender,
         created_at: response.user.created_at,
+        email_notifications: response.user.email_notifications,
       };
 
       setUser(newUser);
@@ -120,6 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: response.email,
         role: response.role as 'teacher' | 'student',
         created_at: response.created_at,
+        email_notifications: response.email_notifications,
       };
 
       setUser(newUser);
@@ -132,16 +136,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUser = async (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; }) => {
+  const updateUser = async (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; email_notifications?: boolean; }) => {
     if (!user) return;
 
-    setIsLoading(true);
     try {
-      const apiData: { full_name?: string; avatar?: string; date_of_birth?: string; gender?: string; } = {};
+      const apiData: { full_name?: string; avatar?: string; date_of_birth?: string; gender?: string; email_notifications?: boolean; } = {};
       if (data.name) apiData.full_name = data.name;
       if (data.avatar) apiData.avatar = data.avatar;
       if (data.date_of_birth !== undefined) apiData.date_of_birth = data.date_of_birth;
       if (data.gender !== undefined) apiData.gender = data.gender;
+      if (data.email_notifications !== undefined) apiData.email_notifications = data.email_notifications;
 
       const updatedUserFn = await updateProfile(apiData);
 
@@ -151,12 +155,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         avatar: updatedUserFn.avatar,
         date_of_birth: updatedUserFn.date_of_birth,
         gender: updatedUserFn.gender,
+        email_notifications: updatedUserFn.email_notifications,
       };
 
       setUser(updatedUser);
       localStorage.setItem('nexattend_user', JSON.stringify(updatedUser));
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to update user context", error);
+      throw error;
     }
   };
 

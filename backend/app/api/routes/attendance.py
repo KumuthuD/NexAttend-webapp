@@ -67,7 +67,7 @@ async def send_attendance_emails(db: Any, classroom_id: str, student_ids: List[s
     # Try users collection first (ObjectId), then students as fallback
     for sid in student_ids:
         user = await _find_user_or_student(db, sid)
-        if user and user.get("email"):
+        if user and user.get("email") and user.get("email_notifications", True):
             await email_service.send_attendance_confirmation(
                 email=user["email"],
                 student_name=user.get("full_name", user.get("name", "Student")),
@@ -245,7 +245,7 @@ async def mark_attendance(
         }
         
     try:
-        if student.get("email"):
+        if student.get("email") and student.get("email_notifications", True):
             classroom = await db["classrooms"].find_one({"_id": session.get("classroom_id")})
             classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom")) if classroom else "Your Classroom"
             date_time = datetime.utcnow()
@@ -381,7 +381,7 @@ async def batch_mark_attendance(
                 date_str = date_time.strftime("%B %d, %Y at %I:%M %p")
                 
                 for student in students:
-                    if student.get("email"):
+                    if student.get("email") and student.get("email_notifications", True):
                         background_tasks.add_task(
                             email_service.send_attendance_confirmation,
                             student["email"],
