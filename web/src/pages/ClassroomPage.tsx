@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw, Smile, Activity, Menu, LogOut, Trash2, AlertTriangle, Flag } from 'lucide-react';
+import { Send, Megaphone, MessageCircle, ArrowLeft, Users, Clock, Hash, CheckCircle, History, RefreshCw, Smile, Activity, Menu, LogOut, Trash2, AlertTriangle, Flag, Download } from 'lucide-react';
+import ExportAttendanceModal from '../components/dashboard/ExportAttendanceModal';
 import CameraCapture from '../components/common/WebcamCapture';
 import AttendanceList from '../components/classroom/AttendanceList';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
@@ -34,6 +35,7 @@ const ClassroomPage: React.FC = () => {
     const [showHistory, setShowHistory] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     // Attendance session state
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -348,7 +350,7 @@ const ClassroomPage: React.FC = () => {
                         </div>
                         {user?.role === 'teacher' && (
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                                {/* Attendance History toggle — left of Mark Attendance */}
+                                {/* Attendance History toggle */}
                                 <button
                                     onClick={() => setShowHistory(prev => !prev)}
                                     className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm border ${showHistory
@@ -359,7 +361,6 @@ const ClassroomPage: React.FC = () => {
                                     <History size={15} />
                                     {showHistory ? 'Hide History' : 'Attendance History'}
                                 </button>
-
 
                                 {/* Mark Attendance */}
                                 <button
@@ -396,24 +397,33 @@ const ClassroomPage: React.FC = () => {
                                 <h2 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attendance History</h2>
                             </div>
 
-                            {/* Date Filter */}
-                            <div className="mb-4 max-w-xs flex items-end gap-2">
-                                <DatePicker
-                                    className="flex-1"
-                                    label="Filter by Date"
-                                    value={selectedDate}
-                                    onChange={(e) => setSelectedDate(e.target.value)}
-                                    placeholder="Select date..."
-                                />
-                                {selectedDate && (
-                                    <button
-                                        onClick={() => setSelectedDate('')}
-                                        className="p-2.5 mb-[1px] bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 rounded-lg transition-colors"
-                                        title="Clear Filter"
-                                    >
-                                        <RefreshCw size={20} />
-                                    </button>
-                                )}
+                            {/* Date Filter + Export CSV */}
+                            <div className="mb-4 flex items-end justify-between gap-2">
+                                <div className="max-w-xs flex items-end gap-2 flex-1">
+                                    <DatePicker
+                                        className="flex-1"
+                                        label="Filter by Date"
+                                        value={selectedDate}
+                                        onChange={(e) => setSelectedDate(e.target.value)}
+                                        placeholder="Select date..."
+                                    />
+                                    {selectedDate && (
+                                        <button
+                                            onClick={() => setSelectedDate('')}
+                                            className="p-2.5 mb-[1px] bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 rounded-lg transition-colors"
+                                            title="Clear Filter"
+                                        >
+                                            <RefreshCw size={20} />
+                                        </button>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => setIsExportModalOpen(true)}
+                                    className="flex items-center gap-2 px-6 py-2 mb-[1px] rounded-xl font-medium text-sm border bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all duration-200"
+                                >
+                                    <Download size={15} />
+                                    Export
+                                </button>
                             </div>
 
                             <AttendanceHistoryTable records={filteredHistory} isLoading={historyLoading} />
@@ -593,6 +603,12 @@ const ClassroomPage: React.FC = () => {
                     onFaceRecognized={handleFaceRecognized}
                 />
             )}
+
+            {/* Export Attendance Modal */}
+            <ExportAttendanceModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+            />
 
             {/* Announcement Delete Confirmation Modal */}
             <AnimatePresence>

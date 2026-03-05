@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { History, RefreshCw, Menu, LogOut } from 'lucide-react';
+import { History, RefreshCw, Menu, LogOut, Download } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
+import ExportAttendanceModal from '../components/dashboard/ExportAttendanceModal';
 import { getAttendanceHistory, getTeacherAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
@@ -25,6 +26,7 @@ const AttendanceHistoryPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const { logout } = useAuth();
     const navigate = useNavigate();
 
@@ -82,7 +84,7 @@ const AttendanceHistoryPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 overflow-x-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
                 {/* Ambient Backgrounds */}
                 <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent dark:from-violet-500/20 dark:via-purple-500/10 dark:to-transparent pointer-events-none rounded-t-3xl blur-3xl opacity-70 z-0" />
                 <div className="absolute top-40 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/10 via-indigo-500/5 to-transparent dark:from-blue-500/20 dark:via-indigo-500/5 dark:to-transparent pointer-events-none blur-3xl opacity-60 z-0" />
@@ -108,7 +110,7 @@ const AttendanceHistoryPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
                         <div className="hidden lg:flex items-center gap-3 mr-4">
                             <ThemeToggle />
                             <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
@@ -129,6 +131,15 @@ const AttendanceHistoryPage: React.FC = () => {
                         >
                             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                             Refresh
+                        </button>
+
+                        {/* Export CSV button */}
+                        <button
+                            onClick={() => setIsExportModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-white dark:bg-[#1a1d2e] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl transition-colors"
+                        >
+                            <Download className="w-4 h-4" />
+                            Export
                         </button>
                     </div>
                 </motion.div>
@@ -196,6 +207,12 @@ const AttendanceHistoryPage: React.FC = () => {
                     />
                 </motion.div>
             </main>
+
+            {/* Export Attendance Modal */}
+            <ExportAttendanceModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+            />
         </div>
     );
 };

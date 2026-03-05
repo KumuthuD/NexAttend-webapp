@@ -201,9 +201,9 @@ const DashboardPage: React.FC = () => {
                 >
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-                            {greeting}{user?.name ? `, ${user.name.split(' ')[0]}!` : '!'} 
+                            {greeting}{user?.name ? `, ${user.name.split(' ')[0]}!` : '!'}
                         </h1>
-                        
+
                     </div>
                     <div className="hidden lg:flex items-center gap-3">
                         <ThemeToggle />
@@ -241,16 +241,6 @@ const DashboardPage: React.FC = () => {
                             {classrooms.length} classrooms
                         </span>
                     </div>
-
-                    {isTeacher && (
-                        <button
-                            onClick={() => setIsExportModalOpen(true)}
-                            className="bg-white dark:bg-[#1a1d2e] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
-                        >
-                            <Download className="w-4 h-4" />
-                            Export CSV
-                        </button>
-                    )}
                 </div>
 
                 {/* Error state */}

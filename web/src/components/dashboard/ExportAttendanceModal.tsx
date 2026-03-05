@@ -149,7 +149,7 @@ const ExportAttendanceModal: React.FC<ExportAttendanceModalProps> = ({ isOpen, o
                                     onChange={(e) => setStatus(e.target.value)}
                                     className="w-full bg-gray-50 dark:bg-[#0f1117] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all"
                                 >
-                                    <option value="">All Statuses</option>
+                                    <option value="">All</option>
                                     <option value="present">Present</option>
                                     <option value="absent">Absent</option>
                                     <option value="excused">Excused</option>
