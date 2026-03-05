@@ -4,6 +4,7 @@ from app.database.mongodb import get_database
 from app.models.classroom import Classroom
 from app.schemas.classroom import (
     ClassroomCreate,
+    ClassroomUpdate,
     ClassroomResponse,
     JoinClassroomRequest,
     JoinClassroomResponse,
@@ -220,6 +221,65 @@ async def get_classroom(
     return ClassroomResponse(
         **classroom,
         student_count=len(classroom.get("student_ids", [])),
+    )
+
+
+
+#  PUT /classrooms/{class_id}    Update classroom (teacher only)
+
+@router.put("/{class_id}", response_model=ClassroomResponse)
+async def update_classroom(
+    class_id: str,
+    classroom_in: ClassroomUpdate,
+    db=Depends(get_database),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Teacher updates classroom metadata (name, description, etc.).
+    Only the owning teacher can perform this operation.
+    """
+    if current_user.role != "teacher":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only teachers can update classrooms",
+        )
+
+    # 1. Verify existence and ownership
+    classroom = await db["classrooms"].find_one({"_id": class_id})
+    if not classroom:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Classroom {class_id} not found",
+        )
+
+    if str(classroom.get("teacher_id")) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only update your own classrooms",
+        )
+
+    # 2. Update data
+    update_data = classroom_in.model_dump(exclude_unset=True)
+    if not update_data:
+        return ClassroomResponse(
+            **classroom,
+            student_count=len(classroom.get("student_ids", [])),
+        )
+    
+    update_data["updated_at"] = datetime.utcnow()
+
+    await db["classrooms"].update_one(
+        {"_id": class_id},
+        {"$set": update_data}
+    )
+
+    updated_classroom = await db["classrooms"].find_one({"_id": class_id})
+    
+    logger.info(f"Classroom {class_id} updated by teacher {current_user.id}")
+
+    return ClassroomResponse(
+        **updated_classroom,
+        student_count=len(updated_classroom.get("student_ids", [])),
     )
 
 
