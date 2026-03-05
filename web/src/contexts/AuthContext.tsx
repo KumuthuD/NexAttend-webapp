@@ -12,6 +12,7 @@ export interface User {
   gender?: string;
   created_at?: string;
   email_notifications?: boolean;
+  student_id?: string;
 }
 
 interface AuthContextType {
@@ -65,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         gender: response.user.gender,
         created_at: response.user.created_at,
         email_notifications: response.user.email_notifications,
+        student_id: response.user.student_id,
       };
 
       setUser(newUser);
@@ -93,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         gender: response.user.gender,
         created_at: response.user.created_at,
         email_notifications: response.user.email_notifications,
+        student_id: response.user.student_id,
       };
 
       setUser(newUser);
@@ -124,6 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: response.role as 'teacher' | 'student',
         created_at: response.created_at,
         email_notifications: response.email_notifications,
+        student_id: response.student_id,
       };
 
       setUser(newUser);
