@@ -390,6 +390,10 @@ export const updatePassword = async (data: { current_password: string; new_passw
   return response.data;
 };
 
+export const deleteAccount = async (password: string): Promise<void> => {
+  await api.delete('/api/v1/users/me', { data: { password } });
+};
+
 export const getClassrooms = async (): Promise<Classroom[]> => {
   const response = await api.get<Classroom[]>("/api/v1/classrooms");
   return response.data;

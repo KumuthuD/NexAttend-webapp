@@ -178,3 +178,46 @@ async def get_my_classrooms(
             student_count=len(cls.get("student_ids", []))
         ))
     return response
+
+from pydantic import BaseModel
+
+class DeleteAccountRequest(BaseModel):
+    password: str
+
+@router.delete("/me", status_code=204)
+async def delete_user_me(
+    request: DeleteAccountRequest,
+    current_user: User = Depends(get_current_user),
+    db = Depends(get_database)
+):
+    """
+    Delete the currently logged-in user's account and all associated data.
+    Requires password confirmation.
+    """
+    # Verify password before deleting
+    user_doc = await db["users"].find_one({"_id": ObjectId(current_user.id)})
+    if not user_doc or not verify_password(request.password, user_doc.get("password_hash", "")):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Incorrect password. Account deletion cancelled."
+        )
+
+    user_id = str(current_user.id)
+
+    # Remove user from any classrooms they are enrolled in (as a student)
+    await db["classrooms"].update_many(
+        {"student_ids": user_id},
+        {"$pull": {"student_ids": user_id}}
+    )
+
+    # Delete all their notifications
+    await db["notifications"].delete_many({"user_id": user_id})
+
+    # Delete their face embeddings if any
+    await db["face_embeddings"].delete_many({"user_id": user_id})
+    await db["students"].delete_many({"user_id": user_id})
+
+    # Finally delete the user document
+    await db["users"].delete_one({"_id": ObjectId(current_user.id)})
+
+    return None
