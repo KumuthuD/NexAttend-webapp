@@ -144,8 +144,170 @@ async def update_motivation_scores(db: Any, classroom_id: str, student_ids: List
     except Exception as e:
         import logging
         logging.error(f"Error updating motivation scores: {str(e)}")
-
 router = APIRouter()
+
+
+# ── GET /flagged — Fetch all attendance records for the review page ─────────
+@router.get("/flagged")
+async def get_flagged_records(
+    classroom_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    db: Any = Depends(get_database)
+):
+    """
+    Fetch all attendance records across sessions for the Attendance Review page.
+    Each student who was in a session gets a record. Enriched with student name
+    and 8-digit student_id from the users collection.
+    """
+    # 1. Build query
+    query = {}
+    if classroom_id:
+        query["classroom_id"] = classroom_id
+    if session_id:
+        query["_id"] = session_id
+
+    # 2. Fetch sessions (most recent first)
+    sessions = await db["attendance_sessions"].find(query).sort("session_date", -1).to_list(length=200)
+
+    # 3. Collect all unique student IDs from records + present lists
+    all_student_ids = set()
+    for session in sessions:
+        for record in session.get("records", []):
+            all_student_ids.add(record.get("student_id"))
+        for sid in session.get("present_student_ids", []):
+            all_student_ids.add(sid)
+
+    # 4. Bulk-fetch student info from users collection
+    student_map = {}
+    for sid in all_student_ids:
+        if not sid:
+            continue
+        user = await _find_user_or_student(db, sid)
+        if user:
+            student_map[sid] = {
+                "name": user.get("full_name", user.get("name", "Unknown")),
+                "student_id": user.get("student_id", ""),  # 8-digit ID
+            }
+
+    # 5. Fetch classroom names
+    classroom_ids = list(set(s.get("classroom_id") for s in sessions if s.get("classroom_id")))
+    classroom_map = {}
+    for cid in classroom_ids:
+        cls = await db["classrooms"].find_one({"_id": cid})
+        if cls:
+            classroom_map[cid] = cls.get("name", "Unknown Classroom")
+
+    # 6. Build flat list of records
+    results = []
+    for session in sessions:
+        session_id = session.get("_id", "")
+        classroom_name = classroom_map.get(session.get("classroom_id", ""), "Unknown Classroom")
+        session_date = session.get("session_date", datetime.utcnow()).isoformat() if session.get("session_date") else datetime.utcnow().isoformat()
+
+        # Get all student IDs in this session (from records + present list)
+        session_student_ids = set()
+        records_by_student = {}
+        for record in session.get("records", []):
+            sid = record.get("student_id")
+            if sid:
+                session_student_ids.add(sid)
+                records_by_student[sid] = record
+
+        # Also include students in present list who may not have explicit records
+        for sid in session.get("present_student_ids", []):
+            session_student_ids.add(sid)
+
+        for sid in session_student_ids:
+            info = student_map.get(sid, {"name": "Unknown", "student_id": ""})
+            record = records_by_student.get(sid, {})
+
+            confidence = record.get("confidence", 0)
+            if confidence is None:
+                confidence = 0
+            # Convert from 0-1 to 0-100 if needed
+            if isinstance(confidence, float) and confidence <= 1.0 and confidence > 0:
+                confidence = round(confidence * 100)
+
+            is_flagged = record.get("is_flagged", False)
+            flag_reason = record.get("flag_reason", "")
+            review_status = record.get("review_status", "pending")
+
+            # Determine status
+            if confidence >= 60:
+                status_val = "approved"
+            elif confidence == 0 and sid not in [r.get("student_id") for r in session.get("records", [])]:
+                status_val = "rejected"
+            else:
+                status_val = review_status
+
+            results.append({
+                "id": f"{session_id}_{sid}",
+                "student_name": info["name"],
+                "student_id": info["student_id"],  # 8-digit ID
+                "classroom_name": classroom_name,
+                "session_date": session_date,
+                "confidence": confidence,
+                "status": status_val,
+                "flagged_reason": flag_reason or ("Clear match" if confidence >= 60 else "Low confidence" if confidence > 0 else "No face detected"),
+            })
+
+    return results
+
+
+# ── PUT /flagged/{record_id} — Approve/reject a record ─────────────────────
+@router.put("/flagged/{record_id}")
+async def update_flagged_record_endpoint(
+    record_id: str,
+    body: dict = Body(...),
+    db: Any = Depends(get_database)
+):
+    """
+    Approve or reject an attendance record from the review page.
+    record_id format: {session_id}_{student_id}
+    """
+    parts = record_id.split("_", 1)
+    if len(parts) != 2:
+        raise HTTPException(status_code=400, detail="Invalid record ID format")
+
+    session_id, student_id = parts
+    action = body.get("action", "approve")
+
+    now = datetime.utcnow()
+
+    if action == "approve":
+        # Mark as present with full confidence
+        result = await db["attendance_sessions"].update_one(
+            {"_id": session_id, "records.student_id": student_id},
+            {
+                "$set": {
+                    "records.$.review_status": "approved",
+                    "records.$.is_flagged": False,
+                    "records.$.confidence": 1.0,
+                    "records.$.status": "present",
+                    "updated_at": now
+                },
+                "$addToSet": {"present_student_ids": student_id}
+            }
+        )
+    else:
+        # Reject
+        result = await db["attendance_sessions"].update_one(
+            {"_id": session_id, "records.student_id": student_id},
+            {
+                "$set": {
+                    "records.$.review_status": "rejected",
+                    "records.$.is_flagged": True,
+                    "records.$.status": "absent",
+                    "updated_at": now
+                },
+                "$pull": {"present_student_ids": student_id}
+            }
+        )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    return {"message": f"Record {action}d successfully"}
 
 @router.post("/start", response_model=AttendanceSessionResponse, status_code=status.HTTP_201_CREATED)
 async def start_attendance(

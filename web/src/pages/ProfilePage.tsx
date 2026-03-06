@@ -13,8 +13,7 @@ import {
     Edit,
     Shield,
     Menu,
-    LogOut,
-    Hash
+    LogOut
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -130,14 +129,10 @@ const ProfilePage: React.FC = () => {
                                 </p>
 
                                 {user?.student_id && (
-                                    <div className="flex items-center gap-2 mb-6 px-4 py-2.5 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-500/10 dark:to-fuchsia-500/10 border border-violet-100 dark:border-violet-500/20 rounded-xl">
-                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-sm">
-                                            <Hash size={16} />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Student ID</span>
-                                            <span className="text-base font-bold text-gray-900 dark:text-white tracking-wider font-mono">{user.student_id}</span>
-                                        </div>
+                                    <div className="flex items-center justify-center gap-2 mb-6 px-5 py-2 bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] rounded-xl">
+                                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Student ID</span>
+                                        <span className="text-xs text-gray-300 dark:text-gray-600">|</span>
+                                        <span className="text-sm font-bold text-gray-900 dark:text-white tracking-[0.15em] font-mono">{user.student_id}</span>
                                     </div>
                                 )}
 

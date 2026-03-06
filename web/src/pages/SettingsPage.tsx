@@ -394,6 +394,24 @@ const SettingsPage: React.FC = () => {
                                                         <p className="text-xs text-gray-500 mt-1">Email address cannot be changed</p>
                                                     </div>
 
+                                                    {user?.student_id && (
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Student ID</label>
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    value={user.student_id}
+                                                                    readOnly
+                                                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100 font-mono tracking-[0.15em] font-semibold cursor-not-allowed select-all"
+                                                                />
+                                                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                                    <Lock size={14} className="text-gray-400 dark:text-gray-500" />
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 mt-1">Student ID is system-generated and cannot be changed</p>
+                                                        </div>
+                                                    )}
+
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                         <div>
                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>

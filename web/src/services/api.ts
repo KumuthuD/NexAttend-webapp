@@ -605,8 +605,11 @@ export interface FlaggedRecord {
  * Fetches all flagged attendance records.
  * Falls back to mock data when the backend endpoint is not available.
  */
-export const getFlaggedRecords = async (): Promise<FlaggedRecord[]> => {
-  const response = await api.get<FlaggedRecord[]>("/api/v1/attendance/flagged");
+export const getFlaggedRecords = async (classroomId?: string, sessionId?: string): Promise<FlaggedRecord[]> => {
+  const params: Record<string, string> = {};
+  if (classroomId) params.classroom_id = classroomId;
+  if (sessionId) params.session_id = sessionId;
+  const response = await api.get<FlaggedRecord[]>("/api/v1/attendance/flagged", { params });
   return response.data;
 };
 

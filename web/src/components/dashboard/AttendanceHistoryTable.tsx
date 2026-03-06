@@ -150,7 +150,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                navigate(`/manual-review/${record.classroom_id}`);
+                                                navigate(`/manual-review/${record.classroom_id}/${record.id}`);
                                             }}
                                             className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-xs border bg-white dark:bg-white/5 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-300 dark:hover:border-amber-500/30 w-auto"
                                             title="Manual Review"

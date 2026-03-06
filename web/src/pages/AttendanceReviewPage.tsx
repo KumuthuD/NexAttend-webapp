@@ -136,7 +136,7 @@ const getStatusBadge = (confidence: number) => {
 const ManualReviewPage: React.FC = () => {
     const { logout, user } = useAuth();
     const navigate = useNavigate();
-    const { classroomId } = useParams<{ classroomId: string }>();
+    const { classroomId, sessionId } = useParams<{ classroomId: string; sessionId: string }>();
 
     const [records, setRecords] = useState<FlaggedRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -177,7 +177,7 @@ const ManualReviewPage: React.FC = () => {
     const fetchRecords = useCallback(async () => {
         setIsLoading(true);
         try {
-            const data = await getFlaggedRecords();
+            const data = await getFlaggedRecords(classroomId, sessionId);
             setRecords(data);
         } catch {
             // Backend not ready — use mock data
@@ -185,7 +185,7 @@ const ManualReviewPage: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [classroomId, sessionId]);
 
     useEffect(() => {
         fetchRecords();
@@ -198,6 +198,7 @@ const ManualReviewPage: React.FC = () => {
 
     const handleApprove = async (recordId: string) => {
         try {
+            await updateFlaggedRecord(recordId, 'approve');
             // Update the local state for immediate feedback
             setRecords((prev) =>
                 prev.map((r) =>
@@ -205,10 +206,14 @@ const ManualReviewPage: React.FC = () => {
                 )
             );
             showToast('Student marked as present', 'success');
-            // If backend becomes available, uncomment the call below
-            // await updateFlaggedRecord(recordId, 'approve'); 
         } catch (error) {
-            showToast('Failed to approve record', 'error');
+            // Fallback to local-only update
+            setRecords((prev) =>
+                prev.map((r) =>
+                    r.id === recordId ? { ...r, confidence: 100 } : r
+                )
+            );
+            showToast('Student marked as present (local only)', 'success');
         }
     };
 
@@ -226,6 +231,7 @@ const ManualReviewPage: React.FC = () => {
         const matchesSearch =
             searchQuery === '' ||
             r.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            r.student_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
             r.classroom_name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesFilter && matchesSearch;
     });
@@ -487,9 +493,16 @@ const ManualReviewPage: React.FC = () => {
                                                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                                         {record.student_name}
                                                     </p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                        Marked at: {new Date(record.session_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        {record.student_id && (
+                                                            <span className="text-[11px] font-mono font-semibold tracking-wider text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-1.5 py-0.5 rounded">
+                                                                {record.student_id}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                            {new Date(record.session_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
 
