@@ -267,7 +267,7 @@ const ManualReviewPage: React.FC = () => {
             </div>
 
             <main
-                className={`flex-1 lg:ml-64 p-4 mt-5 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}
+                className={`flex-1 lg:ml-64 p-4 pt-20 lg:pt-4 mt-5 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}
             >
 
                 {/* ── Top Header ─────────────────────────────────────────────── */}
@@ -373,7 +373,7 @@ const ManualReviewPage: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.15 }}
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 relative z-10"
+                    className="flex flex-col sm:flex-row items-center sm:items-center gap-3 mb-6 relative z-10"
                 >
                     {/* Status pills */}
                     <div className="flex items-center gap-1.5 bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] shadow-[0_2px_10px_rgba(0,0,0,0.02)] rounded-xl p-1">
@@ -399,29 +399,31 @@ const ManualReviewPage: React.FC = () => {
                         ))}
                     </div>
 
-                    {/* Search */}
-                    <div className="relative flex-1 max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search"
-                            className="w-full pl-9 pr-4 py-2 text-sm bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all duration-300"
-                        />
-                    </div>
+                    {/* Search + Refresh on same row */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-1">
+                        <div className="relative flex-1 sm:max-w-xs">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search"
+                                className="w-full pl-9 pr-4 py-2 text-sm bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all duration-300"
+                            />
+                        </div>
 
-                    {/* Refresh */}
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={fetchRecords}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 rounded-xl bg-white dark:bg-white/5 transition-all duration-200 disabled:opacity-50"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                        Refresh
-                    </motion.button>
+                        {/* Refresh */}
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={fetchRecords}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 rounded-xl bg-white dark:bg-white/5 transition-all duration-200 disabled:opacity-50 shrink-0"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            <span className="hidden sm:inline">Refresh</span>
+                        </motion.button>
+                    </div>
                 </motion.div>
 
                 {/* ── Records ──────────────────────────────────────────────── */}

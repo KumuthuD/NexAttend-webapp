@@ -229,10 +229,6 @@ const CalendarPage: React.FC = () => {
                                 <button onClick={prevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-600 dark:text-gray-400 transition-colors">
                                     <ChevronLeft size={20} />
                                 </button>
-                                <button onClick={() => { setCurrentDate(new Date()); setSelectedDate(new Date()); }}
-                                    className="px-3 py-1.5 text-sm font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-lg transition-colors border border-transparent hover:border-violet-100 dark:hover:border-violet-500/20">
-                                    Today
-                                </button>
                                 <button onClick={nextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-600 dark:text-gray-400 transition-colors">
                                     <ChevronRight size={20} />
                                 </button>
@@ -348,9 +344,6 @@ const CalendarPage: React.FC = () => {
                                             <Clock size={20} className="text-gray-300 dark:text-gray-600" />
                                         </div>
                                         <p className="text-gray-400 dark:text-gray-500 text-sm">No events scheduled</p>
-                                        <button onClick={openAddModal} className="mt-3 text-xs text-violet-600 dark:text-violet-400 hover:underline">
-                                            + Add an event
-                                        </button>
                                     </div>
                                 )}
                             </div>

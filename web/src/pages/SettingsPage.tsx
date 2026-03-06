@@ -458,14 +458,14 @@ const SettingsPage: React.FC = () => {
 
                                         {/* Danger Zone */}
                                         <div className="mt-6 pt-6 border-t border-red-200 dark:border-red-900/30">
-                                            <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/30">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/30">
                                                 <div>
                                                     <p className="font-medium text-gray-900 dark:text-white">Delete Account</p>
                                                     <p className="text-sm text-gray-500 dark:text-gray-400">Permanently delete your account and all associated data.</p>
                                                 </div>
                                                 <button
                                                     onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setShowDeletePassword(false); }}
-                                                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium text-sm transition-all duration-200 whitespace-nowrap ml-4"
+                                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium text-sm transition-all duration-200 whitespace-nowrap sm:ml-4 w-full sm:w-auto"
                                                 >
                                                     <Trash2 size={16} />
                                                     Delete Account
