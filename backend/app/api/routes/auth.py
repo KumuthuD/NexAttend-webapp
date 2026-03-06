@@ -8,6 +8,7 @@ from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
 from app.schemas.token import Token
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.api import deps
+from app.services.student_id_service import generate_student_id
 from typing import Any
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -61,6 +62,10 @@ async def register_user(
         "has_registered_face": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
+
+    # Generate unique 8-digit student ID for students
+    if role == "student":
+        user_data["student_id"] = await generate_student_id(db)
 
     # Process Face (if student and files provided)
     if role == "student" and files and len(files) > 0:
@@ -171,7 +176,8 @@ async def login_user(user_in: UserLogin, db = Depends(get_database)):
             avatar=user.get("avatar"),
             date_of_birth=user.get("date_of_birth"),
             gender=user.get("gender"),
-            created_at=user.get("created_at")
+            created_at=user.get("created_at"),
+            student_id=user.get("student_id")
         )
     )
 def get_google_user_info(token: str):
@@ -236,6 +242,10 @@ async def google_login(login_data: GoogleLogin, db = Depends(get_database)):
             "created_at": datetime.now(timezone.utc).isoformat(),
             "auth_provider": "google"
         }
+
+        # Generate unique student ID for student role
+        if login_data.role == "student":
+            user_data["student_id"] = await generate_student_id(db)
         
         result = await db["users"].insert_one(user_data)
         user = await db["users"].find_one({"_id": result.inserted_id})
@@ -261,7 +271,8 @@ async def google_login(login_data: GoogleLogin, db = Depends(get_database)):
             role=user["role"],
             is_active=user.get("is_active", True),
             avatar=user.get("avatar"),
-            created_at=user.get("created_at")
+            created_at=user.get("created_at"),
+            student_id=user.get("student_id")
         )
     )
 

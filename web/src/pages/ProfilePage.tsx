@@ -13,7 +13,8 @@ import {
     Edit,
     Shield,
     Menu,
-    LogOut
+    LogOut,
+    Hash
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -124,9 +125,21 @@ const ProfilePage: React.FC = () => {
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                                     {user?.name || 'User Name'}
                                 </h2>
-                                <p className="text-sm font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-3 py-1 rounded-full mb-6 capitalize">
+                                <p className="text-sm font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 px-3 py-1 rounded-full mb-3 capitalize">
                                     {user?.role || 'Student'}
                                 </p>
+
+                                {user?.student_id && (
+                                    <div className="flex items-center gap-2 mb-6 px-4 py-2.5 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-500/10 dark:to-fuchsia-500/10 border border-violet-100 dark:border-violet-500/20 rounded-xl">
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-sm">
+                                            <Hash size={16} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 dark:text-gray-500">Student ID</span>
+                                            <span className="text-base font-bold text-gray-900 dark:text-white tracking-wider font-mono">{user.student_id}</span>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="w-full space-y-4 mb-8">
                                     <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">

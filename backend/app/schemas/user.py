@@ -40,6 +40,7 @@ class UserResponse(BaseModel):
     gender: Optional[str] = None
     created_at: Optional[str] = None
     email_notifications: bool = True
+    student_id: Optional[str] = None
 
     model_config = ConfigDict(populate_by_name=True)
 
