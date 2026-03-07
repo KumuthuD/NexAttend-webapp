@@ -21,6 +21,7 @@ import {
   ClockIcon,
   SparklesIcon,
 } from "../components/icons";
+import { SendIcon } from "lucide-react";
 
 // ===== SCROLL REVEAL HOOK =====
 function useScrollReveal() {
@@ -458,13 +459,6 @@ const LandingPage = () => {
         {/* Hero Content */}
         <div className="relative z-20 container mx-auto px-4 flex-grow flex flex-col items-center justify-center text-center">
           <div className="w-full max-w-7xl mx-auto flex flex-col items-center">
-            <div className="animate-fade-in-down stagger-1 mb-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium backdrop-blur-sm">
-                <span className="w-2 h-2 bg-violet-400 rounded-full animate-pulse"></span>
-                AI-Powered Attendance System
-              </span>
-            </div>
-
             <h1 className="animate-fade-in-up stagger-2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400">
               NexAttend: Effortless Attendance.
             </h1>
@@ -576,22 +570,13 @@ const LandingPage = () => {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <div className="inline-block mb-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium">
-                <SparklesIcon className="w-4 h-4" />
-                Powerful Features
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">
+            <h2 className="text-4xl md:text-5xl pb-5 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-2">
               Why Choose NexAttend?
             </h2>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Experience the future of classroom management with our
               cutting-edge features.
             </p>
-            <div className="mt-6 flex justify-center">
-              <div className="w-32 h-1 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 rounded-full"></div>
-            </div>
           </div>
 
           {/* Features Grid */}
@@ -660,12 +645,11 @@ const LandingPage = () => {
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16 reveal">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium mb-6">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              How It Works
-            </span>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">Three Simple Steps</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Get up and running in minutes, no complex setup required.</p>
+            <h2 className="text-4xl md:text-5xl pb-2 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-2">Three Simple Steps</h2>
+            <div className="mt-4 flex justify-center">
+              <div className="w-32 h-1 bg-gradient-to-r from-pink-500 via-violet-500 to-pink-500 rounded-full"></div>
+            </div>
+            <p className="text-lg text-gray-400 mt-6 max-w-2xl mx-auto">Get up and running in minutes, no complex setup required.</p>
           </div>
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-3 gap-8 relative">
@@ -699,17 +683,17 @@ const LandingPage = () => {
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16 reveal">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-sm font-medium mb-6">
-              ⭐ Testimonials
-            </span>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-violet-400 to-pink-400 mb-4">Loved by Educators</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Hear from the teachers and admins who use NexAttend every day.</p>
+            <h2 className="text-4xl md:text-5xl pb-2 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-violet-400 to-pink-400 mb-2">Loved by Educators</h2>
+            <div className="mt-4 flex justify-center">
+              <div className="w-32 h-1 bg-gradient-to-r from-pink-500 via-violet-500 to-pink-500 rounded-full"></div>
+            </div>
+            <p className="text-lg text-gray-400 mt-6 max-w-2xl mx-auto">Hear from the teachers and admins who use NexAttend every day.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
               { name: "Dr. Priya Nair", role: "Professor, Computer Science", avatar: "P", color: "from-violet-500 to-pink-500", stars: 5, text: "NexAttend cut my attendance routine from 8 minutes to literally zero. I walk in, start the session, and it's done. Absolutely brilliant." },
-              { name: "James Kowalski", role: "Academic Director", avatar: "J", color: "from-pink-500 to-orange-400", stars: 5, text: "The analytics dashboard gives us a bird's-eye view of campus-wide attendance we never had before. Decision-making is so much faster now." },
-              { name: "Amara Osei", role: "Head of IT, University", avatar: "A", color: "from-cyan-500 to-violet-500", stars: 5, text: "Integration was seamless. We connected it with our existing LMS in an afternoon. The AI accuracy is genuinely impressive — over 97% on day one." },
+              { name: "James Kowalski", role: "Academic Director", avatar: "J", color: "from-pink-500 to-orange-400", stars: 5, text: "The analytics dashboard gives us a bird's eye view of classroom attendance we never had before. Decision-making is so much faster now." },
+              { name: "Amara Osei", role: "Head of IT, University", avatar: "A", color: "from-cyan-500 to-violet-500", stars: 5, text: "Integration was seamless. We connected it with our existing LMS, and the AI accuracy is genuinely impressive over 97% on day one." },
             ].map((t, i) => (
               <div key={i} className="reveal glass-card rounded-3xl p-8 relative overflow-hidden group hover:border-violet-500/30 transition-all duration-500" style={{ transitionDelay: `${i * 0.12}s` }}>
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-violet-500/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -741,23 +725,15 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative z-10">
           {/* Demo Header */}
           <div className="text-center mb-16">
-            <div className="inline-block mb-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                </svg>
-                Product Demo
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-2">
               See NexAttend in Action
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            <div className="mt-4 flex justify-center">
+              <div className="w-32 h-1 bg-gradient-to-r from-pink-500 via-violet-500 to-pink-500 rounded-full"></div>
+            </div>
+            <p className="text-lg text-gray-400 mt-6 max-w-2xl mx-auto">
               Watch how our AI-powered attendance system transforms classroom management in real-time.
             </p>
-            <div className="mt-6 flex justify-center">
-              <div className="w-32 h-1 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 rounded-full"></div>
-            </div>
           </div>
 
           {/* Demo Video */}
@@ -793,24 +769,12 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative z-10">
           {/* Pricing Header */}
           <div className="text-center mb-16">
-            <div className="inline-block mb-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                </svg>
-                Pricing Plans
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 mb-2">
               Choose Your Plan
             </h2>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Flexible pricing options for institutions of all sizes. Start free or scale as you grow.
             </p>
-            <div className="mt-8 flex justify-center">
-              <div className="w-32 h-1 bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500 rounded-full"></div>
-            </div>
             {/* Monthly / Yearly Toggle */}
             <div className="mt-8 flex items-center justify-center gap-4">
               <span className={`text-sm font-semibold transition-colors ${!pricingYearly ? 'text-white' : 'text-gray-500'}`}>Monthly</span>
@@ -842,16 +806,10 @@ const LandingPage = () => {
               <div className="relative group h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-500/20 to-gray-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative h-full bg-gray-800/60 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-500 flex flex-col">
-                  <div className="w-14 h-14 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Starter</h3>
                   <p className="text-gray-400 text-sm mb-8">Perfect for small classrooms</p>
                   <div className="mb-8">
-                    <span className="text-5xl font-black text-white">Free</span>
-                    <p className="text-gray-500 text-sm mt-2">No credit card required</p>
+                    <span className="text-4xl font-black text-white">Free</span>
                   </div>
                   <ul className="space-y-4 mb-8 flex-grow">
                     {["Up to 30 students", "Basic face recognition", "30-day data retention", "Email support"].map((feature, i) => (
@@ -876,24 +834,18 @@ const LandingPage = () => {
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 via-pink-600 to-violet-600 rounded-3xl blur opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
                   <span className="inline-flex items-center gap-1.5 px-5 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-bold rounded-full shadow-xl shadow-violet-500/40">
-                    <SparklesIcon className="w-4 h-4" />
                     MOST POPULAR
                   </span>
                 </div>
                 <div className="relative h-full bg-gradient-to-br from-gray-800/95 via-gray-900/95 to-gray-800/95 backdrop-blur-xl rounded-3xl p-8 border-2 border-violet-500/50 transition-all duration-500 flex flex-col">
-                  <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-violet-500/30 mt-4">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 mb-2">Professional</h3>
+                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 mt-4 mb-2">Professional</h3>
                   <p className="text-gray-400 text-sm mb-8">For growing institutions</p>
                   <div className="mb-8">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-black text-white">${pricingYearly ? '39' : '49'}</span>
+                      <span className="text-4xl font-black text-white">${pricingYearly ? '39' : '49'}</span>
                       <span className="text-xl text-gray-400">/month</span>
                     </div>
-                    <p className="text-gray-500 text-sm mt-2">{pricingYearly ? 'Billed yearly — save $120/yr' : 'Billed monthly'}</p>
+                    <p className="text-gray-500 text-sm mt-2">{pricingYearly ? 'Save $120' : 'Billed monthly'}</p>
                   </div>
                   <ul className="space-y-4 mb-8 flex-grow">
                     {["Up to 200 students", "Advanced AI recognition", "Unlimited data retention", "Real-time analytics", "Priority 24/7 support"].map((feature, i) => (
@@ -917,15 +869,10 @@ const LandingPage = () => {
               <div className="relative group h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-violet-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative h-full bg-gray-800/60 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/50 hover:border-pink-500/30 transition-all duration-500 flex flex-col">
-                  <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-violet-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
                   <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400 mb-2">Enterprise</h3>
                   <p className="text-gray-400 text-sm mb-8">For large organizations</p>
                   <div className="mb-8">
-                    <span className="text-5xl font-black text-white">Custom</span>
+                    <span className="text-4xl font-black text-white">Custom</span>
                     <p className="text-gray-500 text-sm mt-2">Tailored to your needs</p>
                   </div>
                   <ul className="space-y-4 mb-8 flex-grow">
@@ -960,24 +907,16 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative z-10">
           {/* About Header */}
           <div className="text-center mb-16">
-            <div className="inline-block mb-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-sm font-medium">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                </svg>
-                Our Team
-              </span>
-            </div>
             <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-violet-400 to-pink-400 mb-4">
               Meet the Team Behind NexAttend
             </h2>
-            <p className="text-lg text-gray-400 max-w-3xl mx-auto">
+            <div className="mt-4 flex justify-center">
+              <div className="w-32 h-1 bg-gradient-to-r from-pink-500 via-violet-500 to-pink-500 rounded-full"></div>
+            </div>
+            <p className="text-lg text-gray-400 mt-6 max-w-3xl mx-auto">
               We are a passionate team of computer science undergraduates
               building an AI-powered attendance and classroom management system.
             </p>
-            <div className="mt-6 flex justify-center">
-              <div className="w-32 h-1 bg-gradient-to-r from-pink-500 via-violet-500 to-pink-500 rounded-full"></div>
-            </div>
           </div>
 
           {/* Mission & Vision */}
@@ -986,25 +925,10 @@ const LandingPage = () => {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-pink-500"></div>
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl group-hover:bg-violet-500/20 transition-all duration-700"></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-pink-500 rounded-xl flex items-center justify-center mb-5 shadow-lg">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 mb-3">
+                <h3 className="text-3xl text-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-pink-400 mb-6">
                   Our Mission
                 </h3>
-                <p className="text-gray-300 leading-relaxed">
+                <p className="text-gray-300 text-center leading-relaxed">
                   To develop an AI-driven platform that automates classroom
                   attendance, provides detailed analytics, and facilitates
                   communication between teachers and students.
@@ -1016,31 +940,10 @@ const LandingPage = () => {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-violet-500"></div>
               <div className="absolute -top-10 -left-10 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl group-hover:bg-pink-500/20 transition-all duration-700"></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-5 shadow-lg">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400 mb-3">
+                <h3 className="text-3xl text-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400 mb-6">
                   Our Vision
                 </h3>
-                <p className="text-gray-300 leading-relaxed">
+                <p className="text-gray-300 text-center leading-relaxed">
                   Promoting digital transformation in education, reducing
                   administrative burden, and encouraging data-driven decisions
                   to improve student engagement.
@@ -1077,13 +980,6 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 relative z-10">
           {/* Header */}
           <div className="text-center mb-16 reveal">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-sm font-medium mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
-              </span>
-              Get In Touch
-            </span>
             <h2 className="text-4xl md:text-5xl font-extrabold mb-4">
               <span className="text-white">Let's </span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400">
@@ -1099,15 +995,6 @@ const LandingPage = () => {
 
             {/* ── LEFT SIDEBAR ── */}
             <div className="lg:col-span-2 reveal space-y-5" style={{ transitionDelay: '0.05s' }}>
-
-              {/* Response-time badge */}
-              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
-                </span>
-                <p className="text-emerald-300 text-sm font-semibold">Average response time: <span className="text-white">&lt; 4 hours</span></p>
-              </div>
 
               {/* Contact info tiles */}
               {[
@@ -1164,13 +1051,13 @@ const LandingPage = () => {
                 <p className="text-gray-500 text-xs font-semibold uppercase tracking-widest mb-3">Follow us</p>
                 <div className="flex gap-3 flex-wrap">
                   {[
-                    { href: 'https://www.instagram.com/nexattend', label: 'Instagram', icon: <InstagramIcon className="w-4 h-4" />, hover: 'hover:bg-gradient-to-r hover:from-pink-500/30 hover:to-yellow-500/30 hover:border-pink-400/40 hover:text-pink-300' },
-                    { href: 'https://www.linkedin.com/company/nexattend/', label: 'LinkedIn', icon: <LinkedInIcon className="w-4 h-4" />, hover: 'hover:bg-[#0077b5]/20 hover:border-[#0077b5]/40 hover:text-blue-300' },
-                    { href: '#', label: 'X', icon: <XIcon className="w-4 h-4" />, hover: 'hover:bg-white/10 hover:border-white/30 hover:text-white' },
+                    { href: 'https://www.instagram.com/nexattend', icon: <InstagramIcon className="w-4 h-4" />, hover: 'hover:bg-gradient-to-r hover:from-pink-500/30 hover:to-yellow-500/30 hover:border-pink-400/40 hover:text-pink-300' },
+                    { href: 'https://www.linkedin.com/company/nexattend/', icon: <LinkedInIcon className="w-4 h-4" />, hover: 'hover:bg-[#0077b5]/20 hover:border-[#0077b5]/40 hover:text-blue-300' },
+                    { href: '#', icon: <XIcon className="w-4 h-4" />, hover: 'hover:bg-white/10 hover:border-white/30 hover:text-white' },
                   ].map(s => (
-                    <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                    <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer"
                       className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-gray-400 text-xs font-semibold transition-all duration-300 ${s.hover} hover:scale-105`}>
-                      {s.icon} {s.label}
+                      {s.icon}
                     </a>
                   ))}
                 </div>
@@ -1326,7 +1213,7 @@ const LandingPage = () => {
                           <svg className="relative z-10 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                           </svg>
-                          <span className="relative z-10 tracking-wide">Message Sent! 🎉</span>
+                          <span className="relative z-10 tracking-wide">Message Sent!</span>
                         </>
                       )}
                       {sendState === 'error' && (
@@ -1339,10 +1226,8 @@ const LandingPage = () => {
                       )}
                       {sendState === 'idle' && (
                         <>
-                          <svg className="relative z-10 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                          </svg>
                           <span className="relative z-10 tracking-wide">Send Message</span>
+                          <SendIcon className="relative z-10 w-5 h-5" />
                         </>
                       )}
                     </button>
