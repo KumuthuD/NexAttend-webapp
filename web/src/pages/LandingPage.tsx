@@ -586,34 +586,36 @@ const LandingPage = () => {
 
               {/* Hero feature card — left, taller */}
               <div className="lg:w-1/2 xl:w-5/12 min-h-[360px]">
-                <div className="group relative glass-card rounded-2xl p-10 h-full flex flex-col items-center justify-center text-center overflow-hidden card-3d reveal"
+                <div className="group relative rounded-2xl p-10 h-full flex flex-col items-center justify-center text-center overflow-hidden reveal cursor-default
+                  bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]
+                  hover:bg-white/[0.08] hover:border-violet-500/30
+                  hover:-translate-y-1.5 hover:scale-[1.02]
+                  transition-all duration-500 ease-out
+                  shadow-[0_8px_32px_rgba(0,0,0,0.12)]
+                  hover:shadow-[0_12px_48px_rgba(139,92,246,0.15)]"
                   style={{ transitionDelay: '0s' }}>
+                  {/* Top border gradient */}
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:via-violet-400/50 transition-all duration-500" />
+                  {/* Soft background glow on hover */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500/0 to-pink-500/0 group-hover:from-violet-500/[0.06] group-hover:to-pink-500/[0.04] transition-all duration-700 pointer-events-none" />
                   {/* Category tag */}
-                  <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-violet-500/20 text-violet-300 border-violet-500/30">
+                  <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-sm bg-violet-500/20 text-violet-300 border-violet-500/30">
                     {features[0].tag}
                   </div>
-                  {/* Spotlight */}
-                  <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-60 transition-opacity duration-300 rounded-2xl"
-                    style={{ background: 'radial-gradient(400px circle at 50% 50%, rgba(139,92,246,0.18), transparent 60%)' }} />
-                  {/* Top accent */}
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-violet-500/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  {/* Floating orb behind icon */}
-                  <div className="absolute w-32 h-32 bg-gradient-to-r from-violet-500/20 to-pink-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-150 mb-8" />
                   {/* Icon */}
                   <div className="relative mb-6">
-                    <div className="w-24 h-24 bg-gradient-to-br from-violet-500 via-purple-600 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-violet-500/40 group-hover:scale-110 transition-transform duration-500">
-                      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/25 to-transparent" />
+                    <div className="w-20 h-20 bg-gradient-to-br from-violet-500/20 to-pink-500/20 backdrop-blur-sm border border-white/10 rounded-3xl flex items-center justify-center
+                      group-hover:from-violet-500/30 group-hover:to-pink-500/30 group-hover:border-violet-400/30 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-violet-500/20
+                      transition-all duration-500">
                       <div className="relative z-10">{features[0].icon}</div>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-300 group-hover:to-pink-300 transition-all duration-300 mb-3">
+                  <h3 className="text-2xl font-bold text-white group-hover:text-violet-200 transition-colors duration-300 mb-3">
                     {features[0].title}
                   </h3>
                   <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300 leading-relaxed max-w-xs">
                     {features[0].description}
                   </p>
-                  {/* Bottom accent */}
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-violet-500 to-pink-500 group-hover:w-4/5 transition-all duration-700 rounded-full" />
                 </div>
               </div>
 
