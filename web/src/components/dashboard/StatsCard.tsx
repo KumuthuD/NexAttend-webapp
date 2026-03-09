@@ -4,17 +4,17 @@ import { motion } from 'framer-motion';
 interface StatsCardProps {
     title: string;
     value: string | number;
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     trend?: {
         value: number; // e.g., +5.2 or -2.1
         label: string; // e.g., "vs last week"
     };
-    color: string; // Tailwind text color class, e.g., "text-violet-600"
-    bg: string; // Tailwind bg color class, e.g., "bg-violet-50"
+    color?: string; // Tailwind text color class, e.g., "text-violet-600"
+    bg?: string; // Tailwind bg color class, e.g., "bg-violet-50"
     delay?: number;
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, color, bg, delay = 0 }) => {
+const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, color = '', bg = '', delay = 0 }) => {
     const isPositive = trend && trend.value >= 0;
 
     return (
@@ -41,9 +41,11 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, color,
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 font-medium">{trend.label}</p>
                     )}
                 </div>
-                <div className={`p-3 rounded-2xl ${bg} ${color} shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 ring-1 ring-white/50 dark:ring-white/10`}>
-                    {icon}
-                </div>
+                {icon && (
+                    <div className={`p-3 rounded-2xl ${bg} ${color} shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 ring-1 ring-white/50 dark:ring-white/10`}>
+                        {icon}
+                    </div>
+                )}
             </div>
         </motion.div>
     );
