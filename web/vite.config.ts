@@ -82,9 +82,8 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/framer-motion')) {
               return 'vendor-motion';
             }
-            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
-              return 'vendor-charts';
-            }
+            // recharts + d3 left in default chunk to avoid React.forwardRef
+            // race condition with the vendor-react chunk (React 19 compat)
             if (id.includes('node_modules/lucide-react')) {
               return 'vendor-icons';
             }
