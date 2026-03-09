@@ -14,14 +14,7 @@ interface StudentRankingListProps {
     className?: string;
 }
 
-// Mock data to use when actual data is unavailable
-const MOCK_STUDENTS: StudentRanking[] = [
-    { id: '1', name: 'Yasith Peiris', score: 98 },
-    { id: '2', name: 'Kumuthu Dahanayake', score: 95 },
-    { id: '3', name: 'Thiviru Igalawithana', score: 92 },
-    { id: '4', name: 'Sudam Amarajeewa', score: 88 },
-    { id: '5', name: 'Thisandu Ranadheera', score: 85 }
-];
+// Removed mock data array to ensure real time data alone is used.
 
 // Helper component to animate counting up to the score
 const CountUp: React.FC<{ value: number; duration?: number }> = ({ value, duration = 1.5 }) => {
@@ -41,7 +34,7 @@ const CountUp: React.FC<{ value: number; duration?: number }> = ({ value, durati
 };
 
 const StudentRankingList: React.FC<StudentRankingListProps> = ({
-    students = MOCK_STUDENTS,
+    students = [],
     className = ''
 }) => {
     // Sort students by score descending

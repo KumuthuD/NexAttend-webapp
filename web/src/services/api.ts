@@ -529,6 +529,12 @@ export interface AnalyticsOverview {
   weekly_trend: DailyAttendanceStats[];
 }
 
+export interface StudentRanking {
+  id: string;
+  name: string;
+  score: number;
+}
+
 export interface AnalyticsSummaryResponse {
   total_students: number;
   total_classrooms: number;
@@ -539,13 +545,19 @@ export interface AnalyticsSummaryResponse {
   report_period: string;
   most_attended_class?: string;
   lowest_attendance_class?: string;
+  top_students: StudentRanking[];
 }
 
 // ... existing code ...
 
-export const getDashboardAnalytics = async (): Promise<AnalyticsOverview> => {
+export const getDashboardAnalytics = async (params?: {
+  classroom_id?: string;
+  start_date?: string;
+  end_date?: string;
+}): Promise<AnalyticsOverview> => {
   const response = await api.get<AnalyticsOverview>(
     "/api/v1/analytics/dashboard",
+    { params }
   );
   return response.data;
 };
