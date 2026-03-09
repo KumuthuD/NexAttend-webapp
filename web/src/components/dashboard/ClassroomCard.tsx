@@ -1,27 +1,29 @@
-import React from 'react';
-import { Users, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, Trash2, LogOut, Check, X } from 'lucide-react';
 
 interface ClassroomCardProps {
     title: string;
     studentCount: number;
     accessCode: string;
-    icon?: React.ReactNode;
     actionButtonText: string;
     onAction: () => void;
+    onDelete?: () => void;
+    onLeave?: () => void;
     colorClass?: string;
-    iconBgClass?: string;
 }
 
 const ClassroomCard: React.FC<ClassroomCardProps> = ({
     title,
     studentCount,
     accessCode,
-    icon,
     actionButtonText,
     onAction,
-    colorClass = 'text-gray-800',
-    iconBgClass = 'bg-violet-50'
+    onDelete,
+    onLeave,
+    colorClass = 'text-gray-800'
 }) => {
+    const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+
     return (
         <div
             className="group relative bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] hover:border-violet-200 dark:hover:border-violet-500/25 transition-all duration-300 flex flex-col h-full min-h-[240px] overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-violet-500/[0.06] dark:hover:shadow-violet-500/[0.08]"
@@ -34,13 +36,36 @@ const ClassroomCard: React.FC<ClassroomCardProps> = ({
                 {/* Header row */}
                 <div className="flex items-start justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/10 flex items-center justify-center group-hover:bg-violet-100 dark:group-hover:bg-violet-500/15 transition-colors duration-300">
-                            {icon || <Users size={22} className="text-violet-500 dark:text-violet-400" />}
-                        </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-800 dark:text-white leading-tight transition-colors duration-300">{title}</h3>
                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 transition-colors duration-300">Classroom</p>
                         </div>
+                    </div>
+                    <div className="flex items-center gap-1 relative">
+                        {onLeave && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onLeave();
+                                }}
+                                className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-lg transition-colors duration-200"
+                                title="Leave Classroom"
+                            >
+                                <LogOut size={18} />
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete();
+                                }}
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors duration-200"
+                                title="Delete Classroom"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -22,3 +22,25 @@ class RecognitionLogResponse(BaseModel):
     class Config:
         from_attributes = True
         populate_by_name = True
+
+class AuditLogCreate(BaseModel):
+    target_type: str
+    target_id: str
+    changed_by: str
+    old_value: Dict[str, Any] = {}
+    new_value: Dict[str, Any] = {}
+    reason: Optional[str] = None
+
+class AuditLogResponse(BaseModel):
+    id: str = Field(..., alias="_id")
+    target_type: str
+    target_id: str
+    changed_by: str
+    old_value: Dict[str, Any]
+    new_value: Dict[str, Any]
+    reason: Optional[str]
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True

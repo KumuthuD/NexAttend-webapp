@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { History, RefreshCw, Menu, LogOut } from 'lucide-react';
+import { History, RefreshCw, Menu, LogOut, Download } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
-import { getAttendanceHistory } from '../services/api';
+import ExportAttendanceModal from '../components/dashboard/ExportAttendanceModal';
+import { getAttendanceHistory, getTeacherAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
 const MOCK_RECORDS: AttendanceRecord[] = [
-    { id: '1', date: '2026-02-18', classroom_name: 'Algorithms', status: 'present', confidence: 0.94 },
-    { id: '2', date: '2026-02-18', classroom_name: 'Advance Client Side', status: 'present', confidence: 0.88 },
-    { id: '3', date: '2026-02-17', classroom_name: 'Database', status: 'absent', confidence: undefined },
-    { id: '4', date: '2026-02-17', classroom_name: 'Algorithms', status: 'present', confidence: 0.76 },
-    { id: '5', date: '2026-02-14', classroom_name: 'Advance Client Side', status: 'present', confidence: 0.91 },
-    { id: '6', date: '2026-02-14', classroom_name: 'Database', status: 'present', confidence: 0.85 },
-    { id: '7', date: '2026-02-13', classroom_name: 'Algorithms', status: 'absent', confidence: undefined },
-    { id: '8', date: '2026-02-12', classroom_name: 'Database', status: 'present', confidence: 0.97 },
+    { id: '1', date: '2026-02-18', classroom_name: 'Algorithms', presentCount: 42, totalCount: 50 },
+    { id: '2', date: '2026-02-18', classroom_name: 'Advance Client Side', presentCount: 38, totalCount: 45 },
+    { id: '3', date: '2026-02-17', classroom_name: 'Database', presentCount: 48, totalCount: 55 },
+    { id: '4', date: '2026-02-17', classroom_name: 'Algorithms', presentCount: 40, totalCount: 50 },
+    { id: '5', date: '2026-02-14', classroom_name: 'Advance Client Side', presentCount: 41, totalCount: 45 },
+    { id: '6', date: '2026-02-14', classroom_name: 'Database', presentCount: 52, totalCount: 55 },
+    { id: '7', date: '2026-02-13', classroom_name: 'Algorithms', presentCount: 45, totalCount: 50 },
+    { id: '8', date: '2026-02-12', classroom_name: 'Database', presentCount: 50, totalCount: 55 },
 ];
 
 const AttendanceHistoryPage: React.FC = () => {
@@ -25,6 +26,7 @@ const AttendanceHistoryPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const { logout } = useAuth();
     const navigate = useNavigate();
 
@@ -37,10 +39,16 @@ const AttendanceHistoryPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await getAttendanceHistory();
-            setRecords(data);
+            // Try fetching real data from per-classroom history endpoints
+            const data = await getTeacherAttendanceHistory();
+            if (data.length > 0) {
+                setRecords(data);
+            } else {
+                // No sessions yet — show empty state (not mock data)
+                setRecords([]);
+            }
         } catch {
-            // Backend may not have this endpoint yet — fall back to mock data
+            // Backend unavailable — fall back to mock data
             setRecords(MOCK_RECORDS);
         } finally {
             setIsLoading(false);
@@ -76,7 +84,10 @@ const AttendanceHistoryPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-10 relative transition-all duration-300 overflow-x-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+                {/* Ambient Backgrounds */}
+                <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent dark:from-violet-500/20 dark:via-purple-500/10 dark:to-transparent pointer-events-none rounded-t-3xl blur-3xl opacity-70 z-0" />
+                <div className="absolute top-40 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/10 via-indigo-500/5 to-transparent dark:from-blue-500/20 dark:via-indigo-500/5 dark:to-transparent pointer-events-none blur-3xl opacity-60 z-0" />
                 <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
                 {/* Page Header */}
                 <motion.div
@@ -99,7 +110,7 @@ const AttendanceHistoryPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
                         <div className="hidden lg:flex items-center gap-3 mr-4">
                             <ThemeToggle />
                             <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1" />
@@ -120,6 +131,15 @@ const AttendanceHistoryPage: React.FC = () => {
                         >
                             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                             Refresh
+                        </button>
+
+                        {/* Export CSV button */}
+                        <button
+                            onClick={() => setIsExportModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-white dark:bg-[#1a1d2e] hover:bg-gray-50 dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl transition-colors"
+                        >
+                            <Download className="w-4 h-4" />
+                            Export
                         </button>
                     </div>
                 </motion.div>
@@ -144,13 +164,13 @@ const AttendanceHistoryPage: React.FC = () => {
                             },
                             {
                                 label: 'Present',
-                                value: records.filter(r => r.status === 'present').length,
+                                value: records.reduce((acc, r) => acc + r.presentCount, 0),
                                 color: 'text-emerald-600 dark:text-emerald-400',
                                 bg: 'bg-emerald-50 dark:bg-emerald-500/10',
                             },
                             {
                                 label: 'Absent',
-                                value: records.filter(r => r.status === 'absent').length,
+                                value: records.reduce((acc, r) => acc + (r.totalCount - r.presentCount), 0),
                                 color: 'text-red-600 dark:text-red-400',
                                 bg: 'bg-red-50 dark:bg-red-500/10',
                             },
@@ -187,6 +207,12 @@ const AttendanceHistoryPage: React.FC = () => {
                     />
                 </motion.div>
             </main>
+
+            {/* Export Attendance Modal */}
+            <ExportAttendanceModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+            />
         </div>
     );
 };

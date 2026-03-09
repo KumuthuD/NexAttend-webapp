@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,27 +15,71 @@ import {
     Sun,
     Lock,
     Save,
-    Menu
+    Menu,
+    AlertCircle,
+    CheckCircle,
+    Eye,
+    EyeOff,
+    Trash2
 } from 'lucide-react';
 import Input from '../components/common/Input';
 import { motion, AnimatePresence } from 'framer-motion';
+import { updatePassword, uploadAvatar, deleteAccount } from '../services/api';
 
 const SettingsPage: React.FC = () => {
     const { logout, user, updateUser } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('profile');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     // Profile Update State
     const [newName, setNewName] = useState(user?.name || '');
     const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || '');
+    const [dateOfBirth, setDateOfBirth] = useState(user?.date_of_birth || '');
+    const [gender, setGender] = useState(user?.gender || '');
     const [isUpdating, setIsUpdating] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [showDeletePassword, setShowDeletePassword] = useState(false);
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        showToast("Uploading photo...");
+        try {
+            const updatedUser = await uploadAvatar(file);
+            setSelectedAvatar(updatedUser.avatar);
+
+            // Sync with backend by making the context pull down the entire new `user` model through the token or update explicitly
+            // But we already updated the backend user object so calling updateUser context handles React side:
+            await updateUser({ avatar: updatedUser.avatar });
+
+            showToast("Profile photo uploaded!");
+        } catch (error) {
+            console.error("Failed to upload avatar", error);
+            showToast("Failed to upload profile photo", "error");
+        } finally {
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     // Sync local state with user when user changes (e.g. after update or initial load)
     React.useEffect(() => {
         if (user) {
             setNewName(user.name);
             setSelectedAvatar(user.avatar || '');
+            setDateOfBirth(user.date_of_birth || '');
+            setGender(user.gender || '');
         }
     }, [user]);
 
@@ -56,40 +100,79 @@ const SettingsPage: React.FC = () => {
         try {
             await updateUser({
                 name: newName,
-                avatar: selectedAvatar
+                avatar: selectedAvatar,
+                date_of_birth: dateOfBirth,
+                gender: gender
             });
-            // Show success message or toast here if available
+            showToast("Profile updated successfully!");
         } catch (error) {
             console.error("Failed to update profile", error);
+            showToast("Failed to update profile", "error");
         } finally {
             setIsUpdating(false);
         }
     };
 
-    // Mock states for form interactions
+    // Mock states for form interactions (except email)
     const [notifications, setNotifications] = useState({
-        email: true,
+        email: user?.email_notifications ?? true,
         push: false,
         marketing: false,
         security: true
     });
+
+    React.useEffect(() => {
+        if (user) {
+            setNotifications(prev => ({ ...prev, email: user.email_notifications ?? true }));
+        }
+    }, [user?.email_notifications]);
 
     const [passwordData, setPasswordData] = useState({
         current: '',
         new: '',
         confirm: ''
     });
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/get-started');
     };
 
-    const handleNotificationChange = (key: keyof typeof notifications) => {
-        setNotifications(prev => ({
-            ...prev,
-            [key]: !prev[key]
-        }));
+    const handleDeleteAccount = async () => {
+        if (!deletePassword) return;
+        setIsDeletingAccount(true);
+        try {
+            await deleteAccount(deletePassword);
+            logout();
+            navigate('/get-started');
+        } catch (error: any) {
+            console.error('Failed to delete account', error);
+            const msg = error?.response?.data?.detail || 'Failed to delete account. Please try again.';
+            showToast(msg, 'error');
+            setIsDeletingAccount(false);
+        }
+    };
+
+    const handleNotificationChange = async (key: keyof typeof notifications) => {
+        const newValue = !notifications[key];
+        setNotifications(prev => ({ ...prev, [key]: newValue }));
+
+        if (key === 'email') {
+            try {
+                await updateUser({ email_notifications: newValue });
+                showToast("Email notifications preference updated!");
+            } catch (error: any) {
+                console.error("Failed to update email notifications", error);
+                const errorMsg = error.response?.data?.detail || error.message || "Unknown error";
+                showToast(`Failed: ${typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)}`, "error");
+                // Revert local state on error
+                setNotifications(prev => ({ ...prev, [key]: !newValue }));
+            }
+        }
     };
 
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,11 +183,33 @@ const SettingsPage: React.FC = () => {
         }));
     };
 
-    const handleSavePassword = (e: React.FormEvent) => {
+    const handleSavePassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock API call
-        alert("Password update functionality coming soon!");
-        setPasswordData({ current: '', new: '', confirm: '' });
+
+        if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
+            showToast("Please fill in all password fields", "error");
+            return;
+        }
+
+        if (passwordData.new !== passwordData.confirm) {
+            showToast("New passwords do not match", "error");
+            return;
+        }
+
+        setIsUpdatingPassword(true);
+        try {
+            await updatePassword({
+                current_password: passwordData.current,
+                new_password: passwordData.new
+            });
+            showToast("Password updated successfully!");
+            setPasswordData({ current: '', new: '', confirm: '' });
+        } catch (error: any) {
+            console.error("Failed to update password", error);
+            showToast(error.response?.data?.detail || "Failed to update password", "error");
+        } finally {
+            setIsUpdatingPassword(false);
+        }
     };
 
     const tabs = [
@@ -115,7 +220,7 @@ const SettingsPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
+        <div className="flex min-h-screen bg-white dark:bg-[#0f1117] transition-colors duration-300">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Mobile Top Bar */}
@@ -139,7 +244,7 @@ const SettingsPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
                 <div className="lg:hidden h-16" /> {/* Spacer for fixed mobile header */}
 
                 {/* Header */}
@@ -229,14 +334,24 @@ const SettingsPage: React.FC = () => {
                                                             className="w-full h-full object-cover bg-violet-100 dark:bg-violet-900/20"
                                                         />
                                                     </div>
-                                                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                                        <span className="text-white text-xs font-medium">Change</span>
+                                                    <div
+                                                        className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                    >
+                                                        <span className="text-white text-xs font-medium">Upload Photo</span>
                                                     </div>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        ref={fileInputRef}
+                                                        onChange={handleAvatarUpload}
+                                                    />
                                                 </div>
 
                                                 <div className="text-center">
-                                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{user?.name}</h3>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{user?.role} Account</p>
+                                                    <h3 className="capitalize text-lg font-bold text-gray-900 dark:text-white">{user?.name}</h3>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
                                                 </div>
                                             </div>
 
@@ -278,12 +393,56 @@ const SettingsPage: React.FC = () => {
                                                         />
                                                         <p className="text-xs text-gray-500 mt-1">Email address cannot be changed</p>
                                                     </div>
+
+                                                    {user?.student_id && (
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Student ID</label>
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    value={user.student_id}
+                                                                    readOnly
+                                                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100 font-mono tracking-[0.15em] font-semibold cursor-not-allowed select-all"
+                                                                />
+                                                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                                    <Lock size={14} className="text-gray-400 dark:text-gray-500" />
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 mt-1">Student ID is system-generated and cannot be changed</p>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+                                                            <input
+                                                                type="date"
+                                                                value={dateOfBirth}
+                                                                onChange={(e) => setDateOfBirth(e.target.value)}
+                                                                className="w-full px-4 py-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
+                                                            <select
+                                                                value={gender}
+                                                                onChange={(e) => setGender(e.target.value)}
+                                                                className="w-full px-4 py-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100"
+                                                            >
+                                                                <option value="" className="bg-white dark:bg-[#1a1d2e]">Select Gender</option>
+                                                                <option value="Male" className="bg-white dark:bg-[#1a1d2e]">Male</option>
+                                                                <option value="Female" className="bg-white dark:bg-[#1a1d2e]">Female</option>
+                                                                <option value="Other" className="bg-white dark:bg-[#1a1d2e]">Other</option>
+                                                                <option value="Prefer not to say" className="bg-white dark:bg-[#1a1d2e]">Prefer not to say</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div className="pt-4 flex justify-center">
                                                     <button
                                                         onClick={handleUpdateProfile}
-                                                        disabled={isUpdating || (newName === user?.name && selectedAvatar === user?.avatar)}
+                                                        disabled={isUpdating || (newName === user?.name && selectedAvatar === user?.avatar && dateOfBirth === (user?.date_of_birth || '') && gender === (user?.gender || ''))}
                                                         className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         {isUpdating ? 'Saving...' : (
@@ -294,6 +453,23 @@ const SettingsPage: React.FC = () => {
                                                         )}
                                                     </button>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Danger Zone */}
+                                        <div className="mt-6 pt-6 border-t border-red-200 dark:border-red-900/30">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/30">
+                                                <div>
+                                                    <p className="font-medium text-gray-900 dark:text-white">Delete Account</p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Permanently delete your account and all associated data.</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setShowDeletePassword(false); }}
+                                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium text-sm transition-all duration-200 whitespace-nowrap sm:ml-4 w-full sm:w-auto"
+                                                >
+                                                    <Trash2 size={16} />
+                                                    Delete Account
+                                                </button>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -328,48 +504,6 @@ const SettingsPage: React.FC = () => {
                                                         className="sr-only peer"
                                                         checked={notifications.email}
                                                         onChange={() => handleNotificationChange('email')}
-                                                    />
-                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
-                                                </label>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg">
-                                                        <Smartphone size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-900 dark:text-white">Push Notifications</h4>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Receive updates on your device</p>
-                                                    </div>
-                                                </div>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only peer"
-                                                        checked={notifications.push}
-                                                        onChange={() => handleNotificationChange('push')}
-                                                    />
-                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
-                                                </label>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg">
-                                                        <Shield size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-900 dark:text-white">Security Alerts</h4>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Get notified about security events</p>
-                                                    </div>
-                                                </div>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only peer"
-                                                        checked={notifications.security}
-                                                        onChange={() => handleNotificationChange('security')}
                                                     />
                                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-violet-300 dark:peer-focus:ring-violet-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-violet-600"></div>
                                                 </label>
@@ -415,23 +549,32 @@ const SettingsPage: React.FC = () => {
                                         transition={{ duration: 0.4 }}
                                         className="space-y-6"
                                     >
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Security</h3>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Update Password</h3>
 
                                         <div className="flex flex-col lg:flex-row gap-10">
                                             {/* Left Side: Form */}
-                                            <div className="flex-1">
+                                            <div className="flex-1 mt-6">
                                                 <form onSubmit={handleSavePassword} className="space-y-4">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
                                                         <div className="relative">
                                                             <Input
-                                                                type="password"
+                                                                type={showCurrentPassword ? "text" : "password"}
                                                                 name="current"
                                                                 value={passwordData.current}
                                                                 onChange={handlePasswordChange}
                                                                 placeholder="Enter current password"
                                                                 className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
                                                                 leftIcon={<Lock size={18} />}
+                                                                rightIcon={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                                        className="focus:outline-none"
+                                                                    >
+                                                                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                                    </button>
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
@@ -440,13 +583,22 @@ const SettingsPage: React.FC = () => {
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
                                                         <div className="relative">
                                                             <Input
-                                                                type="password"
+                                                                type={showNewPassword ? "text" : "password"}
                                                                 name="new"
                                                                 value={passwordData.new}
                                                                 onChange={handlePasswordChange}
                                                                 placeholder="Enter new password"
                                                                 className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
                                                                 leftIcon={<Lock size={18} />}
+                                                                rightIcon={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                                                        className="focus:outline-none"
+                                                                    >
+                                                                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                                    </button>
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
@@ -455,13 +607,22 @@ const SettingsPage: React.FC = () => {
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
                                                         <div className="relative">
                                                             <Input
-                                                                type="password"
+                                                                type={showConfirmPassword ? "text" : "password"}
                                                                 name="confirm"
                                                                 value={passwordData.confirm}
                                                                 onChange={handlePasswordChange}
                                                                 placeholder="Confirm new password"
                                                                 className="h-8 pl-10 bg-purple-50 dark:bg-white/5"
                                                                 leftIcon={<Lock size={18} />}
+                                                                rightIcon={
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                                        className="focus:outline-none"
+                                                                    >
+                                                                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                                    </button>
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
@@ -469,20 +630,23 @@ const SettingsPage: React.FC = () => {
                                                     <div className="pt-6 mb-10 flex justify-center">
                                                         <button
                                                             type="submit"
-                                                            className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none"
+                                                            disabled={isUpdatingPassword}
+                                                            className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-all duration-200 shadow-md shadow-violet-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
-                                                            <Save size={18} />
-                                                            Update Password
+                                                            {isUpdatingPassword ? (
+                                                                <>
+                                                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                                    Updating...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Save size={18} />
+                                                                    Update Password
+                                                                </>
+                                                            )}
                                                         </button>
                                                     </div>
                                                 </form>
-
-                                                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/[0.06]">
-                                                    <button className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2">
-                                                        <LogOut size={16} />
-                                                        Sign out from all devices
-                                                    </button>
-                                                </div>
                                             </div>
 
                                             {/* Right Side: Illustration */}
@@ -501,6 +665,94 @@ const SettingsPage: React.FC = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg flex items-center gap-3 z-50 text-sm font-medium
+                            ${toast.type === 'success'
+                                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border dark:border-white/10'
+                                : 'bg-red-600 text-white'
+                            }`}
+                    >
+                        {toast.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                        {toast.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Delete Account Confirmation Modal */}
+            <AnimatePresence>
+                {showDeleteModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        onClick={(e) => { if (e.target === e.currentTarget) setShowDeleteModal(false); }}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="bg-white dark:bg-[#1a1d2e] rounded-2xl p-6 shadow-2xl w-full max-w-md border border-red-200 dark:border-red-900/30"
+                        >
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-xl">
+                                    <Trash2 className="text-red-600 dark:text-red-400" size={22} />
+                                </div>
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Delete Account</h2>
+                            </div>
+
+                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                                This action <strong>cannot be undone</strong>. Your account, profile, classrooms, and all associated data will be permanently removed.
+                            </p>
+
+                            <div className="mb-5">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Enter your password to confirm:
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showDeletePassword ? 'text' : 'password'}
+                                        value={deletePassword}
+                                        onChange={(e) => setDeletePassword(e.target.value)}
+                                        placeholder="Enter your password..."
+                                        className="w-full px-4 py-2 pr-10 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeletePassword(p => !p)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                    >
+                                        {showDeletePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="flex-1 py-2.5 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 rounded-xl font-medium text-sm transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    disabled={!deletePassword || isDeletingAccount}
+                                    className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isDeletingAccount ? 'Deleting...' : (<><Trash2 size={14} /> Delete Forever</>)}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

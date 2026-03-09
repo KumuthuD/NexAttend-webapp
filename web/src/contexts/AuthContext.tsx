@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, registerUser, updateProfile, UserData, RegisterData } from '../services/api';
+import { loginUser, registerUser, updateProfile, loginWithGoogle, UserData, RegisterData } from '../services/api';
 
 // Define User types
 export interface User {
@@ -8,14 +8,20 @@ export interface User {
   email: string;
   role: 'teacher' | 'student';
   avatar?: string;
+  date_of_birth?: string;
+  gender?: string;
+  created_at?: string;
+  email_notifications?: boolean;
+  student_id?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (token: string, role?: string) => Promise<void>;
   register: (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => Promise<void>;
-  updateUser: (data: { name?: string; avatar?: string }) => Promise<void>;
+  updateUser: (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; email_notifications?: boolean; }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -45,19 +51,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const response = await loginUser(email, password);
-      
+
       // Store token
       localStorage.setItem('nexattend_token', response.access_token);
-      
+
       // Map API response to User format
       const newUser: User = {
         id: response.user.id,
         name: response.user.full_name,
         email: response.user.email,
         role: response.user.role as 'teacher' | 'student',
-        avatar: response.user.avatar
+        avatar: response.user.avatar,
+        date_of_birth: response.user.date_of_birth,
+        gender: response.user.gender,
+        created_at: response.user.created_at,
+        email_notifications: response.user.email_notifications,
+        student_id: response.user.student_id,
       };
-      
+
+      setUser(newUser);
+      localStorage.setItem('nexattend_user', JSON.stringify(newUser));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const googleLogin = async (token: string, role: string = 'teacher') => {
+    setIsLoading(true);
+    try {
+      const response = await loginWithGoogle(token, role);
+
+      // Store token
+      localStorage.setItem('nexattend_token', response.access_token);
+
+      // Map API response to User format
+      const newUser: User = {
+        id: response.user.id,
+        name: response.user.full_name,
+        email: response.user.email,
+        role: response.user.role as 'teacher' | 'student',
+        avatar: response.user.avatar,
+        date_of_birth: response.user.date_of_birth,
+        gender: response.user.gender,
+        created_at: response.user.created_at,
+        email_notifications: response.user.email_notifications,
+        student_id: response.user.student_id,
+      };
+
       setUser(newUser);
       localStorage.setItem('nexattend_user', JSON.stringify(newUser));
     } finally {
@@ -68,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: Omit<User, 'id'> & { password: string }, images?: File[]) => {
     setIsLoading(true);
     console.log('Registering with images:', images);
-    
+
     try {
       const registerData: RegisterData = {
         full_name: userData.name,
@@ -76,20 +116,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password: userData.password,
         role: userData.role,
       };
-      
+
       const response = await registerUser(registerData, images);
-      
+
       // Map API response to User format
       const newUser: User = {
         id: response.id,
         name: response.full_name,
         email: response.email,
         role: response.role as 'teacher' | 'student',
+        created_at: response.created_at,
+        email_notifications: response.email_notifications,
+        student_id: response.student_id,
       };
-      
+
       setUser(newUser);
       localStorage.setItem('nexattend_user', JSON.stringify(newUser));
-      
+
       // Note: Token will be obtained on subsequent login
       // For auto-login after registration, call login API
     } finally {
@@ -97,27 +140,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateUser = async (data: { name?: string; avatar?: string }) => {
+  const updateUser = async (data: { name?: string; avatar?: string; date_of_birth?: string; gender?: string; email_notifications?: boolean; }) => {
     if (!user) return;
-    
-    setIsLoading(true);
+
     try {
-      const apiData: { full_name?: string; avatar?: string } = {};
+      const apiData: { full_name?: string; avatar?: string; date_of_birth?: string; gender?: string; email_notifications?: boolean; } = {};
       if (data.name) apiData.full_name = data.name;
       if (data.avatar) apiData.avatar = data.avatar;
-      
+      if (data.date_of_birth !== undefined) apiData.date_of_birth = data.date_of_birth;
+      if (data.gender !== undefined) apiData.gender = data.gender;
+      if (data.email_notifications !== undefined) apiData.email_notifications = data.email_notifications;
+
       const updatedUserFn = await updateProfile(apiData);
-      
+
       const updatedUser: User = {
         ...user,
         name: updatedUserFn.full_name,
-        avatar: updatedUserFn.avatar
+        avatar: updatedUserFn.avatar,
+        date_of_birth: updatedUserFn.date_of_birth,
+        gender: updatedUserFn.gender,
+        email_notifications: updatedUserFn.email_notifications,
       };
-      
+
       setUser(updatedUser);
       localStorage.setItem('nexattend_user', JSON.stringify(updatedUser));
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to update user context", error);
+      throw error;
     }
   };
 
@@ -132,6 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user,
       isLoading,
       login,
+      googleLogin,
       register,
       updateUser,
       logout,

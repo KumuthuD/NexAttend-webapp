@@ -1,13 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, CheckCircle, XCircle, BookOpen } from 'lucide-react';
+import { Calendar, BookOpen } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export interface AttendanceRecord {
     id: string;
     date: string;           // ISO date string e.g. "2026-02-18"
+    classroom_id?: string;
     classroom_name: string;
-    status: 'present' | 'absent';
-    confidence?: number;    // 0–1 float, optional
+    presentCount: number;
+    totalCount: number;
 }
 
 interface AttendanceHistoryTableProps {
@@ -25,43 +28,23 @@ const SkeletonRow = ({ index }: { index: number }) => (
         className="border-b border-gray-100 dark:border-white/[0.05]"
     >
         {[1, 2, 3, 4].map((col) => (
-            <td key={col} className={`px-4 py-4 ${col === 4 ? 'hidden sm:table-cell' : ''}`}>
+            <td key={col} className="px-4 py-4">
                 <div className="h-4 bg-gray-100 dark:bg-white/[0.06] rounded-lg animate-pulse" />
             </td>
         ))}
     </motion.tr>
 );
 
-// ── Status badge ──────────────────────────────────────────────────────────────
-const StatusBadge = ({ status }: { status: 'present' | 'absent' }) => {
-    const isPresent = status === 'present';
-    return (
-        <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
-                ${isPresent
-                    ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                    : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400'
-                }`}
-        >
-            {isPresent
-                ? <CheckCircle className="w-3 h-3" />
-                : <XCircle className="w-3 h-3" />
-            }
-            {isPresent ? 'Present' : 'Absent'}
-        </span>
-    );
-};
-
-// ── Confidence bar ────────────────────────────────────────────────────────────
-const ConfidenceBar = ({ value }: { value: number }) => {
-    const pct = Math.round(value * 100);
-    const color = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+// ── Percentage bar ────────────────────────────────────────────────────────────
+const PercentageBar = ({ present, total }: { present: number, total: number }) => {
+    const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+    const color = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-yellow-500' : 'bg-orange-500';
     return (
         <div className="flex items-center gap-2">
             <div className="w-20 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                 <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{pct}%</span>
+            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 tabular-nums">{pct}%</span>
         </div>
     );
 };
@@ -78,11 +61,12 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     isLoading = false,
     className = '',
 }) => {
-    const COLUMNS = ['Date', 'Status', 'Confidence'];
+    const COLUMNS = ['Date', 'Classroom', 'Present Students', 'Percentage', ''];
+    const navigate = useNavigate();
+    const { user } = useAuth();
 
     return (
         <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`}>
-            {/* Table header */}
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead>
@@ -107,7 +91,7 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                         {/* Empty state */}
                         {!isLoading && records.length === 0 && (
                             <tr>
-                                <td colSpan={3} className="px-5 py-16 text-center">
+                                <td colSpan={5} className="px-5 py-16 text-center">
                                     <div className="flex flex-col items-center gap-3">
                                         <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
                                             <BookOpen className="w-6 h-6 text-violet-500 dark:text-violet-400" />
@@ -136,17 +120,44 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                                     </div>
                                 </td>
 
-                                {/* Status */}
+                                {/* Classroom Name */}
                                 <td className="px-4 py-4">
-                                    <StatusBadge status={record.status} />
+                                    <div className="flex items-center gap-2">
+                                        <BookOpen className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400 flex-shrink-0" />
+                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[160px]">
+                                            {record.classroom_name}
+                                        </span>
+                                    </div>
                                 </td>
 
-                                {/* Confidence */}
+                                {/* Marked Students */}
                                 <td className="px-4 py-4">
-                                    {record.confidence !== undefined
-                                        ? <ConfidenceBar value={record.confidence} />
-                                        : <span className="text-xs text-gray-400 dark:text-gray-600">—</span>
-                                    }
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="font-semibold text-gray-900 dark:text-white">
+                                            {record.presentCount}/{record.totalCount} Students
+                                        </span>
+                                    </div>
+                                </td>
+
+                                {/* Percentage */}
+                                <td className="px-4 py-4">
+                                    <PercentageBar present={record.presentCount} total={record.totalCount} />
+                                </td>
+
+                                {/* Action */}
+                                <td className="px-4 py-4 content-center">
+                                    {user?.role === 'teacher' && record.classroom_id && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/manual-review/${record.classroom_id}/${record.id}`);
+                                            }}
+                                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-xs border bg-white dark:bg-white/5 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-300 dark:hover:border-amber-500/30 w-auto"
+                                            title="Manual Review"
+                                        >
+                                            <span>View List</span>
+                                        </button>
+                                    )}
                                 </td>
                             </motion.tr>
                         ))}

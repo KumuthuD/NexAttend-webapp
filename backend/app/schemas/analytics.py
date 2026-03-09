@@ -1,6 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import date
+
+class StudentRanking(BaseModel):
+    id: str
+    name: str
+    score: float
 
 class DailyAttendanceStats(BaseModel):
     date: date
@@ -14,3 +19,15 @@ class AnalyticsOverview(BaseModel):
     average_attendance_rate: float
     average_confidence_score: float
     weekly_trend: List[DailyAttendanceStats]
+
+class AnalyticsSummaryResponse(BaseModel):
+    total_students: int
+    total_classrooms: int
+    total_sessions_completed: int
+    overall_attendance_rate: float
+    average_confidence: float
+    total_flagged_records: int
+    report_period: str # e.g. "All Time", "Last 30 Days", "Custom Range"
+    most_attended_class: Optional[str] = None
+    lowest_attendance_class: Optional[str] = None
+    top_students: List[StudentRanking] = Field(default_factory=list)

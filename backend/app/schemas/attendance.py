@@ -39,6 +39,15 @@ class AttendanceMarkResponse(BaseModel):
     status: str
     timestamp: datetime
 
+class AttendanceUpdateRequest(BaseModel):
+    """
+    Request model for manual attendance status updates (Day 26).
+    """
+    session_id: str
+    student_id: str
+    new_status: str = Field(..., description="Target status: present, absent, excused")
+    reason: Optional[str] = Field(None, description="Reason for manual override")
+
 class AttendanceSessionResponse(AttendanceSessionBase):
     id: Optional[str] = Field(None, alias="_id")
     present_student_ids: List[str] = []
@@ -50,4 +59,13 @@ class AttendanceSessionResponse(AttendanceSessionBase):
 
     class Config:
         from_attributes = True
+
+class AttendanceReviewRequest(BaseModel):
+    """
+    Request model for approving/rejecting flagged attendance records (Day 27).
+    """
+    session_id: str
+    student_id: str
+    status: str = Field(..., description="Review action: approved, rejected")
+    remarks: Optional[str] = Field(None, description="Optional remarks for the review")
 

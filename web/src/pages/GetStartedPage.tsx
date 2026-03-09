@@ -8,11 +8,32 @@ import { useAuth } from "../contexts/AuthContext";
 import { User, Mail, Lock, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Alert from "../components/Alert";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const GetStartedPage = () => {
     const navigate = useNavigate();
 
-    const { login, register, isLoading } = useAuth();
+    const { login, register, googleLogin, isLoading } = useAuth();
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            try {
+                // Here tokenResponse.access_token is the token we need
+                await googleLogin(tokenResponse.access_token, formData.role);
+                setAuthSuccess("Login successful! Redirecting...");
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 1500);
+            } catch (error: any) {
+                console.error("Google authentication failed", error);
+                const errorMessage = error.response?.data?.detail || error.message || "Google Login failed. Please try again.";
+                setAuthError(errorMessage);
+            }
+        },
+        onError: () => {
+            setAuthError("Google Login failed. Please try again.");
+        }
+    });
 
     // Scroll to top when page loads
     useEffect(() => {
@@ -296,12 +317,14 @@ const GetStartedPage = () => {
                                                     </span>
                                                 </div>
                                             </div>
-                                            
+
                                             {/* Social Login */}
                                             <div className="flex justify-center">
                                                 <button
                                                     type="button"
-                                                    className="flex items-center justify-center gap-3 py-3 px-8 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 rounded-xl transition-all w-full max-w-xs text-white"
+                                                    onClick={() => handleGoogleLogin()}
+                                                    disabled={isLoading}
+                                                    className="flex items-center justify-center gap-3 py-3 px-8 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 rounded-xl transition-all w-full max-w-xs text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                                                         <path

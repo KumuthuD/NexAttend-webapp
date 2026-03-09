@@ -9,12 +9,14 @@ Week 03 Day 14 — Multi-Face Recognition with Batch Attendance
 Viraj Jayasiri - Week 04 Day 16 (Low-light optimization)
 """
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status, BackgroundTasks
+from app.services.anomaly_service import check_anomaly
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.services.face_detector import FaceDetector
 from app.services.embedding_service import embedding_service
 from app.services.lighting_optimizer import lighting_optimizer
+from app.services.email_service import email_service
 from app.database.mongodb import db
 import numpy as np
 import cv2
@@ -210,8 +212,9 @@ async def recognize_faces(
         logger.error(f"Error reading file: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
 
-    #detect all faces in the image
-    faces = detector.detect_faces(image)
+    # use classroom_detector here — registration detector (95%) is too strict
+    # it was filtering out valid student faces during attendance
+    faces = classroom_detector.detect_faces(image)
 
     if not faces:
         return {"count": 0, "matched_count": 0, "results": [], "message": "No faces detected"}
@@ -267,6 +270,7 @@ async def recognize_faces(
 
     #convert distance to confidence (lower distance = higher confidence)
             confidence = round(max(0.0, 1.0 - distance), 4)
+            anomaly = check_anomaly(confidence, str(best_user["_id"]) if best_user else None)
 
             if best_user:
                 results.append({
@@ -276,9 +280,12 @@ async def recognize_faces(
                     "student": {
                         "id": str(best_user["_id"]),
                         "full_name": best_user.get("full_name", "Unknown"),
-                        "email": best_user.get("email", "")
+                        "email": best_user.get("email", ""),
+                        "email_notifications": best_user.get("email_notifications", True)
                     },
                     "similarity": confidence,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "identified"
                 })
             else:
@@ -288,6 +295,8 @@ async def recognize_faces(
                     "matched": False,
                     "student": None,
                     "similarity": confidence,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "unknown"
                 })
 
@@ -308,6 +317,7 @@ async def recognize_faces(
 
 @router.post("/recognize-multi", status_code=status.HTTP_200_OK)
 async def recognize_multi_faces(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     classroom_id: Optional[str] = Form(None),
     session_id: Optional[str] = Form(None)
@@ -406,17 +416,13 @@ async def recognize_multi_faces(
             logger.info(f"[Multi-Face] Embedding #{i+1} took: {(t_emb_end-t_emb_start)*1000:.2f}ms")
             
             if not embedding:
-                 # ... existing error handling ...
                 results.append({ "status": "embedding_failed", "matched": False, "box": [int(c) for c in face['box']], "detection_confidence": float(face['confidence']), "similarity": 0.0 })
                 continue
 
             # Match the face embedding against all registered students
             best_user, distance = embedding_service.identify_user(embedding, all_users)
 
-            # ... rest of loop logic (unchanged structure, just showing log insertion)
-            # Copied original logic below to be safe with replacement
-            
-            # Convert distance to similarity (lower distance = higher similarity)
+            # convert distance to similarity (lower distance = higher similarity)
             similarity = round(max(0.0, 1.0 - distance), 4)
 
             if best_user:
@@ -436,6 +442,7 @@ async def recognize_multi_faces(
                     continue
 
                 matched_student_ids.append(student_id)
+                anomaly = check_anomaly(similarity, student_id)
                 results.append({
                     "box": [int(c) for c in face['box']],
                     "detection_confidence": float(face['confidence']),
@@ -443,19 +450,25 @@ async def recognize_multi_faces(
                     "student": {
                         "id": student_id,
                         "full_name": best_user.get("full_name", "Unknown"),
-                        "email": best_user.get("email", "")
+                        "email": best_user.get("email", ""),
+                        "email_notifications": best_user.get("email_notifications", True)
                     },
                     "similarity": similarity,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "identified",
                     "attendance": "pending"
                 })
             else:
+                anomaly = check_anomaly(similarity, "Unknown")
                 results.append({
                     "box": [int(c) for c in face['box']],
                     "detection_confidence": float(face['confidence']),
                     "matched": False,
                     "student": None,
                     "similarity": similarity,
+                    "is_flagged": anomaly["is_flagged"],
+                    "flag_reason": anomaly["flag_reason"],
                     "status": "unknown",
                     "attendance": "skipped"
                 })
@@ -469,12 +482,31 @@ async def recognize_multi_faces(
     if session_id and matched_student_ids:
         try:
             # Verify session exists and is active
+            # session_id from form is a plain string — must cast to ObjectId for MongoDB
+            try:
+                session_oid = ObjectId(session_id)
+            except Exception:
+                logger.warning(f"[Multi-Face] Invalid session_id format: {session_id}")
+                session_oid = session_id
+
             session = await db.db["attendance_sessions"].find_one({
-                "_id": session_id,
+                "_id": session_oid,
                 "status": "active"
             })
 
             if session:
+                # Fetch classroom name for the email
+                classroom_name = "Your Classroom"
+                if session.get("classroom_id"):
+                    try:
+                        cid = session["classroom_id"]
+                        cid_obj = ObjectId(cid) if isinstance(cid, str) and len(cid) == 24 else cid
+                        classroom = await db.db["classrooms"].find_one({"_id": cid_obj})
+                        if classroom:
+                            classroom_name = classroom.get("course_name", classroom.get("name", "Your Classroom"))
+                    except Exception as e:
+                        logger.warning(f"[Multi-Face] Could not fetch classroom: {e}")
+
                 # Get already-present students to avoid duplicates
                 already_present = set(session.get("present_student_ids", []))
 
@@ -494,16 +526,28 @@ async def recognize_multi_faces(
                                 "student_id": sid,
                                 "status": "present",
                                 "confidence": result["similarity"],
+                                "is_flagged": result.get("is_flagged", False),
+                                "flag_reason": result.get("flag_reason"),
                                 "method": "face_recognition",
                                 "timestamp": datetime.utcnow()
                             })
                             new_student_ids.append(sid)
                             result["attendance"] = "marked"
+                            
+                            # Queue email
+                            if result.get("student") and result["student"].get("email") and result["student"].get("email_notifications", True):
+                                background_tasks.add_task(
+                                    email_service.send_attendance_confirmation,
+                                    result["student"]["email"],
+                                    result["student"].get("full_name", "Student"),
+                                    classroom_name,
+                                    datetime.utcnow()
+                                )
 
                 # Single atomic DB update for all new students
                 if new_records:
                     await db.db["attendance_sessions"].update_one(
-                        {"_id": session_id},
+                        {"_id": session_oid},
                         {
                             "$push": {"records": {"$each": new_records}},
                             "$addToSet": {"present_student_ids": {"$each": new_student_ids}}
