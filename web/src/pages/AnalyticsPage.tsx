@@ -5,8 +5,10 @@ import { useAuth } from '../contexts/AuthContext';
 import {
     getDashboardAnalytics,
     getAnalyticsSummary,
+    getClassrooms,
     AnalyticsOverview,
     AnalyticsSummaryResponse,
+    Classroom
 } from '../services/api';
 import Sidebar from '../components/Sidebar';
 import StatsCard from '../components/dashboard/StatsCard';
@@ -26,7 +28,7 @@ import {
 } from 'lucide-react';
 
 // Filter options
-const DATE_FILTERS = ['Week', 'Month', 'Semester'] as const;
+const DATE_FILTERS = ['Week', 'Month'] as const;
 type DateFilter = (typeof DATE_FILTERS)[number];
 
 const AnalyticsPage: React.FC = () => {
@@ -37,20 +39,49 @@ const AnalyticsPage: React.FC = () => {
     const [analyticsData, setAnalyticsData] = useState<AnalyticsOverview | null>(null);
     const [summaryData, setSummaryData] = useState<AnalyticsSummaryResponse | null>(null);
 
-    // Mock classroom options for the selector
-    const classroomOptions = ['All Classrooms', 'Algorithms', 'Advance Client Side', 'Database'];
-    const [selectedClassroom, setSelectedClassroom] = useState('All Classrooms');
+    // Classroom selector state
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+    const [selectedClassroomId, setSelectedClassroomId] = useState('All Classrooms');
+
+    useEffect(() => {
+        const loadClassrooms = async () => {
+            try {
+                const data = await getClassrooms();
+                setClassrooms(data);
+            } catch (error) {
+                console.error('Failed to load classrooms', error);
+            }
+        };
+        loadClassrooms();
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Calculate date range based on active filter
+                const end = new Date();
+                const start = new Date();
+                if (activeFilter === 'Week') {
+                    start.setDate(end.getDate() - 7);
+                } else if (activeFilter === 'Month') {
+                    start.setDate(end.getDate() - 30);
+                }
+                
+                const startDateStr = start.toISOString().split('T')[0];
+                const endDateStr = end.toISOString().split('T')[0];
+                
+                const params: any = {
+                    start_date: startDateStr,
+                    end_date: endDateStr
+                };
+                
+                if (selectedClassroomId !== 'All Classrooms') {
+                    params.classroom_id = selectedClassroomId;
+                }
+
                 const [overview, summary] = await Promise.all([
-                    getDashboardAnalytics(),
-                    getAnalyticsSummary(
-                        selectedClassroom !== 'All Classrooms'
-                            ? { classroom_id: selectedClassroom }
-                            : undefined
-                    ),
+                    getDashboardAnalytics(params),
+                    getAnalyticsSummary(params),
                 ]);
                 setAnalyticsData(overview);
                 setSummaryData(summary);
@@ -59,7 +90,7 @@ const AnalyticsPage: React.FC = () => {
             }
         };
         fetchData();
-    }, [selectedClassroom]);
+    }, [selectedClassroomId, activeFilter]);
 
     // Transform weekly_trend into chart-friendly shapes
     const barChartData = (analyticsData?.weekly_trend || []).map((day) => {
@@ -156,12 +187,13 @@ const AnalyticsPage: React.FC = () => {
                     {/* Classroom selector */}
                     <div className="relative group">
                         <select
-                            value={selectedClassroom}
-                            onChange={(e) => setSelectedClassroom(e.target.value)}
+                            value={selectedClassroomId}
+                            onChange={(e) => setSelectedClassroomId(e.target.value)}
                             className="text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl border border-white/20 dark:border-white/[0.05] shadow-[0_2px_10px_rgba(0,0,0,0.02)] rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all duration-300 cursor-pointer appearance-none pr-10 group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"
                         >
-                            {classroomOptions.map((opt) => (
-                                <option key={opt} value={opt} className="bg-white dark:bg-[#1a1d2e] text-gray-900 dark:text-white font-medium">{opt}</option>
+                            <option value="All Classrooms" className="bg-white dark:bg-[#1a1d2e] text-gray-900 dark:text-white font-medium">All Classrooms</option>
+                            {classrooms.map((cls) => (
+                                <option key={cls.id} value={cls.id} className="bg-white dark:bg-[#1a1d2e] text-gray-900 dark:text-white font-medium">{cls.name || cls.course_code}</option>
                             ))}
                         </select>
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-violet-500 transition-colors">
@@ -195,40 +227,16 @@ const AnalyticsPage: React.FC = () => {
                 </motion.div>
 
                 {/* KPI Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 mb-8">
                     <StatsCard
                         title="Overall Attendance Rate"
                         value={`${summaryData?.overall_attendance_rate ?? 0}%`}
-                        icon={<Activity className="w-5 h-5" />}
-                        trend={{ value: 3.2, label: `vs last ${activeFilter.toLowerCase()}` }}
-                        color="text-violet-600 dark:text-violet-400"
-                        bg="bg-violet-50 dark:bg-violet-500/10"
                         delay={0.15}
                     />
                     <StatsCard
                         title="Total Sessions"
                         value={summaryData?.total_sessions_completed ?? 0}
-                        icon={<CalendarDays className="w-5 h-5" />}
-                        trend={{ value: 8, label: `vs last ${activeFilter.toLowerCase()}` }}
-                        color="text-blue-600 dark:text-blue-400"
-                        bg="bg-blue-50 dark:bg-blue-500/10"
                         delay={0.2}
-                    />
-                    <StatsCard
-                        title="Most Attended Class"
-                        value={summaryData?.most_attended_class ?? '—'}
-                        icon={<TrendingUp className="w-5 h-5" />}
-                        color="text-emerald-600 dark:text-emerald-400"
-                        bg="bg-emerald-50 dark:bg-emerald-500/10"
-                        delay={0.25}
-                    />
-                    <StatsCard
-                        title="Lowest Attendance"
-                        value={summaryData?.lowest_attendance_class ?? '—'}
-                        icon={<TrendingDown className="w-5 h-5" />}
-                        color="text-orange-600 dark:text-orange-400"
-                        bg="bg-orange-50 dark:bg-orange-500/10"
-                        delay={0.3}
                     />
                 </div>
 
@@ -242,7 +250,7 @@ const AnalyticsPage: React.FC = () => {
                     >
                         <AttendanceBarChart
                             period={activeFilter}
-                            classroom={selectedClassroom}
+                            classroom={selectedClassroomId !== 'All Classrooms' ? classrooms.find(c => c.id === selectedClassroomId)?.name || 'Classroom' : 'All Classrooms'}
                             data={barChartData.length > 0 ? barChartData : undefined}
                         />
                     </AnalyticsSummaryCard>
@@ -253,7 +261,7 @@ const AnalyticsPage: React.FC = () => {
                         delay={0.4}
                     >
                         <AttendanceTrendChart
-                            classroom={selectedClassroom}
+                            classroom={selectedClassroomId !== 'All Classrooms' ? classrooms.find(c => c.id === selectedClassroomId)?.name || 'Classroom' : 'All Classrooms'}
                             data={trendChartData.length > 0 ? trendChartData : undefined}
                         />
                     </AnalyticsSummaryCard>
@@ -274,7 +282,10 @@ const AnalyticsPage: React.FC = () => {
 
                     {/* Student Rankings */}
                     <div className="h-full">
-                        <StudentRankingList className="h-full" />
+                        <StudentRankingList 
+                            students={summaryData?.top_students || []}
+                            className="h-full" 
+                        />
                     </div>
 
                 </div>
