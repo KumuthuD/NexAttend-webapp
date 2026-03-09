@@ -13,49 +13,49 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
     },
     plugins: [
-        react(),
-        VitePWA({
-            registerType: 'autoUpdate',
-            includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
-            manifest: {
-                name: 'NexAttend AI-Powered Attendance System',
-                short_name: 'NexAttend',
-                description: 'Automate attendance with AI Multi-Face Detection and transform the teaching experience with real-time analytics.',
-                theme_color: '#4f46e5',
-                background_color: '#0f1117',
-                display: 'standalone',
-                icons: [
-                    {
-                        src: 'pwa-192x192.png',
-                        sizes: '192x192',
-                        type: 'image/png'
-                    },
-                    {
-                        src: 'pwa-512x512.png',
-                        sizes: '512x512',
-                        type: 'image/png'
-                    },
-                    {
-                        src: 'pwa-512x512.png',
-                        sizes: '512x512',
-                        type: 'image/png',
-                        purpose: 'any maskable'
-                    }
-                ],
-                screenshots: [
-                    {
-                        src: 'banner1.png',
-                        sizes: '1200x800',
-                        type: 'image/jpeg',
-                        form_factor: 'wide'
-                    }
-                ]
+      react(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        manifest: {
+          name: 'NexAttend AI-Powered Attendance System',
+          short_name: 'NexAttend',
+          description: 'Automate attendance with AI Multi-Face Detection and transform the teaching experience with real-time analytics.',
+          theme_color: '#4f46e5',
+          background_color: '#0f1117',
+          display: 'standalone',
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png'
             },
-            devOptions: {
-                enabled: true,
-                type: 'module'
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
             }
-        })
+          ],
+          screenshots: [
+            {
+              src: 'banner1.png',
+              sizes: '1200x800',
+              type: 'image/jpeg',
+              form_factor: 'wide'
+            }
+          ]
+        },
+        devOptions: {
+          enabled: true,
+          type: 'module'
+        }
+      })
     ],
     define: {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
@@ -75,22 +75,17 @@ export default defineConfig(({ mode }) => {
         output: {
           // Split large dependencies into separate cacheable chunks
           manualChunks(id) {
-            // Vendor chunks — heavy libraries cached separately
-            if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/react-router-dom')) {
-              return 'vendor-react';
+            // Keep React core together to ensure consistent resolution
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
+              return 'vendor-core';
             }
+
+            // Only split exceptionally large libraries if needed, otherwise let Vite handle it
             if (id.includes('node_modules/framer-motion')) {
               return 'vendor-motion';
             }
-            // recharts + d3 left in default chunk to avoid React.forwardRef
-            // race condition with the vendor-react chunk (React 19 compat)
-            if (id.includes('node_modules/lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('node_modules/axios')) {
-              return 'vendor-axios';
-            }
-            // App page-level chunks
+
+            // App page-level chunks for code-splitting
             if (id.includes('/pages/LandingPage')) return 'page-landing';
             if (id.includes('/pages/DashboardPage') || id.includes('/pages/AttendanceHistoryPage') || id.includes('/pages/CalendarPage')) return 'page-dashboard';
             if (id.includes('/pages/ClassroomPage')) return 'page-classroom';

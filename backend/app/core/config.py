@@ -16,7 +16,10 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://localhost:8000",
         "http://localhost:8001",
+        "https://nexattend.com",
+        "https://www.nexattend.com",
         "https://nex-attend-webapp.vercel.app",
+        "https://nexattend-webapp.onrender.com",
     ]
     
     # Database
