@@ -6,6 +6,9 @@ class AttendanceRecordBase(BaseModel):
     student_id: str
     status: str
     confidence: Optional[float] = None
+    review_status: str = "pending"
+    is_flagged: bool = False
+    flag_reason: Optional[str] = None
 
 class AttendanceRecordCreate(AttendanceRecordBase):
     pass
@@ -78,6 +81,33 @@ class AttendanceBatchMarkResponse(BaseModel):
 
 class PaginatedHistoryResponse(BaseModel):
     items: List[AttendanceSessionResponse]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+class AttendanceUpdateRequest(BaseModel):
+    """
+    Request model for manual attendance status updates (Day 26/27).
+    """
+    session_id: str
+    student_id: str
+    new_status: str = Field(..., description="Target status: present, absent, excused")
+    reason: Optional[str] = Field(None, description="Reason for manual override")
+class FlaggedRecordItem(BaseModel):
+    session_id: str
+    classroom_id: str
+    student_id: Optional[str] = None
+    student_name: str = "Unknown"
+    classroom_name: str = "Unknown Classroom"
+    status: str
+    is_flagged: bool = False
+    flag_reason: Optional[str] = None
+    confidence: Optional[float] = None
+    timestamp: datetime
+
+class PaginatedFlaggedResponse(BaseModel):
+    items: List[FlaggedRecordItem]
     total: int
     page: int
     size: int

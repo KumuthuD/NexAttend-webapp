@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const SupportPage: React.FC = () => {
-    const { logout, user } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
     const [openPrivacy, setOpenPrivacy] = useState<number | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -42,7 +42,7 @@ const SupportPage: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">
+        <div className="flex min-h-screen bg-white dark:bg-[#0f1117] transition-colors duration-300">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Mobile Top Bar */}
@@ -66,7 +66,7 @@ const SupportPage: React.FC = () => {
                 </div>
             </div>
 
-            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
+            <main className={`flex-1 lg:ml-64 p-4 md:p-7 relative transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'blur-sm lg:blur-none' : ''}`}>
                 <div className="lg:hidden h-16" /> {/* Spacer for mobile header */}
 
                 {/* Header */}
@@ -121,9 +121,9 @@ const SupportPage: React.FC = () => {
                 {/* Support Categories Section */}
                 <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
                     {[
-                        { title: "Getting Started", icon: "🚀", desc: "New to NexAttend? Start here." },
-                        { title: "Account & Billing", icon: "💳", desc: "Manage your account and payments." },
-                        { title: "Technical Issues", icon: "🔧", desc: "Troubleshoot bugs and errors." }
+                        { title: "Getting Started", desc: "New to NexAttend? Start here." },
+                        { title: "Account & Billing", desc: "Manage your account and payments." },
+                        { title: "Technical Issues", desc: "Troubleshoot bugs and errors." }
                     ].map((item, index) => (
                         <motion.div
                             key={index}
@@ -133,7 +133,6 @@ const SupportPage: React.FC = () => {
                             whileHover={{ scale: 1.03, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.1)" }}
                             className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-blue-500/30 dark:hover:border-blue-500/50 transition-all duration-300 cursor-pointer group shadow-sm dark:shadow-none"
                         >
-                            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
                             <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.title}</h3>
                             <p className="text-gray-500 dark:text-gray-400">{item.desc}</p>
                         </motion.div>
@@ -193,59 +192,29 @@ const SupportPage: React.FC = () => {
                     transition={{ duration: 0.6 }}
                     className="max-w-5xl mx-auto bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-3xl overflow-hidden shadow-xl dark:shadow-2xl border border-gray-100 dark:border-gray-700"
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-2">
-                        <div className="p-10 flex flex-col justify-center bg-blue-50 dark:bg-blue-600/10 backdrop-blur-sm">
-                            <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Still need help?</h2>
-                            <p className="text-gray-600 dark:text-gray-300 mb-8">
-                                Our support team is always ready to assist you. Reach out to us through any of these channels.
-                            </p>
-
-                            <div className="space-y-6">
-                                <div className="flex items-center space-x-4">
-                                    <div className="p-3 bg-blue-100 dark:bg-blue-500/20 rounded-full text-blue-600 dark:text-blue-400">
-                                        <Mail className="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Email us at</p>
-                                        <p className="font-medium text-gray-900 dark:text-white">nexattend@gmail.com</p>
-                                    </div>
+                    <div className="p-10 flex flex-col justify-center bg-blue-50 dark:bg-blue-600/10 backdrop-blur-sm">
+                        <h1 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-white">Still need help?</h1>
+                        <p className="text-gray-600 dark:text-gray-300 text-center mb-8">
+                            Our support team is always ready to assist you. Reach out to us through any of these channels.
+                        </p>
+                            <div className="flex items-center justify-center space-x-4">
+                                <div className="p-3 bg-blue-100 dark:bg-blue-500/20 rounded-full text-blue-600 dark:text-blue-400">
+                                    <Mail className="h-6 w-6" />
                                 </div>
-
-                                <div className="flex items-center space-x-4">
-                                    <div className="p-3 bg-purple-100 dark:bg-purple-500/20 rounded-full text-purple-600 dark:text-purple-400">
-                                        <Phone className="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Call us at</p>
-                                        <p className="font-medium text-gray-900 dark:text-white">+94 77 1234 567</p>
-                                    </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Email us:</p>
+                                    <p className="font-medium text-gray-900 dark:text-white">nexattendlk@gmail.com</p>
+                                </div>
+                            </div><br></br>
+                            <div className="flex items-center justify-center space-x-4">
+                                <div className="p-3 bg-purple-100 dark:bg-purple-500/20 rounded-full text-purple-600 dark:text-purple-400">
+                                    <Phone className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Call us:</p>
+                                    <p className="font-medium text-gray-900 dark:text-white">+94 70 244 3624</p>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="p-10 bg-white dark:bg-gray-800">
-                            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                                <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Name</label>
-                                    <input type="text" id="name" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all" placeholder="Your Name" />
-                                </div>
-
-                                <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Email</label>
-                                    <input type="email" id="email" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all" placeholder="your@email.com" />
-                                </div>
-
-                                <div>
-                                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Message</label>
-                                    <textarea id="message" rows={4} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all" placeholder="How can we help?"></textarea>
-                                </div>
-
-                                <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center space-x-2 shadow-md">
-                                    <span>Send Message</span>
-                                    <Send className="h-5 w-5" />
-                                </button>
-                            </form>
-                        </div>
                     </div>
                 </motion.div>
             </main>

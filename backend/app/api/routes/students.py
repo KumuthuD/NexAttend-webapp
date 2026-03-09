@@ -13,6 +13,7 @@ import numpy as np
 import cv2
 import logging
 from datetime import datetime
+from app.services.student_id_service import generate_student_id
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -130,6 +131,9 @@ async def register_student(
     # 4. Save to 'users' collection — unified with /faces/register format
     # This allows /faces/recognize and /faces/recognize-multi to find this student
     
+    # Generate unique 8-digit student ID
+    student_id = await generate_student_id(db)
+
     user_doc = {
         "full_name": name,           # matches what /faces/recognize expects
         "email": email,
@@ -137,6 +141,7 @@ async def register_student(
         "roll_number": roll_number,
         "course": course,
         "year": year,
+        "student_id": student_id,
         "embedding": embedding,       # stored directly on user (same as /faces/register)
         "has_registered_face": True,
         "is_active": True,
@@ -158,6 +163,7 @@ async def register_student(
         "roll_number": created_user["roll_number"],
         "course": created_user["course"],
         "year": created_user["year"],
+        "student_id": created_user.get("student_id"),
         "has_registered_face": created_user["has_registered_face"],
         "is_active": created_user["is_active"],
     }

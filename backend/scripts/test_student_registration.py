@@ -3,13 +3,13 @@ import os
 import sys
 from unittest.mock import MagicMock, AsyncMock
 
-# Add project root to path
+#Add project root to path
 PROJECT_ROOT = os.getcwd()
 BACKEND_DIR = os.path.join(PROJECT_ROOT, 'backend')
 if BACKEND_DIR not in sys.path:
     sys.path.append(BACKEND_DIR)
 
-# MOCK DB globally before importing app
+#MOCK DB globally before importing app
 from app.database import mongodb
 
 mock_students_col = AsyncMock()
@@ -23,7 +23,7 @@ def get_col(name):
 
 mock_db_obj.__getitem__ = MagicMock(side_effect=get_col)
 
-# REPLACING THE GLOBAL DB OBJECT
+#REPLACING THE GLOBAL DB OBJECT
 mongodb.db.db = mock_db_obj
 mongodb.db.connect = MagicMock()
 mongodb.db.close = MagicMock()
@@ -32,7 +32,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.database.mongodb import get_database
 
-# OVERRIDE DEPENDENCY
+#OVERRIDE DEPENDENCY
 async def override_get_database():
     return mock_db_obj
 

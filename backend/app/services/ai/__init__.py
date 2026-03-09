@@ -3,14 +3,20 @@ AI Services Module
 ==================
 Exports camera service, image processing utilities, face recognition services,
 and the AI configuration constants.
+
+Updated: Week 05 Day 24 - export quality check constants from Day 23
+Updated: Week 06 Day 26 - export AnomalyDetector
+Updated: Week 06 Day 27 - export ConfidenceCalibrator
 """
 
 from .camera_service import CameraService
 from .face_recognizer import FaceRecognizer
 from .single_face_recognition_service import (
     SingleFaceRecognitionService,
-    single_face_service
+    get_single_face_service
 )
+from .anomaly_detector import AnomalyDetector
+from .confidence_calibrator import ConfidenceCalibrator
 from .ai_config import (
     FACE_MODEL_NAME,
     FACE_DETECTION_MIN_CONFIDENCE,
@@ -25,7 +31,15 @@ from .ai_config import (
     CAMERA_FPS,
     ATTENDANCE_CAPTURE_FPS,
     FACE_IMAGES_DIR,
-    TEMP_DIR
+    TEMP_DIR,
+    # speed optimization constants (Week 05 Day 22)
+    DETECTION_DOWNSCALE_RATIO,
+    DETECTION_FRAME_SKIP,
+    # face quality check constants (Week 05 Day 23)
+    QUALITY_BLUR_THRESHOLD,
+    QUALITY_BRIGHTNESS_MIN,
+    QUALITY_BRIGHTNESS_MAX,
+    QUALITY_MIN_FACE_SIZE,
 )
 from app.services.lighting_optimizer import LightingOptimizer, lighting_optimizer
 from .image_processor import (
@@ -47,7 +61,9 @@ __all__ = [
     'CameraService',
     'FaceRecognizer',
     'SingleFaceRecognitionService',
-    'single_face_service',
+    'get_single_face_service',
+    'AnomalyDetector',
+    'ConfidenceCalibrator',
     'LightingOptimizer',
     'lighting_optimizer',
     # ai config constants
@@ -65,6 +81,13 @@ __all__ = [
     'ATTENDANCE_CAPTURE_FPS',
     'FACE_IMAGES_DIR',
     'TEMP_DIR',
+    'DETECTION_DOWNSCALE_RATIO',
+    'DETECTION_FRAME_SKIP',
+    # quality check constants
+    'QUALITY_BLUR_THRESHOLD',
+    'QUALITY_BRIGHTNESS_MIN',
+    'QUALITY_BRIGHTNESS_MAX',
+    'QUALITY_MIN_FACE_SIZE',
     # image processor functions
     'resize_image',
     'resize_with_aspect_ratio',

@@ -103,7 +103,6 @@ const TechMarquee: React.FC = () => (
                     color:      'rgba(180,180,210,0.7)',
                 }}
             >
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
                 Powered By
             </span>
         </div>

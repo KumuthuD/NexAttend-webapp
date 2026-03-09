@@ -36,18 +36,41 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     avatar: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    created_at: Optional[str] = None
+    email_notifications: bool = True
+    student_id: Optional[str] = None
 
     model_config = ConfigDict(populate_by_name=True)
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     avatar: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    email_notifications: Optional[bool] = None
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "full_name": "Jane Doe",
-                "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=JD"
+                "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=JD",
+                "date_of_birth": "1990-01-01",
+                "gender": "Female"
+            }
+        }
+    )
+
+class UserPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=6)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "current_password": "oldpassword123",
+                "new_password": "newsecurepassword123"
             }
         }
     )
@@ -69,3 +92,7 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+class GoogleLogin(BaseModel):
+    token: str
+    role: Optional[str] = "teacher" # Default role for new users

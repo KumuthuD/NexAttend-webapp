@@ -18,7 +18,7 @@ const SplashScreen: React.FC = () => {
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-950 overflow-hidden"
     >
       {/* Background orbs */}
@@ -38,26 +38,7 @@ const SplashScreen: React.FC = () => {
       />
 
       {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center gap-8">
-
-        {/* "Loading..." heading */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="flex items-baseline gap-0"
-        >
-          <span className="text-3xl md:text-4xl font-semibold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-pink-300 to-violet-300">
-            Loading
-          </span>
-          {/* Fixed-width dot area so text doesn't shift */}
-          <span
-            className="text-3xl md:text-4xl font-semibold text-violet-300 inline-block"
-            style={{ minWidth: '2.5rem', textAlign: 'left' }}
-          >
-            {dots}
-          </span>
-        </motion.div>
+      <div className="relative z-10 flex flex-col items-center justify-center gap-8">
 
         {/* NexAttend Logo */}
         <motion.div
@@ -74,6 +55,25 @@ const SplashScreen: React.FC = () => {
             className="relative w-36 md:w-48 drop-shadow-[0_0_24px_rgba(139,92,246,0.5)]"
           />
         </motion.div>
+
+        {/* "Loading..." heading */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="flex items-baseline gap-0"
+        >
+          <span className="text-3xl md:text-4x font-semibold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-pink-300 to-violet-300">
+            Loading
+          </span>
+          {/* Fixed-width dot area so text doesn't shift */}
+          <span
+            className="text-3xl md:text-4xl font-semibold text-violet-300 inline-block"
+            style={{ minWidth: '2.5rem', textAlign: 'left' }}
+          >
+            {dots}
+          </span>
+        </motion.div>
       </div>
 
       {/* Progress bar at bottom */}
@@ -84,7 +84,7 @@ const SplashScreen: React.FC = () => {
         <motion.div
           initial={{ width: '0%' }}
           animate={{ width: '100%' }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          transition={{ duration: 1, ease: 'easeInOut' }}
           className="h-full bg-gradient-to-r from-violet-500 via-pink-500 to-violet-500"
         />
       </motion.div>
