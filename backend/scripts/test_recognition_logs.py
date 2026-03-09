@@ -2,7 +2,7 @@ import os
 import sys
 from unittest.mock import MagicMock, AsyncMock
 
-# MOCK AI DEPENDENCIES 
+# mock ai dependancies
 sys.modules['deepface'] = MagicMock()
 sys.modules['mtcnn'] = MagicMock()
 sys.modules['cv2'] = MagicMock()
