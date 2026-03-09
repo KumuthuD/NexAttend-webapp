@@ -15,7 +15,7 @@ import logging
 from datetime import datetime
 from app.services.student_id_service import generate_student_id
 
-# Initialize logger
+# initialize logger
 logger = logging.getLogger(__name__)
 
 # Initialize Detector (Strict checks for registration)
