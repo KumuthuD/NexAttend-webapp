@@ -14,7 +14,7 @@ import os
 # add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.services.ai.lighting_optimizer import lighting_optimizer
+from app.services.lighting_optimizer import lighting_optimizer
 from app.services.face_detector import FaceDetector
 
 def create_test_images():

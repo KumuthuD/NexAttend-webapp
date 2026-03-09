@@ -116,9 +116,6 @@ class FaceDetector:
         filter_confidence: bool = True,
         sort_by_size: bool = True
     ) -> List[Dict]:
-        if downscale_ratio is None:
-            from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO
-            downscale_ratio = DETECTION_DOWNSCALE_RATIO
         """
         Detect faces faster by shrinking the frame before MTCNN runs.
         Bounding box coordinates are scaled back to original size.
@@ -126,6 +123,10 @@ class FaceDetector:
         downscale_ratio=0.5 halves each dimension -> image is 1/4 the pixels
         -> MTCNN processes ~4x fewer pixels -> roughly 3-4x faster.
         """
+        if downscale_ratio is None:
+            from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO
+            downscale_ratio = DETECTION_DOWNSCALE_RATIO
+
         if image is None or image.size == 0:
             logger.warning("Empty image passed to detect_faces_fast")
             return []
@@ -191,13 +192,6 @@ class FaceDetector:
         use_fast: bool = True,
         downscale_ratio: float = None
     ) -> List[Dict]:
-        if frame_skip is None:
-            from app.services.ai.ai_config import DETECTION_FRAME_SKIP
-            frame_skip = DETECTION_FRAME_SKIP
-            
-        if downscale_ratio is None:
-            from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO
-            downscale_ratio = DETECTION_DOWNSCALE_RATIO
         """
         Skip detection on most frames and reuse the last result.
         Runs actual detection only every frame_skip-th frame.
@@ -207,6 +201,14 @@ class FaceDetector:
         - downscale_ratio=0.5 makes that detection 3-4x faster
         Together: roughly 10-12x less CPU than the original path.
         """
+        if frame_skip is None:
+            from app.services.ai.ai_config import DETECTION_FRAME_SKIP
+            frame_skip = DETECTION_FRAME_SKIP
+
+        if downscale_ratio is None:
+            from app.services.ai.ai_config import DETECTION_DOWNSCALE_RATIO
+            downscale_ratio = DETECTION_DOWNSCALE_RATIO
+
         self._frame_counter += 1
 
         # run detection every frame_skip frames
