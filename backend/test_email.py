@@ -3,7 +3,7 @@ from datetime import datetime
 from app.services.email_service import email_service
 from app.core.config import settings
 
-# Override config to use Mailtrap or a local debugger server if we want to trace
+# override config to use mailtrap or a local debugger server if we want to trace
 settings.SMTP_HOST = "localhost"
 settings.SMTP_PORT = 1025
 settings.SMTP_USER = "test"
