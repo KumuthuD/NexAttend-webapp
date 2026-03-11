@@ -17,6 +17,9 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   tag,
   tagColor = "violet",
 }) => {
+  const divRef = React.useRef<HTMLDivElement>(null);
+  const frameRef = React.useRef<number>(0);
+
   const tagColors: Record<string, string> = {
     violet: "bg-violet-500/20 text-violet-300 border-violet-500/30",
     pink: "bg-pink-500/20 text-pink-300 border-pink-500/30",
@@ -26,51 +29,119 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
     cyan: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!divRef.current) return;
+    const div = divRef.current;
+    const rect = div.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -10;
+    const rotateY = ((x - centerX) / centerX) * 10;
+
+    cancelAnimationFrame(frameRef.current);
+    frameRef.current = requestAnimationFrame(() => {
+      if (!div) return;
+      div.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(8px)`;
+      div.style.setProperty("--mouse-x", `${x}px`);
+      div.style.setProperty("--mouse-y", `${y}px`);
+    });
+  };
+
+  const handleMouseLeave = () => {
+    if (!divRef.current) return;
+    cancelAnimationFrame(frameRef.current);
+    divRef.current.style.transform =
+      "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)";
+    divRef.current.style.transition =
+      "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease";
+  };
+
+  const handleMouseEnter = () => {
+    if (!divRef.current) return;
+    divRef.current.style.transition =
+      "transform 0.1s ease-out, box-shadow 0.3s ease";
+  };
+
   return (
     <div className="reveal h-full" style={{ transitionDelay: `${index * 0.08}s` }}>
+    <div
+      ref={divRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onMouseEnter={handleMouseEnter}
+      className={`group relative glass-card rounded-2xl p-7 text-center h-full overflow-hidden card-3d`}
+    >
+
+      {/* Spotlight Effect */}
       <div
-        className={`group relative rounded-2xl p-7 text-center h-full overflow-hidden cursor-default
-          bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]
-          hover:bg-white/[0.08] hover:border-violet-500/30
-          hover:-translate-y-1.5 hover:scale-[1.02]
-          transition-all duration-500 ease-out
-          shadow-[0_8px_32px_rgba(0,0,0,0.12)]
-          hover:shadow-[0_12px_48px_rgba(139,92,246,0.15)]`}
-      >
-        {/* Top border gradient — visible on hover */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:via-violet-400/50 transition-all duration-500" />
+        className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-60"
+        style={{
+          background: `radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), rgba(139, 92, 246, 0.18), transparent 40%)`,
+        }}
+      />
 
-        {/* Soft background glow on hover */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500/0 to-pink-500/0 group-hover:from-violet-500/[0.06] group-hover:to-pink-500/[0.04] transition-all duration-700 pointer-events-none" />
+      {/* Top gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-violet-500/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-        {/* Category tag */}
-        {tag && (
-          <div
-            className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-sm ${tagColors[tagColor] ?? tagColors.violet}`}
-          >
-            {tag}
-          </div>
-        )}
-
-        {/* Icon container */}
-        <div className="relative flex justify-center mb-5">
-          <div className="relative w-[64px] h-[64px] bg-gradient-to-br from-violet-500/20 to-pink-500/20 backdrop-blur-sm border border-white/10 rounded-2xl flex items-center justify-center
-            group-hover:from-violet-500/30 group-hover:to-pink-500/30 group-hover:border-violet-400/30 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-violet-500/20
-            transition-all duration-500">
-            <div className="relative z-10">{icon}</div>
-          </div>
+      {/* Category tag */}
+      {tag && (
+        <div
+          className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${tagColors[tagColor] ?? tagColors.violet}`}
+        >
+          {tag}
         </div>
+      )}
 
-        {/* Title */}
-        <h3 className="relative text-lg font-bold mb-2.5 text-white group-hover:text-violet-200 transition-colors duration-300">
-          {title}
-        </h3>
+      {/* Animated glow behind icon */}
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 w-24 h-24 bg-gradient-to-r from-violet-500/30 to-pink-500/30 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-150" />
 
-        {/* Description */}
-        <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300 leading-relaxed text-sm">
-          {description}
-        </p>
+      {/* Icon container */}
+      <div className="relative flex justify-center mb-5 icon-bounce">
+        <div className="bounce-target relative w-18 h-18 w-[72px] h-[72px] bg-gradient-to-br from-violet-500 via-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-violet-500/50 transition-all duration-500">
+          {/* Inner shine */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/25 to-transparent" />
+          {/* Spinning border ring */}
+          <div
+            className="absolute -inset-[2px] rounded-[18px] bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 arc-spin"
+            style={{ backgroundSize: "200% 200%" }}
+          />
+          <div className="relative z-10">{icon}</div>
+        </div>
       </div>
+
+      {/* Floating micro-particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-violet-400/60 particle-star"
+            style={
+              {
+                left: `${15 + i * 18}%`,
+                top: `${20 + (i % 3) * 20}%`,
+                "--dur": `${2 + i * 0.4}s`,
+                "--delay": `${i * 0.3}s`,
+              } as React.CSSProperties
+            }
+          />
+        ))}
+      </div>
+
+      {/* Title */}
+      <h3 className="relative text-lg font-bold mb-2.5 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-300 group-hover:to-pink-300 transition-all duration-300">
+        {title}
+      </h3>
+
+      {/* Description */}
+      <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300 leading-relaxed text-sm">
+        {description}
+      </p>
+
+      {/* Bottom accent */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-violet-500 to-pink-500 group-hover:w-4/5 transition-all duration-700 rounded-full" />
+    </div>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import MouseFollower from "../components/MouseFollower";
 import FeatureCard from "../components/FeatureCard";
 import TechMarquee from "../components/TechMarquee";
-import { LinkedInIcon, InstagramIcon, XIcon } from "../components/icons";
+import { LinkedInIcon, InstagramIcon, YoutubeIcon, GithubIcon } from "../components/icons";
 import kumuthuImg from "../assets/team/kumuthu.jpg";
 import thisanduImg from "../assets/team/thisandu.jpeg";
 import thiviruImg from "../assets/team/thiviru.jpeg";
@@ -131,12 +131,18 @@ const TeamMemberCard = ({
   description,
   image,
   index = 0,
+  linkedin = '#',
+  instagram = '#',
+  github = '#',
 }: {
   name: string;
   role: string;
   description: string;
   image: string;
   index?: number;
+  linkedin?: string;
+  instagram?: string;
+  github?: string;
 }) => {
   const cardRef = React.useRef<HTMLDivElement>(null);
   const frameRef = React.useRef<number>(0);
@@ -219,42 +225,46 @@ const TeamMemberCard = ({
         />
 
         {/* Image area */}
-        <div className="relative h-60 overflow-hidden">
-          <img
-            src={image}
-            alt={name}
-            className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-108"
-            style={{ transform: 'scale(1)', transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' }}
-            onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.08)')}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-          />
-          {/* Multi-stop gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-900/60 to-transparent" />
+        <div className="relative h-64 overflow-hidden p-3 pb-0">
+          <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+            {/* Base Image */}
+            <img
+              src={image}
+              alt={name}
+              className="w-full h-full object-cover object-top transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+            />
+            
+            {/* Subtle Gradient Overlay - much lighter now so the face is visible! */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/10 to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-500" />
+            
+            {/* Inner border for glassmorphism pop */}
+            <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none" />
 
-          {/* Floating role badge */}
-          <div className="absolute top-4 left-4">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gradient-to-r ${grad} text-white shadow-lg`}>
-              {role.split(' ')[0]}
-            </span>
-          </div>
+            {/* Floating role badge */}
+            <div className="absolute top-3 left-3 z-10 pointer-events-auto">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gradient-to-r ${grad} text-white shadow-lg`}>
+                {role.split(' ')[0]}
+              </span>
+            </div>
 
-          {/* Social icons — slide up on hover */}
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2.5 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out">
-            <a href="#" className="w-9 h-9 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-[#0077b5]/70 hover:border-[#0077b5]/50 hover:scale-110 transition-all duration-200">
-              <LinkedInIcon className="w-4 h-4" />
-            </a>
-            <a href="#" className="w-9 h-9 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-gradient-to-br hover:from-pink-500/70 hover:to-violet-500/70 hover:border-pink-400/50 hover:scale-110 transition-all duration-200">
-              <InstagramIcon className="w-4 h-4" />
-            </a>
-            <a href="#" className="w-9 h-9 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-white/20 hover:border-white/40 hover:scale-110 transition-all duration-200">
-              <XIcon className="w-4 h-4" />
-            </a>
+            {/* Social icons — always visible, easy to click */}
+            <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-3 z-20 pointer-events-auto pb-2">
+              <a href={linkedin} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-[#0077b5]/70 hover:border-[#0077b5]/50 hover:scale-110 active:scale-95 transition-all duration-200 shadow-md">
+                <LinkedInIcon className="w-4 h-4" />
+              </a>
+              <a href={instagram} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-gradient-to-br hover:from-pink-500/70 hover:to-violet-500/70 hover:border-pink-400/50 hover:scale-110 active:scale-95 transition-all duration-200 shadow-md">
+                <InstagramIcon className="w-4 h-4" />
+              </a>
+              <a href={github} target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-gray-700/70 hover:border-gray-500/50 hover:scale-110 active:scale-95 transition-all duration-200 shadow-md">
+                <GithubIcon className="w-4 h-4" />
+              </a>
+            </div>
           </div>
         </div>
 
         {/* Avatar ring — overlaps image and body */}
-        <div className="relative -mt-10 flex justify-start px-5 z-10">
-          <div className="relative">
+        <div className="relative -mt-10 flex justify-start px-5 z-10 pointer-events-none">
+          <div className="relative pointer-events-auto">
             {/* Animated gradient ring */}
             <div className={`absolute -inset-[3px] rounded-full bg-gradient-to-r ${grad} opacity-90 group-hover:opacity-100 transition-opacity duration-500`}
               style={{ animation: 'arcSpin 6s linear infinite' }} />
@@ -394,6 +404,9 @@ const LandingPage = () => {
       description:
         "Leads NexAttend's direction and develops real-time face recognition using DeepFace and MTCNN.",
       image: kumuthuImg,
+      linkedin: "https://www.linkedin.com/in/kumuthudahanayake/",
+      instagram: "https://www.instagram.com/_kumuthu_dahanayake_522/",
+      github: "https://github.com/KumuthuD",
     },
     {
       name: "Thisandu Ranadheera",
@@ -401,6 +414,9 @@ const LandingPage = () => {
       description:
         "Develops server infrastructure, API endpoints, and database connectivity using Node.js.",
       image: thisanduImg,
+      linkedin: "https://www.linkedin.com/in/thisanduranadheera/",
+      instagram: "https://www.instagram.com/thisandu.sr/?hl=af",
+      github: "https://github.com/ThisanduSSR",
     },
     {
       name: "Thiviru Igalawithana",
@@ -408,6 +424,9 @@ const LandingPage = () => {
       description:
         "Designs intuitive interfaces in Figma and implements responsive React components.",
       image: thiviruImg,
+      linkedin: "https://www.linkedin.com/in/thiviru-igalawithana/",
+      instagram: "https://www.instagram.com/thiviru_i/",
+      github: "https://github.com/thiviru7715",
     },
     {
       name: "Yasitha Peris",
@@ -415,6 +434,9 @@ const LandingPage = () => {
       description:
         "Creates responsive and user-friendly web experiences.",
       image: yasithaImg,
+      linkedin: "https://www.linkedin.com/in/yasitha-peiris-1908751a6/",
+      instagram: "https://www.instagram.com/itz.yazii/", 
+      github: "https://github.com/Yasith2004",
     },
     {
       name: "Viraj Jayasiri",
@@ -422,6 +444,9 @@ const LandingPage = () => {
       description:
         "Specializes in facial detection systems and optimizing real-time detection accuracy.",
       image: virajImg,
+      linkedin: "https://www.linkedin.com/in/virajjayasiri?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+      instagram: "https://www.instagram.com/virajdeshappriya?igsh=Nnd2cXVsdmxwNHd6",
+      github: "https://github.com/VirajJayasiri",
     },
     {
       name: "Sudam Amarajeewa",
@@ -429,6 +454,9 @@ const LandingPage = () => {
       description:
         "Manages backend systems and creates clear technical documentation.",
       image: sudamImg,
+      linkedin: "https://www.linkedin.com/in/sudam-amarajeewa-449854353/",
+      instagram: "https://www.instagram.com/sudam_amarajeewa/",
+      github: "https://github.com/sudamamarajeewa",
     },
   ];
 
@@ -586,36 +614,34 @@ const LandingPage = () => {
 
               {/* Hero feature card — left, taller */}
               <div className="lg:w-1/2 xl:w-5/12 min-h-[360px]">
-                <div className="group relative rounded-2xl p-10 h-full flex flex-col items-center justify-center text-center overflow-hidden reveal cursor-default
-                  bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]
-                  hover:bg-white/[0.08] hover:border-violet-500/30
-                  hover:-translate-y-1.5 hover:scale-[1.02]
-                  transition-all duration-500 ease-out
-                  shadow-[0_8px_32px_rgba(0,0,0,0.12)]
-                  hover:shadow-[0_12px_48px_rgba(139,92,246,0.15)]"
+                <div className="group relative glass-card rounded-2xl p-10 h-full flex flex-col items-center justify-center text-center overflow-hidden card-3d reveal"
                   style={{ transitionDelay: '0s' }}>
-                  {/* Top border gradient */}
-                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:via-violet-400/50 transition-all duration-500" />
-                  {/* Soft background glow on hover */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500/0 to-pink-500/0 group-hover:from-violet-500/[0.06] group-hover:to-pink-500/[0.04] transition-all duration-700 pointer-events-none" />
                   {/* Category tag */}
-                  <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-sm bg-violet-500/20 text-violet-300 border-violet-500/30">
+                  <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-violet-500/20 text-violet-300 border-violet-500/30">
                     {features[0].tag}
                   </div>
+                  {/* Spotlight */}
+                  <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-60 transition-opacity duration-300 rounded-2xl"
+                    style={{ background: 'radial-gradient(400px circle at 50% 50%, rgba(139,92,246,0.18), transparent 60%)' }} />
+                  {/* Top accent */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-violet-500/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {/* Floating orb behind icon */}
+                  <div className="absolute w-32 h-32 bg-gradient-to-r from-violet-500/20 to-pink-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-150 mb-8" />
                   {/* Icon */}
                   <div className="relative mb-6">
-                    <div className="w-20 h-20 bg-gradient-to-br from-violet-500/20 to-pink-500/20 backdrop-blur-sm border border-white/10 rounded-3xl flex items-center justify-center
-                      group-hover:from-violet-500/30 group-hover:to-pink-500/30 group-hover:border-violet-400/30 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-violet-500/20
-                      transition-all duration-500">
+                    <div className="w-24 h-24 bg-gradient-to-br from-violet-500 via-purple-600 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-violet-500/40 group-hover:scale-110 transition-transform duration-500">
+                      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/25 to-transparent" />
                       <div className="relative z-10">{features[0].icon}</div>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-white group-hover:text-violet-200 transition-colors duration-300 mb-3">
+                  <h3 className="text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-300 group-hover:to-pink-300 transition-all duration-300 mb-3">
                     {features[0].title}
                   </h3>
                   <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300 leading-relaxed max-w-xs">
                     {features[0].description}
                   </p>
+                  {/* Bottom accent */}
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-violet-500 to-pink-500 group-hover:w-4/5 transition-all duration-700 rounded-full" />
                 </div>
               </div>
 
@@ -964,6 +990,9 @@ const LandingPage = () => {
                 description={member.description}
                 image={member.image}
                 index={index}
+                linkedin={member.linkedin}
+                instagram={member.instagram}
+                github={member.github}
               />
             ))}
           </div>
@@ -1019,7 +1048,7 @@ const LandingPage = () => {
                   ),
                   grad: 'from-emerald-500 to-cyan-500',
                   label: 'Call us',
-                  value: '+94 77 123 4567',
+                  value: '+94 70 244 3624',
                   sub: 'Mon–Fri, 9 am – 6 pm IST',
                 },
                 {
@@ -1055,7 +1084,7 @@ const LandingPage = () => {
                   {[
                     { href: 'https://www.instagram.com/nexattend', icon: <InstagramIcon className="w-4 h-4" />, hover: 'hover:bg-gradient-to-r hover:from-pink-500/30 hover:to-yellow-500/30 hover:border-pink-400/40 hover:text-pink-300' },
                     { href: 'https://www.linkedin.com/company/nexattend/', icon: <LinkedInIcon className="w-4 h-4" />, hover: 'hover:bg-[#0077b5]/20 hover:border-[#0077b5]/40 hover:text-blue-300' },
-                    { href: '#', icon: <XIcon className="w-4 h-4" />, hover: 'hover:bg-white/10 hover:border-white/30 hover:text-white' },
+                    { href: 'https://www.youtube.com/@Nexattend', icon: <YoutubeIcon className="w-4 h-4" />, hover: 'hover:bg-red-600/20 hover:border-red-500/30 hover:text-red-400' },
                   ].map(s => (
                     <a key={s.href} href={s.href} target="_blank" rel="noopener noreferrer"
                       className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-gray-400 text-xs font-semibold transition-all duration-300 ${s.hover} hover:scale-105`}>
