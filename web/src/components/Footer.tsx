@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogoIcon, InstagramIcon, LinkedInIcon, XIcon } from './icons';
+import { LogoIcon, InstagramIcon, LinkedInIcon, YoutubeIcon } from './icons';
 
 const Footer = () => {
     const scrollToSection = (sectionId: string) => {
@@ -43,10 +43,10 @@ const Footer = () => {
                                 <LinkedInIcon className="w-5 h-5" />
                             </a>
                             <a
-                                href="#"
-                                className="w-11 h-11 glass-card rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:border-gray-500/30 transition-all"
+                                href="https://www.youtube.com/@Nexattend"
+                                className="w-11 h-11 glass-card rounded-xl flex items-center justify-center text-gray-400 hover:text-red-400 hover:border-red-500/30 transition-all"
                             >
-                                <XIcon className="w-5 h-5" />
+                                <YoutubeIcon className="w-5 h-5" />
                             </a>
                         </div>
                     </div>

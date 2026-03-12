@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn/Uvicorn instance to serve NexAttend
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/NexAttend-webapp/backend
+Environment="PYTHONPATH=/home/ubuntu/NexAttend-webapp/backend"
+ExecStart=/home/ubuntu/NexAttend-webapp/backend/venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+[Install]
+WantedBy=multi-user.target
+
