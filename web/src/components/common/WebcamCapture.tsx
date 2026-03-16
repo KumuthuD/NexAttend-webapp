@@ -231,12 +231,20 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         return () => clearInterval(intervalId);
     }, [mode, isCameraReady, capturedImage, captureAndSendFrame]);
 
+    const streamRef = useRef<MediaStream | null>(null);
+
+    // Keep ref in sync with state
+    useEffect(() => {
+        streamRef.current = stream;
+    }, [stream]);
+
     // Initial load
     useEffect(() => {
         startCamera();
         return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+            // P2-BUG4 fix: use ref instead of stale closure to ensure stream is always stopped
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
             }
         };
     }, []);

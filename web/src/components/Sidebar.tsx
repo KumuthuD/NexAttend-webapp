@@ -131,6 +131,18 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               </div>
             </div>
 
+            {/* P2-BUG6 fix: Logout button in sidebar */}
+            <button
+              onClick={() => {
+                logout();
+                handleNavigation('/get-started');
+              }}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-200 text-sm font-medium"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
+
           </div>
 
         </div>

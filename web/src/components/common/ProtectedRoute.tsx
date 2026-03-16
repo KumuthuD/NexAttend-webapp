@@ -38,7 +38,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (allowedRoles && user && !allowedRoles.includes(user.role)) {
         // If user is authenticated but doesn't have the right role, 
         // redirect to their respective dashboard or a 403 page
-        const redirectPath = user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
+        // P1-BUG2 fix: redirect to /dashboard (the actual route), not /teacher/dashboard or /student/dashboard which don't exist
+        const redirectPath = '/dashboard';
         return <Navigate to={redirectPath} replace />;
     }
 
