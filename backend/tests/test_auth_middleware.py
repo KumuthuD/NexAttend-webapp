@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import HTTPException, status
 
 # Add the backend directory to sys.path
-sys.path.append(os.path.join(os.getcwd(), "backend"))
+sys.path.insert(0, os.getcwd())
 
 # Mock environment variables
 os.environ.setdefault("SECRET_KEY", "test_secret_key")
