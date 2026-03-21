@@ -87,6 +87,10 @@ const ClassroomPage: React.FC = () => {
 
     useEffect(() => {
         fetchAnnouncements();
+        
+        // Polling to keep announcements up to date
+        const timer = setInterval(fetchAnnouncements, 10000);
+        return () => clearInterval(timer);
     }, [id]);
 
     // Fetch motivation data for student users
@@ -106,7 +110,12 @@ const ClassroomPage: React.FC = () => {
                 }
             }
         };
+
         fetchMotivation();
+
+        // Polling every 10 seconds to auto-update based on face scanning
+        const intervalId = setInterval(fetchMotivation, 10000);
+        return () => clearInterval(intervalId);
     }, [user?.role, user?.id, id]);
 
     // Fetch attendance history from API
@@ -373,6 +382,7 @@ const ClassroomPage: React.FC = () => {
                         )}
                         {user?.role === 'student' && (
                             <button
+                                onClick={() => navigate('/attendance-history')}
                                 className="flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-violet-200 dark:shadow-violet-500/20 text-sm"
                             >
                                 View Attendance

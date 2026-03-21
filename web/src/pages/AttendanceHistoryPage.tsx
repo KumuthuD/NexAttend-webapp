@@ -46,24 +46,18 @@ const AttendanceHistoryPage: React.FC = () => {
                 } else {
                     setRecords([]);
                 }
-            } else if (user?.role === 'student' && user.id) {
+            } else if (user?.role === 'student' && user?.id) {
                 const data = await getStudentAttendanceHistory(user.id);
-                // The endpoint returns `history` array inside `StudentAttendanceHistory` object.
-                // Map it to `AttendanceRecord` format for the table.
                 if (data.history && data.history.length > 0) {
-                    const studentRecords = data.history.map((item: any) => ({
-                        id: item.session_id,
-                        date: item.session_date,
+                    const studentRecords: AttendanceRecord[] = data.history.map((item: any) => ({
+                        id: item.session_id || Math.random().toString(),
+                        date: item.session_date ? item.session_date.split('T')[0] : new Date().toISOString().split('T')[0],
                         classroom_id: item.classroom_id,
-                        classroom_name: item.classroom_name,
-                        // If they have a record, they either present or absent.
-                        // We will set presentCount to show their status in the table (1 for present, 0 for absent)
-                        // And totalCount to 1, or use a custom component/column for Student view if preferred.
-                        // For the existing PercentageBar, 1/1 = 100% (Present), 0/1 = 0% (Absent)
+                        classroom_name: item.classroom_name || 'Unknown Class',
                         presentCount: item.attendance_status === 'present' ? 1 : 0,
                         totalCount: 1,
-                        status: item.attendance_status // add custom property if table can handle it
                     }));
+                    studentRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     setRecords(studentRecords);
                 } else {
                     setRecords([]);

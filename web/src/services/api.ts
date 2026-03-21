@@ -316,10 +316,7 @@ export const getStudentDashboardStats = async (studentId: string): Promise<Stude
   return response.data;
 };
 
-export const getStudentAttendanceHistory = async (studentId: string): Promise<any> => {
-  const response = await api.get(`/api/v1/students/${studentId}/attendance`);
-  return response.data;
-};
+// Removed duplicate getStudentAttendanceHistory
 
 // Auth API functions
 export const loginUser = async (
@@ -616,6 +613,24 @@ export const getStudentMotivationData = async (
     `/api/v1/students/${studentId}`,
   );
   return response.data.classroom_progress || {};
+};
+
+export interface StudentAttendanceHistoryResponse {
+  student_id: string;
+  student_name: string;
+  total_sessions: number;
+  present_count: number;
+  attendance_percentage: number;
+  history: any[];
+}
+
+export const getStudentAttendanceHistory = async (
+  studentId: string,
+): Promise<StudentAttendanceHistoryResponse> => {
+  const response = await api.get<StudentAttendanceHistoryResponse>(
+    `/api/v1/students/${studentId}/attendance`
+  );
+  return response.data;
 };
 
 // --- Flagged Attendance Records (Day 26 - Thiviru) ---

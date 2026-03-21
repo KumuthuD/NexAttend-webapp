@@ -80,7 +80,7 @@ const DashboardPage: React.FC = () => {
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
-        // Fetch dashboard stats for teachers
+        // Fetch dashboard stats (varies by role)
         const fetchStats = async () => {
             if (user?.role === 'teacher') {
                 try {
@@ -101,8 +101,18 @@ const DashboardPage: React.FC = () => {
 
         fetchClassrooms();
         fetchStats();
-        return () => clearInterval(timer);
-    }, [user?.role, fetchClassrooms]);
+
+        // Polling to keep stats and classrooms auto-updated
+        const dataInterval = setInterval(() => {
+            fetchStats();
+            fetchClassrooms();
+        }, 10000);
+
+        return () => {
+            clearInterval(timer);
+            clearInterval(dataInterval);
+        };
+    }, [user?.role, user?.id, fetchClassrooms]);
 
     const handleLogout = () => {
         logout();

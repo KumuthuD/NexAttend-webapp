@@ -253,9 +253,21 @@ async def get_student_attendance_history(student_id: str):
     # Safe name retrieval
     student_name = student.get("full_name") or student.get("name") or "Unknown Student"
     
+    # Find all classrooms where student is formally enrolled
+    enrolled_classes = await db["classrooms"].find({"student_ids": student_id}).to_list(length=100)
+    classroom_ids = [str(c["_id"]) for c in enrolled_classes]
+    
     # Aggregation Pipeline
     pipeline = [
-        {"$match": {"present_student_ids": student_id}},
+        {
+            "$match": {
+                "$or": [
+                    {"classroom_id": {"$in": classroom_ids}},
+                    {"present_student_ids": student_id},
+                    {"records.student_id": student_id}
+                ]
+            }
+        },
         {
             "$lookup": {
                 "from": "classrooms",
@@ -272,7 +284,8 @@ async def get_student_attendance_history(student_id: str):
                 "classroom_id": {"$ifNull": ["$classroom_id", "Unknown"]},
                 "classroom_name": {"$ifNull": ["$classroom.name", "Unknown Classroom"]},
                 "session_date": {"$ifNull": ["$session_date", datetime.utcnow()]},
-                "records": 1
+                "records": 1,
+                "present_student_ids": 1
             }
         }
     ]
@@ -287,6 +300,10 @@ async def get_student_attendance_history(student_id: str):
         records = sess.get("records") or []
         record = next((r for r in records if r.get("student_id") == student_id), None)
         
+        # Check if student is explicitly marked present
+        present_list = sess.get("present_student_ids") or []
+        is_present_in_list = student_id in present_list
+        
         status_val = "absent"
         timestamp = None
         confidence = None
@@ -295,6 +312,10 @@ async def get_student_attendance_history(student_id: str):
             status_val = record.get("status", "present")
             timestamp = record.get("timestamp")
             confidence = record.get("confidence")
+        elif is_present_in_list:
+            status_val = "present"
+            
+        if status_val == "present":
             present_count += 1
             
         history_items.append(StudentAttendanceHistoryItem(
