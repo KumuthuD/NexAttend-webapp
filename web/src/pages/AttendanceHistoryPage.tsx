@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import ExportAttendanceModal from '../components/dashboard/ExportAttendanceModal';
-import { getAttendanceHistory, getTeacherAttendanceHistory } from '../services/api';
+import { getTeacherAttendanceHistory, getStudentAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
 const MOCK_RECORDS: AttendanceRecord[] = [
@@ -27,7 +27,7 @@ const AttendanceHistoryPage: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -39,16 +39,39 @@ const AttendanceHistoryPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // Try fetching real data from per-classroom history endpoints
-            const data = await getTeacherAttendanceHistory();
-            if (data.length > 0) {
-                setRecords(data);
-            } else {
-                // No sessions yet — show empty state (not mock data)
-                setRecords([]);
+            if (user?.role === 'teacher') {
+                const data = await getTeacherAttendanceHistory();
+                if (data.length > 0) {
+                    setRecords(data);
+                } else {
+                    setRecords([]);
+                }
+            } else if (user?.role === 'student' && user.id) {
+                const data = await getStudentAttendanceHistory(user.id);
+                // The endpoint returns `history` array inside `StudentAttendanceHistory` object.
+                // Map it to `AttendanceRecord` format for the table.
+                if (data.history && data.history.length > 0) {
+                    const studentRecords = data.history.map((item: any) => ({
+                        id: item.session_id,
+                        date: item.session_date,
+                        classroom_id: item.classroom_id,
+                        classroom_name: item.classroom_name,
+                        // If they have a record, they either present or absent.
+                        // We will set presentCount to show their status in the table (1 for present, 0 for absent)
+                        // And totalCount to 1, or use a custom component/column for Student view if preferred.
+                        // For the existing PercentageBar, 1/1 = 100% (Present), 0/1 = 0% (Absent)
+                        presentCount: item.attendance_status === 'present' ? 1 : 0,
+                        totalCount: 1,
+                        status: item.attendance_status // add custom property if table can handle it
+                    }));
+                    setRecords(studentRecords);
+                } else {
+                    setRecords([]);
+                }
             }
-        } catch {
-            // Backend unavailable — fall back to mock data
+        } catch (err) {
+            console.error("Failed to fetch history:", err);
+            // Fallback for demo purposes if backend fails
             setRecords(MOCK_RECORDS);
         } finally {
             setIsLoading(false);
@@ -57,7 +80,7 @@ const AttendanceHistoryPage: React.FC = () => {
 
     useEffect(() => {
         fetchHistory();
-    }, []);
+    }, [user]);
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">

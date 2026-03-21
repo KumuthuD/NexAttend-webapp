@@ -69,3 +69,50 @@ async def get_dashboard_stats(db: Any = Depends(get_database)):
         "todays_attendance_count": todays_attendance_count,
         "attendance_percentage": round(attendance_percentage, 1)
     }
+
+class StudentDashboardStatsResponse(BaseModel):
+    attendance_percentage: float
+    total_classes: int
+    present_count: int
+    absent_count: int
+
+@router.get("/student-stats/{student_id}", response_model=StudentDashboardStatsResponse)
+async def get_student_dashboard_stats(student_id: str, db: Any = Depends(get_database)):
+    """
+    Get summary statistics for a specific student's dashboard.
+    """
+    pipeline = [
+        {"$match": {"present_student_ids": student_id}},
+    ]
+    
+    # Sessions where the student is present
+    present_sessions = await db["attendance_sessions"].aggregate(pipeline).to_list(None)
+    present_count = len(present_sessions)
+    
+    # Find all accessible classrooms for the student
+    # Either by student_ids array or generally (if we want to assume they are part of all the classrooms they have attended or all classrooms where the teacher added them)
+    # Let's count total sessions of classrooms they belong to.
+    student_classrooms = await db["classrooms"].find({"student_ids": student_id}).to_list(None)
+    classroom_ids = [str(c["_id"]) for c in student_classrooms]
+    # For safety with ObjectIds
+    from bson import ObjectId
+    classroom_oids = [c["_id"] for c in student_classrooms]
+    
+    total_sessions = await db["attendance_sessions"].count_documents({
+        "classroom_id": {"$in": classroom_ids + classroom_oids}
+    })
+    
+    absent_count = total_sessions - present_count
+    # Prevent negative absent count in case of data inconsistencies
+    absent_count = max(0, absent_count)
+    
+    attendance_percentage = 0.0
+    if total_sessions > 0:
+        attendance_percentage = (present_count / total_sessions) * 100
+        
+    return {
+        "attendance_percentage": round(attendance_percentage, 1),
+        "total_classes": total_sessions,
+        "present_count": present_count,
+        "absent_count": absent_count
+    }

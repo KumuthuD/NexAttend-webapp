@@ -210,6 +210,13 @@ export interface PaginatedHistoryResponse {
   pages: number;
 }
 
+export interface StudentDashboardStats {
+  attendance_percentage: number;
+  total_classes: number;
+  present_count: number;
+  absent_count: number;
+}
+
 /**
  * Fetch paginated attendance history for a specific classroom.
  * Backend: GET /api/v1/attendance/classroom/{classroom_id}/history
@@ -300,6 +307,18 @@ export const getTeacherAttendanceHistory = async (): Promise<
   );
 
   return merged;
+};
+
+// ── Student Attendance functions ──────────────────────────────────────────────
+
+export const getStudentDashboardStats = async (studentId: string): Promise<StudentDashboardStats> => {
+  const response = await api.get<StudentDashboardStats>(`/api/v1/dashboard/student-stats/${studentId}`);
+  return response.data;
+};
+
+export const getStudentAttendanceHistory = async (studentId: string): Promise<any> => {
+  const response = await api.get(`/api/v1/students/${studentId}/attendance`);
+  return response.data;
 };
 
 // Auth API functions
