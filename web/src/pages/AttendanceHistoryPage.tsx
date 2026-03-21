@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import ExportAttendanceModal from '../components/dashboard/ExportAttendanceModal';
-import { getAttendanceHistory, getTeacherAttendanceHistory } from '../services/api';
+import { getAttendanceHistory, getTeacherAttendanceHistory, getStudentAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
 const MOCK_RECORDS: AttendanceRecord[] = [
@@ -27,7 +27,7 @@ const AttendanceHistoryPage: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -39,13 +39,29 @@ const AttendanceHistoryPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // Try fetching real data from per-classroom history endpoints
-            const data = await getTeacherAttendanceHistory();
-            if (data.length > 0) {
-                setRecords(data);
+            if (user?.role === 'student' && user?.id) {
+                const data = await getStudentAttendanceHistory(user.id);
+                // Map student history format to AttendanceRecord format
+                const records: AttendanceRecord[] = data.history.map((record: any) => ({
+                    id: record.session_id || Math.random().toString(),
+                    date: record.session_date ? record.session_date.split('T')[0] : new Date().toISOString().split('T')[0],
+                    classroom_id: record.classroom_id,
+                    classroom_name: record.classroom_name || 'Unknown Class',
+                    presentCount: record.attendance_status === 'present' ? 1 : 0,
+                    totalCount: 1, // Student-specific: 1/1 present, 0/1 absent
+                }));
+                // Sort by date newest first
+                records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                setRecords(records);
             } else {
-                // No sessions yet — show empty state (not mock data)
-                setRecords([]);
+                // Try fetching real data from per-classroom history endpoints
+                const data = await getTeacherAttendanceHistory();
+                if (data.length > 0) {
+                    setRecords(data);
+                } else {
+                    // No sessions yet — show empty state (not mock data)
+                    setRecords([]);
+                }
             }
         } catch {
             // Backend unavailable — fall back to mock data
