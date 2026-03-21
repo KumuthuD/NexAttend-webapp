@@ -599,6 +599,24 @@ export const getStudentMotivationData = async (
   return response.data.classroom_progress || {};
 };
 
+export interface StudentAttendanceHistoryResponse {
+  student_id: string;
+  student_name: string;
+  total_sessions: number;
+  present_count: number;
+  attendance_percentage: number;
+  history: any[];
+}
+
+export const getStudentAttendanceHistory = async (
+  studentId: string,
+): Promise<StudentAttendanceHistoryResponse> => {
+  const response = await api.get<StudentAttendanceHistoryResponse>(
+    `/api/v1/students/${studentId}/attendance`
+  );
+  return response.data;
+};
+
 // --- Flagged Attendance Records (Day 26 - Thiviru) ---
 
 export interface FlaggedRecord {
