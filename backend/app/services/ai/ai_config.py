@@ -129,6 +129,6 @@ QUALITY_BRIGHTNESS_MAX: float = float(
     os.getenv("QUALITY_BRIGHTNESS_MAX", "220.0")
 )
 
-# Minimum width AND height of a cropped face to be accepted (pixels)
-# Faces smaller than this can't produce reliable embeddings
+# minimum width AND height of a cropped face to be accepted (pixels)
+# faces smaller than this can't produce reliable embeddings
 QUALITY_MIN_FACE_SIZE: int = int(os.getenv("QUALITY_MIN_FACE_SIZE", "80"))

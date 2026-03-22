@@ -4,8 +4,8 @@ from app.schemas.attendance import AttendanceMarkResponse
 
 class AttendanceBatchRecord(BaseModel):
     """
-    Individual student item in a batch request.
-    Does not need session_id as it's in the parent request.
+    individual student item in a batch request.
+    does not need session_id as it's in the parent request.
     """
     student_id: str
     confidence: Optional[float] = None

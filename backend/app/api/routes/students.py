@@ -15,10 +15,10 @@ import logging
 from datetime import datetime
 from app.services.student_id_service import generate_student_id
 
-# Initialize logger
+# initialize logger
 logger = logging.getLogger(__name__)
 
-# Initialize Detector (Strict checks for registration)
+# initialize detector (strict checks for registration)
 detector = FaceDetector(min_face_size=50, min_confidence=0.95)
 
 router = APIRouter()
