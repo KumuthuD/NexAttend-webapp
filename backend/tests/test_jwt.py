@@ -3,7 +3,7 @@ import os
 from datetime import timedelta
 
 # Add the backend directory to sys.path
-sys.path.append(os.path.join(os.getcwd(), "backend"))
+sys.path.insert(0, os.getcwd())
 
 # Mock environment variables for testing if not set
 os.environ.setdefault("SECRET_KEY", "test_secret_key")

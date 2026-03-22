@@ -19,7 +19,8 @@ class Settings(BaseSettings):
         "https://nexattend.com",
         "https://www.nexattend.com",
         "https://nex-attend-webapp.vercel.app",
-        "https://nexattend-webapp.onrender.com",
+        "https://nexattend.com",
+        "https://api.nexattend.com",
     ]
     
     # Database

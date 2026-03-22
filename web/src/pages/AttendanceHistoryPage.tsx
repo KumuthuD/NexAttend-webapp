@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AttendanceHistoryTable, { AttendanceRecord } from '../components/dashboard/AttendanceHistoryTable';
 import ExportAttendanceModal from '../components/dashboard/ExportAttendanceModal';
-import { getAttendanceHistory, getTeacherAttendanceHistory } from '../services/api';
+import { getTeacherAttendanceHistory, getStudentAttendanceHistory } from '../services/api';
 
 // ── Rich mock data (used as fallback when API is unavailable) ─────────────────
 const MOCK_RECORDS: AttendanceRecord[] = [
@@ -27,7 +27,7 @@ const AttendanceHistoryPage: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -39,16 +39,33 @@ const AttendanceHistoryPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // Try fetching real data from per-classroom history endpoints
-            const data = await getTeacherAttendanceHistory();
-            if (data.length > 0) {
-                setRecords(data);
-            } else {
-                // No sessions yet — show empty state (not mock data)
-                setRecords([]);
+            if (user?.role === 'teacher') {
+                const data = await getTeacherAttendanceHistory();
+                if (data.length > 0) {
+                    setRecords(data);
+                } else {
+                    setRecords([]);
+                }
+            } else if (user?.role === 'student' && user?.id) {
+                const data = await getStudentAttendanceHistory(user.id);
+                if (data.history && data.history.length > 0) {
+                    const studentRecords: AttendanceRecord[] = data.history.map((item: any) => ({
+                        id: item.session_id || Math.random().toString(),
+                        date: item.session_date ? item.session_date.split('T')[0] : new Date().toISOString().split('T')[0],
+                        classroom_id: item.classroom_id,
+                        classroom_name: item.classroom_name || 'Unknown Class',
+                        presentCount: item.attendance_status === 'present' ? 1 : 0,
+                        totalCount: 1,
+                    }));
+                    studentRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    setRecords(studentRecords);
+                } else {
+                    setRecords([]);
+                }
             }
-        } catch {
-            // Backend unavailable — fall back to mock data
+        } catch (err) {
+            console.error("Failed to fetch history:", err);
+            // Fallback for demo purposes if backend fails
             setRecords(MOCK_RECORDS);
         } finally {
             setIsLoading(false);
@@ -57,7 +74,7 @@ const AttendanceHistoryPage: React.FC = () => {
 
     useEffect(() => {
         fetchHistory();
-    }, []);
+    }, [user]);
 
     return (
         <div className="flex min-h-screen bg-[#f8f9fc] dark:bg-[#0f1117] transition-colors duration-300">

@@ -74,6 +74,12 @@ const GetStartedPage = () => {
         const errors: Record<string, string> = {};
 
         if (activeTab === "signup") {
+            if (!formData.name.trim()) {
+                errors.name = "Full name is required";
+            }
+            if (formData.password.length < 6) {
+                errors.password = "Password must be at least 6 characters";
+            }
             if (formData.password !== formData.confirmPassword) {
                 errors.confirmPassword = "Passwords do not match";
             }
@@ -81,6 +87,14 @@ const GetStartedPage = () => {
             if (formData.role === "student" && profileImages.length < 3) {
                 setImageError("Please upload at least 3 profile photos for face recognition setup.");
                 return;
+            }
+        } else {
+            // Login tab validation
+            if (!formData.email.trim()) {
+                errors.email = "Email is required";
+            }
+            if (!formData.password) {
+                errors.password = "Password is required";
             }
         }
 
@@ -204,8 +218,8 @@ const GetStartedPage = () => {
                                                 value={formData.name}
                                                 onChange={handleChange}
                                                 leftIcon={<User size={18} />}
+                                                error={validationErrors.name}
                                                 className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
-                                                required
                                             />
 
                                             <div>
@@ -251,7 +265,6 @@ const GetStartedPage = () => {
                                         leftIcon={<Mail size={18} />}
                                         error={validationErrors.email}
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
-                                        required
                                     />
 
                                     <Input
@@ -262,8 +275,8 @@ const GetStartedPage = () => {
                                         value={formData.password}
                                         onChange={handleChange}
                                         leftIcon={<Lock size={18} />}
+                                        error={validationErrors.password}
                                         className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
-                                        required
                                     />
 
                                     {activeTab === "signup" && (
@@ -277,7 +290,6 @@ const GetStartedPage = () => {
                                             leftIcon={<Lock size={18} />}
                                             error={validationErrors.confirmPassword}
                                             className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2.5 px-4 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors sm:text-sm"
-                                            required
                                         />
                                     )}
 

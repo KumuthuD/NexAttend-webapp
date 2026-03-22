@@ -61,9 +61,9 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
     isLoading = false,
     className = '',
 }) => {
-    const COLUMNS = ['Date', 'Classroom', 'Present Students', 'Percentage', ''];
     const navigate = useNavigate();
     const { user } = useAuth();
+    const COLUMNS = ['Date', 'Classroom', user?.role === 'student' ? 'Status' : 'Present Students', user?.role === 'student' ? '' : 'Percentage', ''];
 
     return (
         <div className={`bg-white dark:bg-[#1a1d2e] rounded-2xl border border-gray-100 dark:border-white/[0.06] shadow-sm overflow-hidden ${className}`}>
@@ -133,15 +133,22 @@ const AttendanceHistoryTable: React.FC<AttendanceHistoryTableProps> = ({
                                 {/* Marked Students */}
                                 <td className="px-4 py-4">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="font-semibold text-gray-900 dark:text-white">
-                                            {record.presentCount}/{record.totalCount} Students
+                                        <span className={`font-semibold ${user?.role === 'student'
+                                                ? (record.presentCount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')
+                                                : 'text-gray-900 dark:text-white'
+                                            }`}>
+                                            {user?.role === 'student'
+                                                ? (record.presentCount > 0 ? 'Present' : 'Absent')
+                                                : `${record.presentCount}/${record.totalCount} Students`}
                                         </span>
                                     </div>
                                 </td>
 
                                 {/* Percentage */}
                                 <td className="px-4 py-4">
-                                    <PercentageBar present={record.presentCount} total={record.totalCount} />
+                                    {user?.role !== 'student' && (
+                                        <PercentageBar present={record.presentCount} total={record.totalCount} />
+                                    )}
                                 </td>
 
                                 {/* Action */}

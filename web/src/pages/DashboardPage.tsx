@@ -10,6 +10,8 @@ import {
     joinClassroom,
     Classroom,
     ClassroomCreateData,
+    getStudentDashboardStats,
+    StudentDashboardStats,
 } from '../services/api';
 import Sidebar from '../components/Sidebar';
 import ClassroomCard from '../components/dashboard/ClassroomCard';
@@ -47,6 +49,7 @@ const DashboardPage: React.FC = () => {
     const [classroomsError, setClassroomsError] = useState('');
 
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [studentStats, setStudentStats] = useState<StudentDashboardStats | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Toast notification
@@ -77,7 +80,7 @@ const DashboardPage: React.FC = () => {
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
-        // Fetch dashboard stats for teachers
+        // Fetch dashboard stats (varies by role)
         const fetchStats = async () => {
             if (user?.role === 'teacher') {
                 try {
@@ -86,13 +89,30 @@ const DashboardPage: React.FC = () => {
                 } catch (error) {
                     console.error('Failed to fetch dashboard stats', error);
                 }
+            } else if (user?.role === 'student' && user.id) {
+                try {
+                    const data = await getStudentDashboardStats(user.id);
+                    setStudentStats(data);
+                } catch (error) {
+                    console.error('Failed to fetch student dashboard stats', error);
+                }
             }
         };
 
         fetchClassrooms();
         fetchStats();
-        return () => clearInterval(timer);
-    }, [user?.role, fetchClassrooms]);
+
+        // Polling to keep stats and classrooms auto-updated
+        const dataInterval = setInterval(() => {
+            fetchStats();
+            fetchClassrooms();
+        }, 10000);
+
+        return () => {
+            clearInterval(timer);
+            clearInterval(dataInterval);
+        };
+    }, [user?.role, user?.id, fetchClassrooms]);
 
     const handleLogout = () => {
         logout();
@@ -224,10 +244,10 @@ const DashboardPage: React.FC = () => {
                 {/* Student Attendance Overview */}
                 {!isTeacher && (
                     <StudentAttendanceOverview
-                        attendancePercentage={stats?.attendance_percentage || 0}
-                        totalClasses={classrooms.length}
-                        presentCount={stats?.todays_attendance_count || 0}
-                        absentCount={0}
+                        attendancePercentage={studentStats?.attendance_percentage || 0}
+                        totalClasses={studentStats?.total_classes || classrooms.length}
+                        presentCount={studentStats?.present_count || 0}
+                        absentCount={studentStats?.absent_count || 0}
                     />
                 )}
 

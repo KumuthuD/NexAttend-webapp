@@ -210,6 +210,13 @@ export interface PaginatedHistoryResponse {
   pages: number;
 }
 
+export interface StudentDashboardStats {
+  attendance_percentage: number;
+  total_classes: number;
+  present_count: number;
+  absent_count: number;
+}
+
 /**
  * Fetch paginated attendance history for a specific classroom.
  * Backend: GET /api/v1/attendance/classroom/{classroom_id}/history
@@ -301,6 +308,15 @@ export const getTeacherAttendanceHistory = async (): Promise<
 
   return merged;
 };
+
+// ── Student Attendance functions ──────────────────────────────────────────────
+
+export const getStudentDashboardStats = async (studentId: string): Promise<StudentDashboardStats> => {
+  const response = await api.get<StudentDashboardStats>(`/api/v1/dashboard/student-stats/${studentId}`);
+  return response.data;
+};
+
+// Removed duplicate getStudentAttendanceHistory
 
 // Auth API functions
 export const loginUser = async (
@@ -597,6 +613,24 @@ export const getStudentMotivationData = async (
     `/api/v1/students/${studentId}`,
   );
   return response.data.classroom_progress || {};
+};
+
+export interface StudentAttendanceHistoryResponse {
+  student_id: string;
+  student_name: string;
+  total_sessions: number;
+  present_count: number;
+  attendance_percentage: number;
+  history: any[];
+}
+
+export const getStudentAttendanceHistory = async (
+  studentId: string,
+): Promise<StudentAttendanceHistoryResponse> => {
+  const response = await api.get<StudentAttendanceHistoryResponse>(
+    `/api/v1/students/${studentId}/attendance`
+  );
+  return response.data;
 };
 
 // --- Flagged Attendance Records (Day 26 - Thiviru) ---

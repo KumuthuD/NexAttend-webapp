@@ -8,7 +8,7 @@ async def test_export():
         # We assume the uvicorn server is running on localhost:8000
         # If not running, we'll just catch the exception
         try:
-            url = "http://localhost:8000/api/v1/export/csv"
+            url = "http://localhost:8000/api/v1/export/attendance/csv"
             print(f"Requesting: {url}")
             response = await client.get(url)
             
